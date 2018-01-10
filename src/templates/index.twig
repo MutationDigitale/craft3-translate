@@ -1,0 +1,40 @@
+{% extends "_layouts/cp" %}
+
+{% if title is not defined %}
+	{% set title = "Translate" %}
+{% endif %}
+
+{% block pageTitle %}
+	{{ parent() }}
+
+	{% if craft.app.isMultiSite %}
+		<div class="select">
+			<select onchange="document.location.href='{{ url('translate/{locale}') }}'.replace('{locale}', this.value);">
+				{% for locale in craft.app.i18n.editableLocales %}
+					<option value="{{ locale.id }}"{% if locale.id == localeId %} selected{% endif %}>{{ locale.name }}</option>
+				{% endfor %}
+			</select>
+		</div>
+	{% endif %}
+{% endblock %}
+
+{% set content %}
+	<form method="post" accept-charset="UTF-8">
+		<input type="hidden" name="action" value="translate/translate/save">
+		<input type="hidden" name="locale" value="{{ localeId }}">
+		{{ csrfInput() }}
+		{% for key, translation in translations %}
+			<div class="field">
+				<div class="heading">
+					<label for="{{ key }}">{{ key }} <span class="extralight" data-icon="language" title="{{ 'This field is translatable.' | t('app') }}"></span></label>
+				</div>
+				<div class="input ltr">
+					<input class="text nicetext fullwidth" type="text" id="{{ key }}" name="translations[{{ key }}]" value="{{ translation }}" data-show-chars-left="" autocomplete="off" placeholder="">
+				</div>
+			</div>
+		{% endfor %}
+		<p>
+			<button type="submit" class="btn submit">{{ 'Save translations' | t('translate') }}</button>
+		</p>
+	</form>
+{% endset %}

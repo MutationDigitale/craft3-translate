@@ -1,0 +1,21 @@
+{
+  "name": "mutation/translate",
+  "description": "Translate strings in the control panel",
+  "version": "1.0.0",
+  "type": "craft-plugin",
+  "minimum-stability": "beta",
+  "autoload": {
+    "psr-4": {
+      "mutation\\translate\\": "src/"
+    }
+  },
+  "support": {
+    "email": "sam@mutation.io"
+  },
+  "extra": {
+    "handle": "translate",
+    "name": "Translate",
+    "developer": "Mutation Digitale",
+    "developerUrl": "http://mutation.io"
+  }
+}
