@@ -1,9 +1,19 @@
 {
   "name": "mutation/translate",
   "description": "Translate strings in the control panel",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "type": "craft-plugin",
   "minimum-stability": "beta",
+  "require": {
+    "roave/security-advisories": "dev-master",
+    "php": ">=7.0.0",
+    "craftcms/cms": "3.0.0-RC5"
+  },
+  "config": {
+    "platform": {
+      "php": "7.0"
+    }
+  },
   "autoload": {
     "psr-4": {
       "mutation\\translate\\": "src/"

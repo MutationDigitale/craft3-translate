@@ -35,7 +35,7 @@ class Plugin extends \craft\base\Plugin
 
 		Event::on(UrlManager::class, UrlManager::EVENT_REGISTER_CP_URL_RULES, function(RegisterUrlRulesEvent $event) {
 			$event->rules['translate'] = 'translate/translate/index';
-			$event->rules['translate/<locale:\w+>'] = 'translate/translate/index';
+			$event->rules['translate/<siteHandle:\w+>'] = 'translate/translate/index';
 		});
 
 		Event::on(MessageSource::class, MessageSource::EVENT_MISSING_TRANSLATION, function(MissingTranslationEvent $event) {
@@ -45,9 +45,9 @@ class Plugin extends \craft\base\Plugin
 		});
 	}
 
-	private function saveTranslationToFile($key, $locale)
+	private function saveTranslationToFile($key, $language)
 	{
-		$path = \Craft::$app->path->getSiteTranslationsPath() . DIRECTORY_SEPARATOR . $locale . DIRECTORY_SEPARATOR . 'site.php';
+		$path = \Craft::$app->path->getSiteTranslationsPath() . DIRECTORY_SEPARATOR . $language . DIRECTORY_SEPARATOR . 'site.php';
 
 		if (!file_exists($path)) {
 			$file = fopen($path, 'wb');
