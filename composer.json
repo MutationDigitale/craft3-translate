@@ -1,7 +1,7 @@
 {
   "name": "mutation/translate",
   "description": "Translate strings in the control panel",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "type": "craft-plugin",
   "license": "MIT",
   "authors": [

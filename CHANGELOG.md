@@ -1,7 +1,11 @@
 # Changelog
 
+## 1.0.6 - 2018-02-21
+### Fixed
+- Create site folder if it doesn't exist
+
 ## 1.0.5 - 2018-02-21
-### Changed
+### Fixed
 - Fixed double CP section
 
 ## 1.0.4 - 2018-02-21

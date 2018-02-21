@@ -34,6 +34,9 @@ class Plugin extends \craft\base\Plugin
 		$path = \Craft::$app->path->getSiteTranslationsPath() . DIRECTORY_SEPARATOR . $language . DIRECTORY_SEPARATOR . 'site.php';
 
 		if (!file_exists($path)) {
+            if (!file_exists(dirname($path))) {
+                mkdir(dirname($path), 0775, true);
+            }
 			$file = fopen($path, 'wb');
 			fclose($file);
 			$oldTranslations = array();
