@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.5 - 2018-02-21
+### Changed
+- Fixed double CP section
+
 ## 1.0.4 - 2018-02-21
 ### Changed
 - Changed composer.json

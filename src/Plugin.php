@@ -8,8 +8,6 @@ use craft\web\UrlManager;
 use yii\base\Event;
 use yii\i18n\MessageSource;
 use yii\i18n\MissingTranslationEvent;
-use craft\events\RegisterCpNavItemsEvent;
-use craft\web\twig\variables\Cp;
 
 class Plugin extends \craft\base\Plugin
 {
@@ -19,15 +17,6 @@ class Plugin extends \craft\base\Plugin
 
 	public function init()
 	{
-		Event::on(Cp::class, Cp::EVENT_REGISTER_CP_NAV_ITEMS, function(RegisterCpNavItemsEvent $event) {
-			if (\Craft::$app->user->identity->admin) {
-				$event->navItems['translate'] = [
-					'label' => 'Translate',
-					'url' => 'translate'
-				];
-			}
-		});
-
 		Event::on(UrlManager::class, UrlManager::EVENT_REGISTER_CP_URL_RULES, function(RegisterUrlRulesEvent $event) {
 			$event->rules['translate'] = 'translate/translate/index';
 			$event->rules['translate/<siteHandle:\w+>'] = 'translate/translate/index';
