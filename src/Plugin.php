@@ -14,6 +14,8 @@ use craft\web\twig\variables\Cp;
 class Plugin extends \craft\base\Plugin
 {
     public $changelogUrl = 'https://bitbucket.org/mutationdigitale/craft3-translate/src/master/CHANGELOG.md';
+    public $documentationUrl = 'https://bitbucket.org/mutationdigitale/craft3-translate/src/master/README.md';
+    public $downloadUrl = 'https://bitbucket.org/mutationdigitale/craft3-translate/get/master.zip';
 
 	public $controllerMap = [
 		'translate' => TranslateController::class,
