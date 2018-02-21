@@ -1,31 +1,32 @@
 {
   "name": "mutation/translate",
   "description": "Translate strings in the control panel",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "type": "craft-plugin",
-  "minimum-stability": "beta",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Mutation Digitale",
+      "email": "sam@mutation.io",
+      "homepage": "https://mutation.io/"
+    }
+  ],
   "require": {
     "roave/security-advisories": "dev-master",
-    "php": ">=7.0.0",
     "craftcms/cms": "^3.0.0-RC5"
-  },
-  "config": {
-    "platform": {
-      "php": "7.0"
-    }
   },
   "autoload": {
     "psr-4": {
       "mutation\\translate\\": "src/"
     }
   },
-  "support": {
-    "email": "sam@mutation.io"
-  },
   "extra": {
-    "handle": "translate",
     "name": "Translate",
-    "developer": "Mutation Digitale",
-    "developerUrl": "http://mutation.io"
+    "handle": "translate",
+    "schemaVersion": "1.0.0",
+    "developerEmail": "sam@mutation.io",
+    "documentationUrl": "https://bitbucket.org/mutationdigitale/craft3-translate/src/master/README.md",
+    "changelogUrl": "https://bitbucket.org/mutationdigitale/craft3-translate/raw/master/CHANGELOG.md",
+    "hasCpSection": true
   }
 }

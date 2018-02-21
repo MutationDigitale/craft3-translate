@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.4 - 2018-02-21
+### Changed
+- Changed composer.json
+
 ## 1.0.3 - 2018-02-21
 ### Added
 - Added readme
