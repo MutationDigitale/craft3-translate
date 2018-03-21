@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.7 - 2018-03-21
+### Fixed
+- Changed composer.json
+
 ## 1.0.6 - 2018-02-21
 ### Fixed
 - Create site folder if it doesn't exist

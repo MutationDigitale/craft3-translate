@@ -1,7 +1,7 @@
 {
   "name": "mutation/translate",
   "description": "Translate strings in the control panel",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "type": "craft-plugin",
   "license": "MIT",
   "authors": [
@@ -12,8 +12,7 @@
     }
   ],
   "require": {
-    "roave/security-advisories": "dev-master",
-    "craftcms/cms": "^3.0.0-RC5"
+    "craftcms/cms": "^3.0.0-RC10"
   },
   "autoload": {
     "psr-4": {
