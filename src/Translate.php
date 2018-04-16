@@ -2,6 +2,7 @@
 
 namespace mutation\translate;
 
+use craft\base\Plugin;
 use craft\events\RegisterUrlRulesEvent;
 use mutation\translate\controllers\TranslateController;
 use craft\web\UrlManager;
@@ -9,7 +10,7 @@ use yii\base\Event;
 use yii\i18n\MessageSource;
 use yii\i18n\MissingTranslationEvent;
 
-class Plugin extends \craft\base\Plugin
+class Translate extends Plugin
 {
     public $controllerMap = [
 		'translate' => TranslateController::class,

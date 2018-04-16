@@ -1,7 +1,7 @@
 {
   "name": "mutation/translate",
   "description": "Translate strings in the control panel",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "type": "craft-plugin",
   "license": "MIT",
   "authors": [
@@ -12,7 +12,7 @@
     }
   ],
   "require": {
-    "craftcms/cms": "^3.0.0-RC10"
+    "craftcms/cms": "^3.0.0"
   },
   "autoload": {
     "psr-4": {
@@ -28,6 +28,6 @@
     "changelogUrl": "https://bitbucket.org/mutationdigitale/craft3-translate/raw/master/CHANGELOG.md",
     "hasCpSettings": false,
     "hasCpSection": true,
-    "class": "mutation\\translate\\Plugin"
+    "class": "mutation\\translate\\Translate"
   }
 }
