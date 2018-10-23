@@ -3,11 +3,14 @@
   "description": "Translate strings in the control panel",
   "version": "1.0.9",
   "type": "craft-plugin",
+  "support": {
+    "docs": "https://github.com/MutationDigitale/craft3-translate/blob/master/README.md",
+    "issues": "https://github.com/MutationDigitale/craft3-translate/issues"
+  },
   "license": "MIT",
   "authors": [
     {
       "name": "Mutation Digitale",
-      "email": "sam@mutation.io",
       "homepage": "https://mutation.io/"
     }
   ],
@@ -22,12 +25,10 @@
   "extra": {
     "name": "Translate",
     "handle": "translate",
-    "schemaVersion": "1.0.0",
-    "developerEmail": "sam@mutation.io",
-    "documentationUrl": "https://bitbucket.org/mutationdigitale/craft3-translate/src/master/README.md",
-    "changelogUrl": "https://bitbucket.org/mutationdigitale/craft3-translate/raw/master/CHANGELOG.md",
     "hasCpSettings": false,
     "hasCpSection": true,
+    "schemaVersion": "1.0.0",
+    "changelogUrl": "https://raw.githubusercontent.com/MutationDigitale/craft3-translate/master/CHANGELOG.md",
     "class": "mutation\\translate\\Translate"
   }
 }
