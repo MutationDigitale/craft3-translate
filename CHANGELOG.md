@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.9 - 2018-10-23
+
+### Changed
+- New repository and remove [] from auto-translated strings
+
 ## 1.0.8 - 2018-04-16
 
 ### Changed

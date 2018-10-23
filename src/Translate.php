@@ -46,7 +46,7 @@ class Translate extends Plugin
 			$oldTranslations = include($path);
 		}
 
-		$newTranslations = array_merge($oldTranslations, array($key => "[$key]"));
+		$newTranslations = array_merge($oldTranslations, array($key => $key));
 		ksort($newTranslations);
 
 		$string = "<?php \n\nreturn " . var_export($newTranslations, true) . ';';
