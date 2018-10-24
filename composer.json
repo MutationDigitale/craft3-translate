@@ -1,7 +1,7 @@
 {
   "name": "mutation/translate",
   "description": "Translate strings in the control panel",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "type": "craft-plugin",
   "support": {
     "docs": "https://github.com/MutationDigitale/craft3-translate/blob/master/README.md",

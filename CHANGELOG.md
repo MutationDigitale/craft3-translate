@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.10 - 2018-10-24
+
+### Fixed
+- Fixed admin page when site handle is different from language
+
 ## 1.0.9 - 2018-10-23
 
 ### Changed
