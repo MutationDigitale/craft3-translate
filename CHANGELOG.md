@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.11 - 2018-10-25
+
+### Fixed
+- Ignore the sites and use only the locales
+
 ## 1.0.10 - 2018-10-24
 
 ### Fixed

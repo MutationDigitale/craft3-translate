@@ -6,23 +6,24 @@ use craft\web\Controller;
 
 class TranslateController extends Controller
 {
-    public function actionIndex($siteHandle = null)
+    public function actionIndex($localeId = null)
     {
         $this->requireAdmin();
 
-        if ($siteHandle) {
-            $site = \Craft::$app->sites->getSiteByHandle($siteHandle);
-        } else {
-            $site = \Craft::$app->sites->getPrimarySite();
+        if ($localeId == null) {
+            $localeId = \Craft::$app->i18n->getPrimarySiteLocaleId();
         }
 
-        $path = \Craft::$app->path->getSiteTranslationsPath() . DIRECTORY_SEPARATOR . $site->language . DIRECTORY_SEPARATOR . 'site.php';
+        $path = \Craft::$app->path->getSiteTranslationsPath() . DIRECTORY_SEPARATOR . $localeId . DIRECTORY_SEPARATOR . 'site.php';
         $translations = array();
         if (file_exists($path)) {
             $translations = include($path);
         }
 
-        $this->renderTemplate('translate/index', array("translations" => $translations, "siteId" => $site->id, "siteHandle" => $site->handle));
+        $this->renderTemplate('translate/index', array(
+            "translations" => $translations,
+            "currentLocaleId" => $localeId
+        ));
     }
 
     public function actionSave()
@@ -30,15 +31,13 @@ class TranslateController extends Controller
         $this->requirePostRequest();
         $this->requireAdmin();
 
-        $siteHandle = \Craft::$app->request->post('siteHandle', \Craft::$app->sites->getPrimarySite()->handle);
+        $localeId = \Craft::$app->request->post('localeId', \Craft::$app->i18n->getPrimarySiteLocaleId());
         $translations = \Craft::$app->request->post('translations');
         ksort($translations);
 
         $string = "<?php \n\nreturn " . var_export($translations, true) . ';';
 
-        $site = \Craft::$app->sites->getSiteByHandle($siteHandle);
-
-        $path = \Craft::$app->path->getSiteTranslationsPath() . DIRECTORY_SEPARATOR . $site->language . DIRECTORY_SEPARATOR . 'site.php';
+        $path = \Craft::$app->path->getSiteTranslationsPath() . DIRECTORY_SEPARATOR . $localeId . DIRECTORY_SEPARATOR . 'site.php';
 
         if (file_put_contents($path, $string)) {
             \Craft::$app->session->setNotice('Translations saved.');
@@ -46,6 +45,6 @@ class TranslateController extends Controller
             \Craft::$app->session->setError('Couldn’t save translations.');
         }
 
-        return $this->redirect(\craft\helpers\UrlHelper::url('translate') . '/' . $siteHandle);
+        return $this->redirect(\craft\helpers\UrlHelper::url('translate') . '/' . $localeId);
     }
 }
