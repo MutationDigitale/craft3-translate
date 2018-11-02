@@ -1,0 +1,9 @@
+{% import "_includes/forms" as forms %}
+
+<form class="utility" method="post" accept-charset="UTF-8">
+    <input type="hidden" name="action" value="fileCache/cache/warm">
+    {{ redirectInput('utilities/filecache') }}
+    {{ csrfInput() }}
+
+    <input type="submit" class="btn submit" value="{{ 'Warm All Cache'|t('filecache') }}"/>
+</form>

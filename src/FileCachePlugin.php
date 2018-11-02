@@ -4,13 +4,15 @@ namespace mutation\filecache;
 
 use craft\base\Plugin;
 use craft\events\DeleteTemplateCachesEvent;
-use craft\web\twig\variables\CraftVariable;
+use craft\events\RegisterComponentTypesEvent;
 use craft\services\TemplateCaches;
-use yii\base\Event;
-
+use craft\services\Utilities;
+use craft\web\twig\variables\CraftVariable;
 use mutation\filecache\models\SettingsModel;
-use mutation\filecache\variables\FileCacheVariable;
 use mutation\filecache\services\FileCacheService;
+use mutation\filecache\utilities\CacheUtility;
+use mutation\filecache\variables\FileCacheVariable;
+use yii\base\Event;
 
 class FileCachePlugin extends Plugin
 {
@@ -49,6 +51,12 @@ class FileCachePlugin extends Plugin
             TemplateCaches::EVENT_BEFORE_DELETE_CACHES,
             function (DeleteTemplateCachesEvent $event) {
                 self::$plugin->fileCache->deleteTemplateCaches($event->cacheIds);
+            }
+        );
+
+        Event::on(Utilities::class, Utilities::EVENT_REGISTER_UTILITY_TYPES,
+            function (RegisterComponentTypesEvent $event) {
+                $event->types[] = CacheUtility::class;
             }
         );
     }

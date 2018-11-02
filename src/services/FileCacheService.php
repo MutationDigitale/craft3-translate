@@ -2,8 +2,14 @@
 
 namespace mutation\filecache\services;
 
+use Craft;
 use craft\base\Component;
+use craft\base\Element;
+use GuzzleHttp\Client;
+use GuzzleHttp\Exception\ClientException;
+use GuzzleHttp\Exception\RequestException;
 use mutation\filecache\FileCachePlugin;
+use mutation\filecache\jobs\WarmCacheJob;
 use mutation\filecache\models\SettingsModel;
 use yii\db\Query;
 
@@ -78,6 +84,59 @@ class FileCacheService extends Component
             $cacheKey = $this->getTemplateCacheKeyById($cacheId);
             $this->deleteCache($cacheKey);
         }
+    }
+
+    public function warmCache(bool $queue = false): int
+    {
+        $count = 0;
+        $urls = [];
+
+        $elementTypes = Craft::$app->getElements()->getAllElementTypes();
+
+        /** @var Element $elementType */
+        foreach ($elementTypes as $elementType) {
+            if (!$elementType::hasUris()) {
+                continue;
+            }
+
+            $sites = Craft::$app->getSites()->getAllSites();
+            foreach ($sites as $site) {
+                $elements = $elementType::find()->siteId($site->id)->all();
+
+                foreach ($elements as $element) {
+                    $uri = trim($element->uri, '/');
+                    $uri = ($uri === '__home__' ? '' : $uri);
+
+                    if ($uri === null || !$this->isCacheableUri($uri)) {
+                        continue;
+                    }
+
+                    $url = $element->getUrl();
+                    if ($url === null || \in_array($url, $urls, true)) {
+                        continue;
+                    }
+
+                    $urls[] = $url;
+                }
+            }
+        }
+
+        if (\count($urls) > 0) {
+            if ($queue === true) {
+                Craft::$app->getQueue()->push(new WarmCacheJob(['urls' => $urls]));
+                return 0;
+            }
+            $client = new Client();
+            foreach ($urls as $url) {
+                try {
+                    $response = $client->get($url);
+                    $count++;
+                } catch (ClientException $e) {
+                } catch (RequestException $e) {
+                }
+            }
+        }
+        return $count;
     }
 
     public function getCacheFilePath($site, $path): string

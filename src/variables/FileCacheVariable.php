@@ -2,9 +2,8 @@
 
 namespace mutation\filecache\variables;
 
-use yii\base\Application;
-
 use mutation\filecache\FileCachePlugin;
+use yii\base\Application;
 
 class FileCacheVariable
 {
