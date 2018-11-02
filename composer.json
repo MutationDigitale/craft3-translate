@@ -1,7 +1,7 @@
 {
     "name": "mutation/htmlcache",
     "description": "Html static cache.",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "type": "craft-plugin",
     "support": {
         "docs": "https://github.com/MutationDigitale/craft3-htmlcache/blob/master/README.md",
