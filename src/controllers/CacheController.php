@@ -1,9 +1,6 @@
 <?php
-/**
- * @copyright Copyright (c) PutYourLightsOn
- */
 
-namespace putyourlightson\blitz\controllers;
+namespace mutation\filecache\controllers;
 
 use Craft;
 use craft\web\Controller;
