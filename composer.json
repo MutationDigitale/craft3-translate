@@ -1,7 +1,7 @@
 {
-    "name": "mutation/htmlcache",
+    "name": "mutation/filecache",
     "description": "Html static cache.",
-    "version": "1.0.3",
+    "version": "1.0.0",
     "type": "craft-plugin",
     "support": {
         "docs": "https://github.com/MutationDigitale/craft3-htmlcache/blob/master/README.md",
@@ -20,7 +20,7 @@
     },
     "autoload": {
         "psr-4": {
-            "mutation\\htmlcache\\": "src/"
+            "mutation\\filecache\\": "src/"
         }
     },
     "extra": {
@@ -30,6 +30,6 @@
         "hasCpSection": false,
         "schemaVersion": "1.0.0",
         "changelogUrl": "https://raw.githubusercontent.com/MutationDigitale/craft3-htmlcache/master/CHANGELOG.md",
-        "class": "mutation\\htmlcache\\HtmlCache"
+        "class": "mutation\\filecache\\FileCachePlugin"
     }
 }
