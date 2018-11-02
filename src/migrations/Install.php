@@ -1,17 +1,7 @@
 <?php
-/**
- * HTML Cache plugin for Craft CMS 3.x
- *
- * HTML Cache install migration
- *
- * @link      http://www.bolden.nl
- * @copyright Copyright (c) 2018 Bolden B.V.
- * @author Klearchos Douvantzis
- */
 
 namespace mutation\htmlcache\migrations;
 
-use Craft;
 use craft\db\Migration;
 
 /**
@@ -21,9 +11,6 @@ use craft\db\Migration;
  */
 class Install extends Migration
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */

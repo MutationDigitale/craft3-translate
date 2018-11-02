@@ -1,26 +1,10 @@
 <?php
 
-/**
- * HTML Cache plugin for Craft CMS 3.x
- *
- * HTML Cache Service
- *
- * @link      http://www.bolden.nl
- * @copyright Copyright (c) 2018 Bolden B.V.
- * @author Klearchos Douvantzis
- */
-
 namespace mutation\htmlcache\services;
 
-use Craft;
 use craft\base\Component;
 use craft\helpers\FileHelper;
-use mutation\htmlcache\assets\HtmlcacheAssets;
 use mutation\htmlcache\HtmlCache;
-use craft\elements\Entry;
-use craft\services\Elements;
-use yii\base\Event;
-use craft\elements\db\ElementQuery;
 use mutation\htmlcache\records\HtmlCacheCache;
 use mutation\htmlcache\records\HtmlCacheElement;
 

@@ -1,15 +1,5 @@
 <?php
 
-/**
- * HTML Cache plugin for Craft CMS 3.x
- *
- * HTML Cache Plugin
- *
- * @link      http://www.bolden.nl
- * @copyright Copyright (c) 2018 Bolden B.V.
- * @author Klearchos Douvantzis
- */
-
 namespace mutation\htmlcache;
 
 use craft\base\Plugin;
@@ -28,26 +18,8 @@ use mutation\htmlcache\records\HtmlCacheElement;
 use craft\elements\User;
 use craft\elements\GlobalSet;
 
-/**
- * Craft plugins are very much like little applications in and of themselves. We’ve made
- * it as simple as we can, but the training wheels are off. A little prior knowledge is
- * going to be required to write a plugin.
- *
- * For the purposes of the plugin docs, we’re going to assume that you know PHP and SQL,
- * as well as some semi-advanced concepts like object-oriented programming and PHP namespaces.
- *
- * https://craftcms.com/docs/plugins/introduction
- *
- * @author    Bolden B.V.
- * @package   HtmlCache
- * @since     0.0.1
- *
- */
 class HtmlCache extends Plugin
 {
-    // Static Properties
-    // =========================================================================
-
     /**
      * Static property that is an instance of this plugin class so that it can be accessed via
      * HtmlCache::$plugin
@@ -55,12 +27,7 @@ class HtmlCache extends Plugin
      * @var HtmlCache
      */
     public static $plugin;
-    public $schemaVersion = '1.0.0';
     public $allowAnonymous = true;
-    public $hasCpSettings = true;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Returns whether the plugin should get its own tab in the CP header.
@@ -211,9 +178,6 @@ class HtmlCache extends Plugin
         );
         parent::init();
     }
-    
-    // Protected Methods
-    // =========================================================================
 
 }
             

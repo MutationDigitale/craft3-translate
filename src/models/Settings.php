@@ -1,16 +1,6 @@
 <?php
-/**
- * HTML Cache plugin for Craft CMS 3.x
- *
- * HTML Cache model settings
- *
- * @link      http://www.bolden.nl
- * @copyright Copyright (c) 2018 Bolden B.V.
- * @author Klearchos Douvantzis
- */
 
 namespace mutation\htmlcache\models;
-
 
 class Settings extends \craft\base\Model
 {
