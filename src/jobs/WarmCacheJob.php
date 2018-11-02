@@ -16,7 +16,7 @@ class WarmCacheJob extends BaseJob
 
     public function execute($queue)
     {
-        if (!FileCachePlugin::$plugin->getSettings()->cachingEnabled) {
+        if (!FileCachePlugin::$plugin->getSettings()->cacheEnabled) {
             return;
         }
 
