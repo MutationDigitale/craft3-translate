@@ -8,7 +8,7 @@ use mutation\filecache\FileCachePlugin;
 
 class FileCacheVariable
 {
-    public function key()
+    public function key(): string
     {
         $site = \Craft::getAlias(\Craft::$app->sites->getCurrentSite()->baseUrl);
         $path = \Craft::$app->request->getPathInfo();
@@ -16,7 +16,8 @@ class FileCacheVariable
         $cacheFilePath = FileCachePlugin::$plugin->fileCache->getCacheFilePath($site, $path);
 
         \Craft::$app->on(Application::EVENT_AFTER_REQUEST, function () use ($cacheFilePath) {
-            if (FileCachePlugin::$plugin->fileCache->isCacheable()) {
+            if (FileCachePlugin::$plugin->fileCache->isCacheableRequest() &&
+                FileCachePlugin::$plugin->fileCache->isCacheableUri(\Craft::$app->getRequest()->getPathInfo())) {
                 if ($html = \Craft::$app->templateCaches->getTemplateCache($cacheFilePath, false)) {
                     FileCachePlugin::$plugin->fileCache->writeCache($cacheFilePath, $html);
                 }
@@ -26,8 +27,9 @@ class FileCacheVariable
         return $cacheFilePath;
     }
 
-    public function canCache()
+    public function canCache(): bool
     {
-        return FileCachePlugin::$plugin->fileCache->isCacheable();
+        return FileCachePlugin::$plugin->fileCache->isCacheableRequest() &&
+            FileCachePlugin::$plugin->fileCache->isCacheableUri(\Craft::$app->getRequest()->getPathInfo());
     }
 }

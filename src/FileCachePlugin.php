@@ -8,7 +8,7 @@ use craft\web\twig\variables\CraftVariable;
 use craft\services\TemplateCaches;
 use yii\base\Event;
 
-use mutation\filecache\models\Settings;
+use mutation\filecache\models\SettingsModel;
 use mutation\filecache\variables\FileCacheVariable;
 use mutation\filecache\services\FileCacheService;
 
@@ -55,6 +55,6 @@ class FileCachePlugin extends Plugin
 
     protected function createSettingsModel()
     {
-        return new Settings();
+        return new SettingsModel();
     }
 }
