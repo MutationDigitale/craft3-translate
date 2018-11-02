@@ -4,7 +4,11 @@ namespace mutation\filecache;
 
 use craft\base\Plugin;
 use craft\events\DeleteTemplateCachesEvent;
+use craft\events\ElementEvent;
+use craft\events\MoveElementEvent;
 use craft\events\RegisterComponentTypesEvent;
+use craft\services\Elements;
+use craft\services\Structures;
 use craft\services\TemplateCaches;
 use craft\services\Utilities;
 use craft\web\twig\variables\CraftVariable;
@@ -50,13 +54,31 @@ class FileCachePlugin extends Plugin
             TemplateCaches::class,
             TemplateCaches::EVENT_BEFORE_DELETE_CACHES,
             function (DeleteTemplateCachesEvent $event) {
-                self::$plugin->fileCache->deleteTemplateCaches($event->cacheIds);
+                $this->fileCache->deleteTemplateCaches($event->cacheIds);
             }
         );
 
         Event::on(Utilities::class, Utilities::EVENT_REGISTER_UTILITY_TYPES,
             function (RegisterComponentTypesEvent $event) {
                 $event->types[] = CacheUtility::class;
+            }
+        );
+
+        Event::on(Elements::class, Elements::EVENT_AFTER_SAVE_ELEMENT,
+            function(ElementEvent $event) {
+                $this->filecache->warmCache(true);
+            }
+        );
+
+        Event::on(Structures::class, Structures::EVENT_AFTER_MOVE_ELEMENT,
+            function(MoveElementEvent $event) {
+                $this->filecache->warmCache(true);
+            }
+        );
+
+        Event::on(Elements::class, Elements::EVENT_BEFORE_DELETE_ELEMENT,
+            function(ElementEvent $event) {
+                $this->filecache->warmCache(true);
             }
         );
     }
