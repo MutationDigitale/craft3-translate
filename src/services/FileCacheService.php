@@ -3,70 +3,78 @@
 namespace mutation\filecache\services;
 
 use craft\base\Component;
+use mutation\filecache\FileCachePlugin;
 use yii\db\Query;
 
 class FileCacheService extends Component
 {
-	public function getTemplateCacheKeyById($id)
-	{
-		return (new Query())
-			->select('cacheKey')
-			->from('{{%templatecaches}}')
-			->where([
-				'and',
-				[
-					'id' => $id,
-				],
-			])
-			->scalar();
-	}
+    public function getTemplateCacheKeyById($id)
+    {
+        return (new Query())
+            ->select('cacheKey')
+            ->from('{{%templatecaches}}')
+            ->where([
+                'and',
+                ['id' => $id]
+            ])
+            ->scalar();
+    }
 
+    public function isCacheable()
+    {
+        return true;
+    }
 
-	public function isCacheable()
-	{
-		return true;
-	}
+    public function writeCache($cacheFilePath, $html)
+    {
+        if (!file_exists($cacheFilePath)) {
+            if (!file_exists(dirname($cacheFilePath))) {
+                mkdir(dirname($cacheFilePath), 0775, true);
+            }
+            $file = fopen($cacheFilePath, 'wb');
+            fclose($file);
+        }
 
-	public function writeCache($cacheFilePath, $html)
-	{
-		if (!file_exists($cacheFilePath)) {
-			if (!file_exists(dirname($cacheFilePath))) {
-				mkdir(dirname($cacheFilePath), 0775, true);
-			}
-			$file = fopen($cacheFilePath, 'wb');
-			fclose($file);
-		}
+        file_put_contents($cacheFilePath, trim($html));
+    }
 
-		file_put_contents($cacheFilePath, trim($html));
-	}
+    public function deleteCache($cacheFilePath)
+    {
+        if (file_exists($cacheFilePath)) {
+            unlink($cacheFilePath);
+        }
+    }
 
-	public function deleteCache($cacheFilePath)
-	{
-		if (file_exists($cacheFilePath)) {
-			unlink($cacheFilePath);
-		}
-	}
+    public function deleteTemplateCaches($cacheIds)
+    {
+        foreach ($cacheIds as $cacheId) {
+            $cacheKey = $this->getTemplateCacheKeyById($cacheId);
+            $this->deleteCache($cacheKey);
+        }
+    }
 
-	public function getCacheFilePath($site, $path)
-	{
-		$pathSegments = [
-			CRAFT_BASE_PATH,
-			"web/filecache",
-			$site,
-			$path
-		];
+    public function getCacheFilePath($site, $path)
+    {
+        $settings = FileCachePlugin::$plugin->getSettings();
 
-		$targetPath = $this->normalizePath(implode('/', $pathSegments));
+        $pathSegments = [
+            CRAFT_BASE_PATH,
+            $settings->cachePath,
+            $site,
+            $path
+        ];
 
-		$pathInfo = pathinfo($targetPath);
-		$extension = isset($pathInfo['extension']) ? $pathInfo['extension'] : 'html';
+        $targetPath = $this->normalizePath(implode('/', $pathSegments));
 
-		return $targetPath . DIRECTORY_SEPARATOR . 'index.' . $extension;
-	}
+        $pathInfo = pathinfo($targetPath);
+        $extension = $pathInfo['extension'] ?? 'html';
 
-	private function normalizePath($path)
-	{
-		$path = preg_replace('#https?://#', '', $path);
-		return rtrim(preg_replace('~/+~', DIRECTORY_SEPARATOR, $path), DIRECTORY_SEPARATOR);
-	}
+        return $targetPath . DIRECTORY_SEPARATOR . 'index.' . $extension;
+    }
+
+    private function normalizePath($path)
+    {
+        $path = preg_replace('#https?://#', '', $path);
+        return rtrim(preg_replace('~/+~', DIRECTORY_SEPARATOR, $path), DIRECTORY_SEPARATOR);
+    }
 }

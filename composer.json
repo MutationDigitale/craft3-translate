@@ -1,6 +1,6 @@
 {
     "name": "mutation/filecache",
-    "description": "Html static cache.",
+    "description": "Cache templates to html files",
     "version": "1.0.0",
     "type": "craft-plugin",
     "support": {
@@ -24,8 +24,8 @@
         }
     },
     "extra": {
-        "name": "HTML Cache",
-        "handle": "html-cache",
+        "name": "File Cache",
+        "handle": "filecache",
         "hasCpSettings": false,
         "hasCpSection": false,
         "schemaVersion": "1.0.0",

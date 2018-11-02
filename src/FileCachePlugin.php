@@ -8,44 +8,53 @@ use craft\web\twig\variables\CraftVariable;
 use craft\services\TemplateCaches;
 use yii\base\Event;
 
+use mutation\filecache\models\Settings;
 use mutation\filecache\variables\FileCacheVariable;
 use mutation\filecache\services\FileCacheService;
 
 class FileCachePlugin extends Plugin
 {
-	public function init()
-	{
-		parent::init();
+    /**
+     * @var FileCachePlugin
+     */
+    public static $plugin;
 
-		$this->setComponents([
-			'fileCache' => FileCacheService::class,
-		]);
+    public function init()
+    {
+        parent::init();
 
-		$this->initEvents();
-	}
+        self::$plugin = $this;
 
-	protected function initEvents()
-	{
-		Event::on(
-			CraftVariable::class,
-			CraftVariable::EVENT_INIT,
-			function (Event $event) {
-				/** @var CraftVariable $variable */
-				$variable = $event->sender;
-				$variable->set('filecache', FileCacheVariable::class);
-			}
-		);
+        $this->setComponents([
+            'fileCache' => FileCacheService::class,
+        ]);
 
-		Event::on(
-			TemplateCaches::class,
-			TemplateCaches::EVENT_BEFORE_DELETE_CACHES,
-			function (DeleteTemplateCachesEvent $event) {
-				foreach ($event->cacheIds as $cacheId) {
-					$cacheKey = FileCachePlugin::getInstance()->fileCache->getTemplateCacheKeyById($cacheId);
-					FileCachePlugin::getInstance()->fileCache->deleteCache($cacheKey);
-				}
-			}
-		);
-	}
+        $this->initEvents();
+    }
 
+    protected function initEvents()
+    {
+        Event::on(
+            CraftVariable::class,
+            CraftVariable::EVENT_INIT,
+            function (Event $event) {
+                /** @var CraftVariable $variable */
+                $variable = $event->sender;
+                $variable->set('filecache', FileCacheVariable::class);
+            }
+        );
+
+        Event::on(
+            TemplateCaches::class,
+            TemplateCaches::EVENT_BEFORE_DELETE_CACHES,
+            function (DeleteTemplateCachesEvent $event) {
+                self::$plugin->fileCache->deleteTemplateCaches($event->cacheIds);
+            }
+        );
+    }
+
+    protected function createSettingsModel()
+    {
+        return new Settings();
+    }
 }
