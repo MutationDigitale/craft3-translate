@@ -129,7 +129,7 @@ class FileCacheService extends Component
             $client = new Client();
             foreach ($urls as $url) {
                 try {
-                    $response = $client->get($url);
+                    $client->get($url);
                     $count++;
                 } catch (ClientException $e) {
                 } catch (RequestException $e) {

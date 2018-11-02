@@ -15,7 +15,7 @@ class CacheController extends Controller
         /** @var SettingsModel $settings */
         $settings = FileCachePlugin::$plugin->getSettings();
 
-        if (!$settings->cachingEnabled) {
+        if (!$settings->cacheEnabled) {
             Craft::$app->getSession()->setError(Craft::t('filecache', 'File caching is disabled.'));
             return $this->redirectToPostedUrl();
         }
@@ -25,7 +25,7 @@ class CacheController extends Controller
             return $this->redirectToPostedUrl();
         }
 
-        $count = FileCachePlugin::$plugin->fileCache->warmCache(true);
+        FileCachePlugin::$plugin->fileCache->warmCache(true);
         Craft::$app->getSession()->setNotice(Craft::t('filecache', 'File cache successfully queued for warming.'));
 
         return $this->redirectToPostedUrl();
