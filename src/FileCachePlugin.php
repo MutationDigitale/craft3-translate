@@ -63,24 +63,6 @@ class FileCachePlugin extends Plugin
                 $event->types[] = CacheUtility::class;
             }
         );
-
-        Event::on(Elements::class, Elements::EVENT_AFTER_SAVE_ELEMENT,
-            function(ElementEvent $event) {
-                $this->filecache->warmCache(true);
-            }
-        );
-
-        Event::on(Structures::class, Structures::EVENT_AFTER_MOVE_ELEMENT,
-            function(MoveElementEvent $event) {
-                $this->filecache->warmCache(true);
-            }
-        );
-
-        Event::on(Elements::class, Elements::EVENT_BEFORE_DELETE_ELEMENT,
-            function(ElementEvent $event) {
-                $this->filecache->warmCache(true);
-            }
-        );
     }
 
     protected function createSettingsModel()
