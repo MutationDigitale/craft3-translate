@@ -5,6 +5,7 @@ namespace mutation\filecache\services;
 use Craft;
 use craft\base\Component;
 use craft\base\Element;
+use Exception;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Exception\RequestException;
@@ -81,14 +82,13 @@ class FileCacheService extends Component
     public function deleteTemplateCaches($cacheIds): void
     {
         foreach ($cacheIds as $cacheId) {
-            $cacheKey = $this->getTemplateCacheKeyById($cacheId);
+            $cacheKey = $this->_getTemplateCacheKeyById($cacheId);
             $this->deleteCache($cacheKey);
         }
     }
 
-    public function warmCache(bool $queue = false): int
+    public function warmAllCache(bool $queue = false): void
     {
-        $count = 0;
         $urls = [];
 
         $elementTypes = Craft::$app->getElements()->getAllElementTypes();
@@ -122,21 +122,31 @@ class FileCacheService extends Component
         }
 
         if (\count($urls) > 0) {
-            if ($queue === true) {
-                Craft::$app->getQueue()->push(new WarmCacheJob(['urls' => $urls]));
-                return 0;
-            }
-            $client = new Client();
-            foreach ($urls as $url) {
-                try {
-                    $client->get($url);
-                    $count++;
-                } catch (ClientException $e) {
-                } catch (RequestException $e) {
-                }
+            $this->warmCache($urls, $queue);
+        }
+    }
+
+    public function warmCacheByFiles($files, bool $queue = false): void
+    {
+        $urls = [];
+        foreach ($files as $file) {
+            $urls[] = $this->_getUrlFromCacheFile($file);
+        }
+        $this->warmCache($urls, $queue);
+    }
+
+    public function warmCache($urls, bool $queue = false): void
+    {
+        if ($queue === true) {
+            Craft::$app->getQueue()->push(new WarmCacheJob(['urls' => $urls]));
+        }
+        $client = new Client();
+        foreach ($urls as $url) {
+            try {
+                $client->get($url);
+            } catch (Exception $exception) {
             }
         }
-        return $count;
     }
 
     public function getCacheFilePath($site, $path): string
@@ -159,7 +169,16 @@ class FileCacheService extends Component
         return $targetPath . DIRECTORY_SEPARATOR . 'index.' . $extension;
     }
 
-    public function getTemplateCacheKeyById($id)
+    public function getFilesByCacheIds($cacheIds)
+    {
+        $files = [];
+        foreach ($cacheIds as $cacheId) {
+            $files[] = $this->_getTemplateCacheKeyById($cacheId);
+        }
+        return $files;
+    }
+
+    private function _getTemplateCacheKeyById($id)
     {
         return (new Query())
             ->select('cacheKey')
@@ -169,6 +188,20 @@ class FileCacheService extends Component
                 ['id' => $id]
             ])
             ->scalar();
+    }
+
+    private function _getUrlFromCacheFile($file)
+    {
+        /** @var SettingsModel $settings */
+        $settings = FileCachePlugin::$plugin->getSettings();
+
+        $url = str_replace("\\", '/', $file);
+        $url = explode($settings->cacheFolderPath, $url)[1];
+        $url = ltrim($url, '/');
+        $url = preg_replace('/\/index.html$/', '', $url);
+        $url = '//' . $url;
+
+        return $url;
     }
 
     private function _matchUriPattern(string $pattern, string $uri): bool

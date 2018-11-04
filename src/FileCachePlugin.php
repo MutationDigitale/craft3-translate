@@ -4,11 +4,7 @@ namespace mutation\filecache;
 
 use craft\base\Plugin;
 use craft\events\DeleteTemplateCachesEvent;
-use craft\events\ElementEvent;
-use craft\events\MoveElementEvent;
 use craft\events\RegisterComponentTypesEvent;
-use craft\services\Elements;
-use craft\services\Structures;
 use craft\services\TemplateCaches;
 use craft\services\Utilities;
 use craft\web\twig\variables\CraftVariable;
@@ -16,6 +12,7 @@ use mutation\filecache\models\SettingsModel;
 use mutation\filecache\services\FileCacheService;
 use mutation\filecache\utilities\CacheUtility;
 use mutation\filecache\variables\FileCacheVariable;
+use yii\base\Application;
 use yii\base\Event;
 
 class FileCachePlugin extends Plugin
@@ -25,7 +22,7 @@ class FileCachePlugin extends Plugin
      */
     public static $plugin;
 
-    public function init()
+    public function init(): void
     {
         parent::init();
 
@@ -38,7 +35,17 @@ class FileCachePlugin extends Plugin
         $this->initEvents();
     }
 
-    protected function initEvents()
+    public function fileCacheService(): FileCacheService
+    {
+        return $this->fileCache;
+    }
+
+    protected function createSettingsModel(): SettingsModel
+    {
+        return new SettingsModel();
+    }
+
+    private function initEvents(): void
     {
         Event::on(
             CraftVariable::class,
@@ -54,7 +61,19 @@ class FileCachePlugin extends Plugin
             TemplateCaches::class,
             TemplateCaches::EVENT_BEFORE_DELETE_CACHES,
             function (DeleteTemplateCachesEvent $event) {
-                $this->fileCache->deleteTemplateCaches($event->cacheIds);
+                /** @var SettingsModel $settings */
+                $settings = $this->getSettings();
+
+                if (!$settings->cacheEnabled) {
+                    return;
+                }
+
+                $this->fileCacheService()->deleteTemplateCaches($event->cacheIds);
+                $files = $this->fileCacheService()->getFilesByCacheIds($event->cacheIds);
+
+                \Craft::$app->on(Application::EVENT_AFTER_REQUEST, function () use ($files) {
+                    $this->fileCacheService()->warmCacheByFiles($files, true);
+                });
             }
         );
 
@@ -63,10 +82,5 @@ class FileCachePlugin extends Plugin
                 $event->types[] = CacheUtility::class;
             }
         );
-    }
-
-    protected function createSettingsModel()
-    {
-        return new SettingsModel();
     }
 }

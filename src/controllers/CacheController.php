@@ -16,16 +16,11 @@ class CacheController extends Controller
         $settings = FileCachePlugin::$plugin->getSettings();
 
         if (!$settings->cacheEnabled) {
-            Craft::$app->getSession()->setError(Craft::t('filecache', 'File caching is disabled.'));
+            Craft::$app->getSession()->setError(Craft::t('filecache', 'File cache is disabled.'));
             return $this->redirectToPostedUrl();
         }
 
-        if (empty($settings->cacheFolderPath)) {
-            Craft::$app->getSession()->setError(Craft::t('filecache', 'File cache folder path is not set.'));
-            return $this->redirectToPostedUrl();
-        }
-
-        FileCachePlugin::$plugin->fileCache->warmCache(true);
+        FileCachePlugin::$plugin->fileCacheService()->warmAllCache(true);
         Craft::$app->getSession()->setNotice(Craft::t('filecache', 'File cache successfully queued for warming.'));
 
         return $this->redirectToPostedUrl();

@@ -12,13 +12,13 @@ class FileCacheVariable
         $site = \Craft::getAlias(\Craft::$app->sites->getCurrentSite()->baseUrl);
         $path = \Craft::$app->request->getPathInfo();
 
-        $cacheFilePath = FileCachePlugin::$plugin->fileCache->getCacheFilePath($site, $path);
+        $cacheFilePath = FileCachePlugin::$plugin->fileCacheService()->getCacheFilePath($site, $path);
 
         \Craft::$app->on(Application::EVENT_AFTER_REQUEST, function () use ($cacheFilePath) {
-            if (FileCachePlugin::$plugin->fileCache->isCacheableRequest() &&
-                FileCachePlugin::$plugin->fileCache->isCacheableUri(\Craft::$app->getRequest()->getPathInfo())) {
+            if (FileCachePlugin::$plugin->fileCacheService()->isCacheableRequest() &&
+                FileCachePlugin::$plugin->fileCacheService()->isCacheableUri(\Craft::$app->getRequest()->getPathInfo())) {
                 if ($html = \Craft::$app->templateCaches->getTemplateCache($cacheFilePath, false)) {
-                    FileCachePlugin::$plugin->fileCache->writeCache($cacheFilePath, $html);
+                    FileCachePlugin::$plugin->fileCacheService()->writeCache($cacheFilePath, $html);
                 }
             }
         });
@@ -28,7 +28,7 @@ class FileCacheVariable
 
     public function canCache(): bool
     {
-        return FileCachePlugin::$plugin->fileCache->isCacheableRequest() &&
-            FileCachePlugin::$plugin->fileCache->isCacheableUri(\Craft::$app->getRequest()->getPathInfo());
+        return FileCachePlugin::$plugin->fileCacheService()->isCacheableRequest() &&
+            FileCachePlugin::$plugin->fileCacheService()->isCacheableUri(\Craft::$app->getRequest()->getPathInfo());
     }
 }
