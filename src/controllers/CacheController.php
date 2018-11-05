@@ -10,6 +10,14 @@ use yii\web\Response;
 
 class CacheController extends Controller
 {
+    public function actionClear(): Response
+    {
+        FileCachePlugin::$plugin->fileCacheService()->deleteAllCache();
+        Craft::$app->getSession()->setNotice(Craft::t('filecache', 'File cache successfully cleared.'));
+
+        return $this->redirectToPostedUrl();
+    }
+
     public function actionWarm(): Response
     {
         /** @var SettingsModel $settings */

@@ -12,6 +12,8 @@ use GuzzleHttp\Exception\RequestException;
 use mutation\filecache\FileCachePlugin;
 use mutation\filecache\jobs\WarmCacheJob;
 use mutation\filecache\models\SettingsModel;
+use RecursiveDirectoryIterator;
+use RecursiveIteratorIterator;
 use yii\db\Query;
 
 class FileCacheService extends Component
@@ -62,14 +64,33 @@ class FileCacheService extends Component
     {
         if (!file_exists($cacheFilePath)) {
             $dir = \dirname($cacheFilePath);
-            if (!file_exists($dir)) {
-                mkdir($dir, 0775, true);
+            if (mkdir($dir, 0775, true) || is_dir($dir)) {
+                $file = fopen($cacheFilePath, 'wb');
+                fclose($file);
             }
-            $file = fopen($cacheFilePath, 'wb');
-            fclose($file);
         }
 
         file_put_contents($cacheFilePath, trim($html));
+    }
+
+    public function deleteAllCache(): void
+    {
+        /** @var SettingsModel $settings */
+        $settings = FileCachePlugin::$plugin->getSettings();
+
+        $dir = $this->_normalizePath(CRAFT_BASE_PATH . '/' . $settings->cacheFolderPath);
+
+        $files = new RecursiveIteratorIterator(
+            new RecursiveDirectoryIterator($dir, RecursiveDirectoryIterator::SKIP_DOTS),
+            RecursiveIteratorIterator::CHILD_FIRST
+        );
+
+        foreach ($files as $fileinfo) {
+            $todo = ($fileinfo->isDir() ? 'rmdir' : 'unlink');
+            $todo($fileinfo->getRealPath());
+        }
+
+        rmdir($dir);
     }
 
     public function deleteCache($cacheFilePath): void
@@ -169,7 +190,7 @@ class FileCacheService extends Component
         return $targetPath . DIRECTORY_SEPARATOR . 'index.' . $extension;
     }
 
-    public function getFilesByCacheIds($cacheIds)
+    public function getFilesByCacheIds($cacheIds): array
     {
         $files = [];
         foreach ($cacheIds as $cacheId) {
