@@ -41,7 +41,8 @@ Add a file named `filecache.php` to the `config` folder:
 return [
 	'*' => [
 		'excludedUriPatterns' => [],
-		'cacheFolderPath' => 'web/filecache'
+		'cacheFolderPath' => 'web/filecache',
+		'automaticallyWarmCache' => true
 	],
 	'dev' => [
 		'cacheEnabled' => false

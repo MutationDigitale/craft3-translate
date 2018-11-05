@@ -77,6 +77,10 @@ class FileCachePlugin extends Plugin
                 $this->fileCacheService()->deleteFileCacheByTemplateCacheIds($event->cacheIds);
                 $files = $this->fileCacheService()->getFilesByCacheIds($event->cacheIds);
 
+                if (!$settings->automaticallyWarmCache) {
+                    return;
+                }
+
                 \Craft::$app->on(Application::EVENT_AFTER_REQUEST, function () use ($files) {
                     $this->fileCacheService()->warmCacheByFiles($files, true);
                 });

@@ -17,6 +17,11 @@ class SettingsModel extends Model
     public $cacheFolderPath = 'web/filecache';
 
     /**
+     * @var bool
+     */
+    public $automaticallyWarmCache = true;
+
+    /**
      * @var mixed
      */
     public $excludedUriPatterns = [];
