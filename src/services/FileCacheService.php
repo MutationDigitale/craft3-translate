@@ -7,8 +7,6 @@ use craft\base\Component;
 use craft\base\Element;
 use Exception;
 use GuzzleHttp\Client;
-use GuzzleHttp\Exception\ClientException;
-use GuzzleHttp\Exception\RequestException;
 use mutation\filecache\FileCachePlugin;
 use mutation\filecache\jobs\WarmCacheJob;
 use mutation\filecache\models\SettingsModel;
@@ -73,12 +71,16 @@ class FileCacheService extends Component
         file_put_contents($cacheFilePath, trim($html));
     }
 
-    public function deleteAllCache(): void
+    public function deleteAllFileCaches(): void
     {
         /** @var SettingsModel $settings */
         $settings = FileCachePlugin::$plugin->getSettings();
 
         $dir = $this->_normalizePath(CRAFT_BASE_PATH . '/' . $settings->cacheFolderPath);
+
+        if (!is_dir($dir)) {
+            return;
+        }
 
         $files = new RecursiveIteratorIterator(
             new RecursiveDirectoryIterator($dir, RecursiveDirectoryIterator::SKIP_DOTS),
@@ -93,19 +95,26 @@ class FileCacheService extends Component
         rmdir($dir);
     }
 
-    public function deleteCache($cacheFilePath): void
+    public function deleteFileCacheByPath($cacheFilePath): void
     {
         if (file_exists($cacheFilePath)) {
             unlink($cacheFilePath);
         }
     }
 
-    public function deleteTemplateCaches($cacheIds): void
+    public function deleteFileCacheByTemplateCacheIds($cacheIds): void
     {
         foreach ($cacheIds as $cacheId) {
             $cacheKey = $this->_getTemplateCacheKeyById($cacheId);
-            $this->deleteCache($cacheKey);
+            $this->deleteFileCacheByPath($cacheKey);
         }
+    }
+
+    public function deleteAllTemplateCaches(): void
+    {
+        Craft::$app->getDb()->createCommand()
+            ->delete('{{%templatecaches}}')
+            ->execute();
     }
 
     public function warmAllCache(bool $queue = false): void
@@ -143,7 +152,7 @@ class FileCacheService extends Component
         }
 
         if (\count($urls) > 0) {
-            $this->warmCache($urls, $queue);
+            $this->warmCacheByUrls($urls, $queue);
         }
     }
 
@@ -153,10 +162,10 @@ class FileCacheService extends Component
         foreach ($files as $file) {
             $urls[] = $this->_getUrlFromCacheFile($file);
         }
-        $this->warmCache($urls, $queue);
+        $this->warmCacheByUrls($urls, $queue);
     }
 
-    public function warmCache($urls, bool $queue = false): void
+    public function warmCacheByUrls($urls, bool $queue = false): void
     {
         if ($queue === true) {
             Craft::$app->getQueue()->push(new WarmCacheJob(['urls' => $urls]));

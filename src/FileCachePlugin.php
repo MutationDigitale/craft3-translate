@@ -2,7 +2,9 @@
 
 namespace mutation\filecache;
 
+use Craft;
 use craft\base\Plugin;
+use craft\console\Application as ConsoleApplication;
 use craft\events\DeleteTemplateCachesEvent;
 use craft\events\RegisterComponentTypesEvent;
 use craft\services\TemplateCaches;
@@ -27,6 +29,10 @@ class FileCachePlugin extends Plugin
         parent::init();
 
         self::$plugin = $this;
+
+        if (Craft::$app instanceof ConsoleApplication) {
+            $this->controllerNamespace = 'mutation\filecache\console\controllers';
+        }
 
         $this->setComponents([
             'fileCache' => FileCacheService::class,
@@ -68,7 +74,7 @@ class FileCachePlugin extends Plugin
                     return;
                 }
 
-                $this->fileCacheService()->deleteTemplateCaches($event->cacheIds);
+                $this->fileCacheService()->deleteFileCacheByTemplateCacheIds($event->cacheIds);
                 $files = $this->fileCacheService()->getFilesByCacheIds($event->cacheIds);
 
                 \Craft::$app->on(Application::EVENT_AFTER_REQUEST, function () use ($files) {

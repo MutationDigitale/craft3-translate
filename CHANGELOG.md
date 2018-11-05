@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.9 - 2018-11-05
+
+### Added
+- Console commands
+
 ## 1.0.8 - 2018-11-05
 
 ### Added
