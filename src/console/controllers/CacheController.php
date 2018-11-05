@@ -10,7 +10,7 @@ use yii\console\Controller;
 
 class CacheController extends Controller
 {
-    public function actionClear()
+    public function actionClear(): void
     {
         /** @var SettingsModel $settings */
         $settings = FileCachePlugin::$plugin->getSettings();
@@ -28,7 +28,7 @@ class CacheController extends Controller
         $this->stdout(Craft::t('filecache', 'File cache successfully cleared.') . PHP_EOL, Console::FG_GREEN);
     }
 
-    public function actionWarm()
+    public function actionWarm(): void
     {
         /** @var SettingsModel $settings */
         $settings = FileCachePlugin::$plugin->getSettings();

@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.11 - 2018-11-05
+
+### Fixed
+- Error with mkdir
+
 ## 1.0.10 - 2018-11-05
 
 ### Added

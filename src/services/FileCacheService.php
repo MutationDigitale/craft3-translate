@@ -62,10 +62,13 @@ class FileCacheService extends Component
     {
         if (!file_exists($cacheFilePath)) {
             $dir = \dirname($cacheFilePath);
-            if (mkdir($dir, 0775, true) || is_dir($dir)) {
-                $file = fopen($cacheFilePath, 'wb');
-                fclose($file);
+            if (!file_exists($dir)) {
+                if (!mkdir($dir, 0775, true) && !is_dir($dir)) {
+                    return;
+                }
             }
+            $file = fopen($cacheFilePath, 'wb');
+            fclose($file);
         }
 
         file_put_contents($cacheFilePath, trim($html));
