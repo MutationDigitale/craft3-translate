@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.13 - 2018-11-07
+
+### Added
+- Added logs for warming cache
+
 ## 1.0.12 - 2018-11-07
 
 ### Fixed

@@ -173,11 +173,17 @@ class FileCacheService extends Component
         if ($queue === true) {
             Craft::$app->getQueue()->push(new WarmCacheJob(['urls' => $urls]));
         }
+
+        $totalElements = \count($urls);
+        Craft::info("Begin warmCacheByUrls (nb urls: $totalElements)", 'filecache');
+
         $client = new Client();
         foreach ($urls as $url) {
             try {
+                Craft::info("GET: $url", 'filecache');
                 $client->get($url);
             } catch (Exception $exception) {
+                Craft::error($exception->getMessage(), 'filecache');
             }
         }
     }
