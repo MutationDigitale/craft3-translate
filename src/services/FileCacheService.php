@@ -196,10 +196,7 @@ class FileCacheService extends Component
 
         $targetPath = $this->_normalizePath(implode('/', $pathSegments));
 
-        $pathInfo = pathinfo($targetPath);
-        $extension = $pathInfo['extension'] ?? 'html';
-
-        return $targetPath . DIRECTORY_SEPARATOR . 'index.' . $extension;
+        return $targetPath . DIRECTORY_SEPARATOR . 'index.html';
     }
 
     public function getFilesByCacheIds($cacheIds): array

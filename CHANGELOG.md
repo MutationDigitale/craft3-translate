@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.12 - 2018-11-07
+
+### Fixed
+- Error with homepage path not being index.html
+
 ## 1.0.11 - 2018-11-05
 
 ### Fixed
