@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.14 - 2018-11-14
+
+### Fixed
+- Don't completly delete filecache folder
+
 ## 1.0.13 - 2018-11-07
 
 ### Added

@@ -94,8 +94,6 @@ class FileCacheService extends Component
             $todo = ($fileinfo->isDir() ? 'rmdir' : 'unlink');
             $todo($fileinfo->getRealPath());
         }
-
-        rmdir($dir);
     }
 
     public function deleteFileCacheByPath($cacheFilePath): void
