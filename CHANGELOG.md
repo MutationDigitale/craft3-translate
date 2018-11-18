@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.12 - 2018-11-17
+
+### Fixed
+- Allow plugin name translation
+
 ## 1.0.11 - 2018-10-25
 
 ### Fixed
