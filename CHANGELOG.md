@@ -1,9 +1,9 @@
 # Changelog
 
-## 1.0.15 - 2018-11-27
+## 1.0.15 - 2018-11-15
 
 ### Fixed
-- Don't cache request with user connected
+- Typo
 
 ## 1.0.14 - 2018-11-14
 

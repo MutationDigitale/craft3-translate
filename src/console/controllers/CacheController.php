@@ -20,7 +20,7 @@ class CacheController extends Controller
             return;
         }
 
-        $this->stdout(Craft::t('filecache', 'Clearing Blitz cache.') . PHP_EOL);
+        $this->stdout(Craft::t('filecache', 'Clearing file cache.') . PHP_EOL);
 
         FileCachePlugin::$plugin->fileCacheService()->deleteAllTemplateCaches();
         FileCachePlugin::$plugin->fileCacheService()->deleteAllFileCaches();
