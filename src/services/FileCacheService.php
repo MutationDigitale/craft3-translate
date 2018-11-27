@@ -25,7 +25,8 @@ class FileCacheService extends Component
             !$request->getIsGet() ||
             $request->getIsActionRequest() ||
             $request->getIsLivePreview() ||
-            !$response->getIsOk()) {
+            !$response->getIsOk() ||
+            !Craft::$app->getUser()->getIsGuest()) {
             return false;
         }
 
