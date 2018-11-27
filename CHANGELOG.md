@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.16 - 2018-11-27
+
+### Fixed
+- Don't cache request with user connected
+
 ## 1.0.15 - 2018-11-15
 
 ### Fixed
