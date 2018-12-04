@@ -5,8 +5,6 @@ namespace mutation\filecache\jobs;
 use Craft;
 use craft\helpers\App;
 use craft\queue\BaseJob;
-use Exception;
-use GuzzleHttp\Client;
 use mutation\filecache\FileCachePlugin;
 
 class WarmCacheJob extends BaseJob
@@ -21,22 +19,15 @@ class WarmCacheJob extends BaseJob
         }
 
         App::maxPowerCaptain();
-        $totalElements = \count($this->urls);
 
-        Craft::info("Begin WarmCacheJob (nb urls: $totalElements)", 'filecache');
-
-        $count = 0;
-        foreach ($this->urls as $url) {
-            $this->setProgress($queue, $count++ / $totalElements);
-
-            $client = new Client();
-            try {
-                Craft::info("GET: $url", 'filecache');
-                $client->get($url);
-            } catch (Exception $exception) {
-                Craft::error($exception->getMessage(), 'filecache');
+        FileCachePlugin::$plugin->fileCacheService()->warmCacheByUrls($this->urls,
+            function ($count, $total) use (&$queue) {
+                $this->setProgress($queue, $count / $total);
+            },
+            function ($count, $total) use (&$queue) {
+                $this->setProgress($queue, $count / $total);
             }
-        }
+        );
     }
 
     protected function defaultDescription(): string

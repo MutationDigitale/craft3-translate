@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.0.17 - 2018-12-04
+
+### Added
+- Exclude entries by section or type
+- Warm multiple urls at a time with Guzzle Pool
+
+### Changed
+- Cleanup
+
 ## 1.0.16 - 2018-11-27
 
 ### Fixed

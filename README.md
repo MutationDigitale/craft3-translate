@@ -42,8 +42,11 @@ Add a file named `filecache.php` to the `config` folder:
 return [
 	'*' => [
 		'excludedUriPatterns' => [],
+		'excludedEntrySections' => [],
+		'excludedEntryTypes' => [],
 		'cacheFolderPath' => 'web/filecache',
-		'automaticallyWarmCache' => true
+		'automaticallyWarmCache' => true,
+		'concurrency' => 5,
 	],
 	'dev' => [
 		'cacheEnabled' => false
@@ -53,6 +56,8 @@ return [
 ```
 
 In the `excludedUriPatterns`, you can add any uri that will be excluded from cache. See the PHP doc for possible patterns: http://php.net/manual/en/reference.pcre.pattern.syntax.php
+
+Exclude entries by section `excludedEntrySections` or type `excludedEntryTypes` by adding the section/type handles to their respective arrays.
 
 ## How to use
 

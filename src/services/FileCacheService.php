@@ -5,8 +5,12 @@ namespace mutation\filecache\services;
 use Craft;
 use craft\base\Component;
 use craft\base\Element;
+use craft\base\ElementInterface;
+use craft\elements\Entry;
 use Exception;
 use GuzzleHttp\Client;
+use GuzzleHttp\Pool;
+use GuzzleHttp\Psr7\Request;
 use mutation\filecache\FileCachePlugin;
 use mutation\filecache\jobs\WarmCacheJob;
 use mutation\filecache\models\SettingsModel;
@@ -18,18 +22,6 @@ class FileCacheService extends Component
 {
     public function isCacheableRequest(): bool
     {
-        $request = \Craft::$app->getRequest();
-        $response = \Craft::$app->getResponse();
-
-        if (!$request->getIsSiteRequest() ||
-            !$request->getIsGet() ||
-            $request->getIsActionRequest() ||
-            $request->getIsLivePreview() ||
-            !$response->getIsOk() ||
-            !Craft::$app->getUser()->getIsGuest()) {
-            return false;
-        }
-
         /** @var SettingsModel $settings */
         $settings = FileCachePlugin::$plugin->getSettings();
 
@@ -37,7 +29,17 @@ class FileCacheService extends Component
             return false;
         }
 
-        return true;
+        $request = \Craft::$app->getRequest();
+        $response = \Craft::$app->getResponse();
+
+        return $request->getIsSiteRequest() &&
+            $request->getIsGet() &&
+            !$request->getIsActionRequest() &&
+            !$request->getIsLivePreview() &&
+            $response->getIsOk() &&
+            Craft::$app->getUser()->getIsGuest() &&
+            $this->isCacheableUri($request->getPathInfo()) &&
+            $this->isCacheableElement(Craft::$app->urlManager->getMatchedElement());
     }
 
     public function isCacheableUri(string $uri): bool
@@ -45,14 +47,30 @@ class FileCacheService extends Component
         /** @var SettingsModel $settings */
         $settings = FileCachePlugin::$plugin->getSettings();
 
-        if (\is_array($settings->excludedUriPatterns)) {
-            foreach ($settings->excludedUriPatterns as $excludedUriPattern) {
-                if (\is_array($excludedUriPattern)) {
-                    $excludedUriPattern = $excludedUriPattern[0];
-                }
-                if ($this->_matchUriPattern($excludedUriPattern, $uri)) {
-                    return false;
-                }
+        foreach ($settings->excludedUriPatterns as $excludedUriPattern) {
+            if ($this->_matchUriPattern($excludedUriPattern, $uri)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public function isCacheableElement(ElementInterface $element): bool
+    {
+        /** @var SettingsModel $settings */
+        $settings = FileCachePlugin::$plugin->getSettings();
+
+        if (is_a($element, craft\elements\Entry::class)) {
+            /** @var Entry $element */
+            $entry = $element;
+
+            if (\in_array($entry->section->handle, $settings->excludedEntrySections, true)) {
+                return false;
+            }
+
+            if (\in_array($entry->type->handle, $settings->excludedEntryTypes, true)) {
+                return false;
             }
         }
 
@@ -139,7 +157,9 @@ class FileCacheService extends Component
                     $uri = trim($element->uri, '/');
                     $uri = ($uri === '__home__' ? '' : $uri);
 
-                    if ($uri === null || !$this->isCacheableUri($uri)) {
+                    if ($uri === null ||
+                        !$this->isCacheableUri($uri) ||
+                        !$this->isCacheableElement($element)) {
                         continue;
                     }
 
@@ -154,7 +174,7 @@ class FileCacheService extends Component
         }
 
         if (\count($urls) > 0) {
-            $this->warmCacheByUrls($urls, $queue);
+            $this->startWarmingCache($urls, $queue);
         }
     }
 
@@ -164,31 +184,66 @@ class FileCacheService extends Component
         foreach ($files as $file) {
             $urls[] = $this->_getUrlFromCacheFile($file);
         }
-        $this->warmCacheByUrls($urls, $queue);
+        $this->startWarmingCache($urls, $queue);
     }
 
-    public function warmCacheByUrls($urls, bool $queue = false): void
+    public function startWarmingCache($urls, bool $queue = false): void
     {
         if ($queue === true) {
             Craft::$app->getQueue()->push(new WarmCacheJob(['urls' => $urls]));
+            return;
         }
 
-        $totalElements = \count($urls);
-        Craft::info("Begin warmCacheByUrls (nb urls: $totalElements)", 'filecache');
-
-        $client = new Client();
-        foreach ($urls as $url) {
-            try {
-                Craft::info("GET: $url", 'filecache');
-                $client->get($url);
-            } catch (Exception $exception) {
-                Craft::error($exception->getMessage(), 'filecache');
-            }
-        }
+        $this->warmCacheByUrls($urls);
     }
 
-    public function getCacheFilePath($site, $path): string
+    public function warmCacheByUrls($urls, $fullfiledCallback = null, $rejectedCallback = null): void
     {
+        /** @var SettingsModel $settings */
+        $settings = FileCachePlugin::$plugin->getSettings();
+
+        $total = count($urls);
+
+        Craft::info("Begin warming urls ($total)", 'filecache');
+
+        $client = Craft::createGuzzleClient();
+        $count = 0;
+        $errors = 0;
+        $success = 0;
+        $requests = [];
+
+        foreach ($urls as $url) {
+            $requests[] = new Request('GET', $url);
+        }
+
+        $pool = new Pool($client, $requests, [
+            'concurrency' => $settings->concurrency,
+            'fulfilled' => function () use (&$count, &$success, $total, $fullfiledCallback) {
+                $count++;
+                $success++;
+                if (is_callable($fullfiledCallback)) {
+                    $fullfiledCallback($count, $total);
+                }
+            },
+            'rejected' => function () use (&$count, &$errors, $total, $rejectedCallback) {
+                $count++;
+                $errors++;
+                if (is_callable($rejectedCallback)) {
+                    $rejectedCallback($count, $total);
+                }
+            },
+        ]);
+
+        $pool->promise()->wait();
+
+        Craft::info("Finished warming urls (errors: $errors, success: $success)", 'filecache');
+    }
+
+    public function getCacheFilePath(): string
+    {
+        $site = \Craft::getAlias(\Craft::$app->sites->getCurrentSite()->baseUrl);
+        $path = \Craft::$app->request->getPathInfo();
+
         /** @var SettingsModel $settings */
         $settings = FileCachePlugin::$plugin->getSettings();
 

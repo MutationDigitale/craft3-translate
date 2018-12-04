@@ -22,7 +22,22 @@ class SettingsModel extends Model
     public $automaticallyWarmCache = true;
 
     /**
-     * @var mixed
+     * @var int
+     */
+    public $concurrency = 5;
+
+    /**
+     * @var array
      */
     public $excludedUriPatterns = [];
+
+    /**
+     * @var array
+     */
+    public $excludedEntrySections = [];
+
+    /**
+     * @var array
+     */
+    public $excludedEntryTypes = [];
 }
