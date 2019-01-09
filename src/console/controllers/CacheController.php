@@ -10,24 +10,6 @@ use yii\console\Controller;
 
 class CacheController extends Controller
 {
-    public function actionClear(): void
-    {
-        /** @var SettingsModel $settings */
-        $settings = FileCachePlugin::$plugin->getSettings();
-
-        if (empty($settings->cacheFolderPath)) {
-            $this->stdout(Craft::t('filecache', 'Cache folder is not set.') . PHP_EOL, Console::FG_RED);
-            return;
-        }
-
-        $this->stdout(Craft::t('filecache', 'Clearing file cache.') . PHP_EOL);
-
-        FileCachePlugin::$plugin->fileCacheService()->deleteAllTemplateCaches();
-        FileCachePlugin::$plugin->fileCacheService()->deleteAllFileCaches();
-
-        $this->stdout(Craft::t('filecache', 'File cache successfully cleared.') . PHP_EOL, Console::FG_GREEN);
-    }
-
     public function actionWarm(): void
     {
         /** @var SettingsModel $settings */

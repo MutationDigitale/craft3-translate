@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.18 - 2019-01-09
+
+### Changed
+- Use craft cache events
+
 ## 1.0.17 - 2018-12-04
 
 ### Added
