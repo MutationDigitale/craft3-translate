@@ -46,6 +46,7 @@ return [
 		'excludedEntryTypes' => [],
 		'cacheFolderPath' => 'web/filecache',
 		'automaticallyWarmCache' => true,
+		'injectJsCsrfToken' => true,
 		'concurrency' => 5,
 	],
 	'dev' => [
@@ -63,10 +64,28 @@ Exclude entries by section `excludedEntrySections` or type `excludedEntryTypes` 
 
 The html file cache is created automatically when you visit a page. Also, the cached is warmed each time the templates caches are cleared (when an element is saved or deleted for exemple). 
 
-You can visit this url to delete or warm the cache manually: `/admin/utilities/filecache`.
+You can visit this url to clear the cache manually: `/admin/utilities/clear-caches`.
+
+You can visit this url to warm the cache manually: `/admin/utilities/filecache`.
 
 You can also use these 2 console commands (`@web` alias must be set to an absolute url):
 ```
-php craft filecache/cache/clear
+php craft clear-caches/filecache
 php craft filecache/cache/warm
+```
+
+## Dynamic content
+
+Set this setting `injectJsCsrfToken` to `true` to inject the csrf token to `window` object in javascript.
+
+Use this template code to inject the csrf token in html:
+
+```
+{{ craft.filecache.injectCsrfInput() }}
+```
+
+or this code to inject any url as html:
+
+```
+{{ craft.filecache.injectUrl('URL') }}
 ```

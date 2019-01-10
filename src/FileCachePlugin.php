@@ -12,6 +12,7 @@ use craft\services\TemplateCaches;
 use craft\services\Utilities;
 use craft\utilities\ClearCaches;
 use craft\web\twig\variables\CraftVariable;
+use craft\web\View;
 use mutation\filecache\models\SettingsModel;
 use mutation\filecache\services\FileCacheService;
 use mutation\filecache\utilities\CacheUtility;
@@ -41,6 +42,7 @@ class FileCachePlugin extends Plugin
 		]);
 
 		$this->initEvents();
+		$this->injectJsCsrfToken();
 	}
 
 	public function fileCacheService(): FileCacheService
@@ -121,5 +123,31 @@ class FileCachePlugin extends Plugin
 				'action' => [FileCachePlugin::$plugin->fileCacheService(), 'deleteAllFileCaches'],
 			],
 		];
+	}
+
+	protected function injectJsCsrfToken(): void
+	{
+		/** @var SettingsModel $settings */
+		$settings = $this->getSettings();
+
+		if (!$settings->injectJsCsrfToken) {
+			return;
+		}
+
+		$url = '/' . Craft::$app->getConfig()->getGeneral()->actionTrigger . '/filecache/csrf/js';
+		$view = Craft::$app->getView();
+		$view->registerJs(<<<Js
+var xhr = new XMLHttpRequest();
+xhr.responseType = 'json';
+xhr.onload = function () {
+    if (xhr.status >= 200 && xhr.status < 300) {
+        window.csrfTokenName = this.response.csrfTokenName;
+	    window.csrfTokenValue = this.response.csrfTokenValue;
+    }
+};
+xhr.open('GET', '$url');
+xhr.send();
+Js
+			, View::POS_END);
 	}
 }

@@ -40,4 +40,19 @@ class SettingsModel extends Model
      * @var array
      */
     public $excludedEntryTypes = [];
+
+	/**
+	 * @var array
+	 */
+	public $excludedEntrySectionsFromWarming = [];
+
+	/**
+	 * @var array
+	 */
+	public $excludedEntryTypesFromWarming = [];
+
+    /**
+     * @var boolean
+     */
+    public $injectJsCsrfToken = false;
 }
