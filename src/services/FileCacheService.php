@@ -77,6 +77,27 @@ class FileCacheService extends Component
         return true;
     }
 
+	public function isWarmeableElement(ElementInterface $element): bool
+	{
+		/** @var SettingsModel $settings */
+		$settings = FileCachePlugin::$plugin->getSettings();
+
+		if (is_a($element, craft\elements\Entry::class)) {
+			/** @var Entry $element */
+			$entry = $element;
+
+			if (\in_array($entry->section->handle, $settings->excludedEntrySectionsFromWarming, true)) {
+				return false;
+			}
+
+			if (\in_array($entry->type->handle, $settings->excludedEntryTypesFromWarming, true)) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
     public function writeCache($cacheFilePath, $html): void
     {
         if (!file_exists($cacheFilePath)) {
@@ -159,7 +180,8 @@ class FileCacheService extends Component
 
                     if ($uri === null ||
                         !$this->isCacheableUri($uri) ||
-                        !$this->isCacheableElement($element)) {
+                        !$this->isCacheableElement($element) ||
+						!$this->isWarmeableElement($element)) {
                         continue;
                     }
 

@@ -44,6 +44,8 @@ return [
 		'excludedUriPatterns' => [],
 		'excludedEntrySections' => [],
 		'excludedEntryTypes' => [],
+		'excludedEntrySectionsFromWarming' => [],
+		'excludedEntryTypesFromWarming' => [],
 		'cacheFolderPath' => 'web/filecache',
 		'automaticallyWarmCache' => true,
 		'injectJsCsrfToken' => true,
@@ -58,7 +60,9 @@ return [
 
 In the `excludedUriPatterns`, you can add any uri that will be excluded from cache. See the PHP doc for possible patterns: http://php.net/manual/en/reference.pcre.pattern.syntax.php
 
-Exclude entries by section `excludedEntrySections` or type `excludedEntryTypes` by adding the section/type handles to their respective arrays.
+Exclude entries from cache by section `excludedEntrySections` or type `excludedEntryTypes` by adding the section/type handles to their respective arrays.
+
+Exclude entries from warming by section `excludedEntrySections` or type `excludedEntryTypes` by adding the section/type handles to their respective arrays.
 
 ## How to use
 
