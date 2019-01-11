@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.1.0 - 2019-01-11
+
+### Added
+- Added the ability to inject dynamic content and csrf
+- Added the ability to exclude sections and entry types from warming
+
 ## 1.0.18 - 2019-01-09
 
 ### Changed
