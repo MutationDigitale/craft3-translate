@@ -6,8 +6,9 @@ use Craft;
 use craft\helpers\App;
 use craft\queue\BaseJob;
 use mutation\filecache\FileCachePlugin;
+use yii\queue\RetryableJobInterface;
 
-class WarmCacheJob extends BaseJob
+class WarmCacheJob extends BaseJob implements RetryableJobInterface
 {
     public $urls = [];
 
@@ -34,4 +35,14 @@ class WarmCacheJob extends BaseJob
     {
         return Craft::t('filecache', 'Warming html cache');
     }
+
+	public function getTtr(): int
+	{
+		return 3600;
+	}
+
+	public function canRetry($attempt, $error): bool
+	{
+		return ($attempt < 5);
+	}
 }

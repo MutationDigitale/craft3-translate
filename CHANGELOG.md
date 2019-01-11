@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.1.1 - 2019-01-11
+
+### Changed
+- More time reserved for the warming job
+
 ## 1.1.0 - 2019-01-11
 
 ### Added
