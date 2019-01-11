@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.1.3 - 2019-01-11
+
+### Changed
+- Replaced Template caches by Template and file caches in CP
+
 ## 1.1.2 - 2019-01-11
 
 ### Changed

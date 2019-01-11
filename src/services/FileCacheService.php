@@ -158,6 +158,12 @@ class FileCacheService extends Component
             ->execute();
     }
 
+    public function deleteAllTemplateAndFileCaches(): void
+	{
+		$this->deleteAllTemplateCaches();
+		$this->deleteAllFileCaches();
+	}
+
     public function warmAllCache(bool $queue = false): void
     {
         $urls = [];

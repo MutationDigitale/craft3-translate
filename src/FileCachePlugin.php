@@ -101,28 +101,19 @@ class FileCachePlugin extends Plugin
 			ClearCaches::class,
 			ClearCaches::EVENT_REGISTER_CACHE_OPTIONS,
 			function (RegisterCacheOptionsEvent $event) {
-				Craft::debug(
-					'ClearCaches::EVENT_REGISTER_CACHE_OPTIONS',
-					__METHOD__
-				);
-				// Register our Control Panel routes
+				$event->options = array_filter($event->options, function ($item) {
+					return $item['key'] !== 'template-caches';
+				});
 				$event->options = array_merge(
 					$event->options,
-					$this->customAdminCpCacheOptions()
+					[[
+						'key' => 'template-file-caches',
+						'label' => Craft::t('filecache', 'Template and file caches'),
+						'action' => [FileCachePlugin::$plugin->fileCacheService(), 'deleteAllTemplateAndFileCaches'],
+					]]
 				);
 			}
 		);
-	}
-
-	protected function customAdminCpCacheOptions(): array
-	{
-		return [
-			[
-				'key' => 'filecache',
-				'label' => Craft::t('filecache', 'File caches'),
-				'action' => [FileCachePlugin::$plugin->fileCacheService(), 'deleteAllFileCaches'],
-			],
-		];
 	}
 
 	protected function injectJsCsrfToken(): void
