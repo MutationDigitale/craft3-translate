@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.1.2 - 2019-01-11
+
+### Changed
+- For injected elements, replace span instead of append
+
 ## 1.1.1 - 2019-01-11
 
 ### Changed
