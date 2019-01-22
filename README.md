@@ -74,7 +74,7 @@ You can visit this url to warm the cache manually: `/admin/utilities/filecache`.
 
 You can also use these 2 console commands (`@web` alias must be set to an absolute url):
 ```
-php craft clear-caches/template-file-caches
+php craft clear-caches/template-caches
 php craft filecache/cache/warm
 ```
 
