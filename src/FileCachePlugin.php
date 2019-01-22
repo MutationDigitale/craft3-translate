@@ -101,7 +101,7 @@ class FileCachePlugin extends Plugin
 			ClearCaches::class,
 			ClearCaches::EVENT_REGISTER_CACHE_OPTIONS,
 			function (RegisterCacheOptionsEvent $event) {
-				foreach ($event->options as $option) {
+				foreach ($event->options as &$option) {
 					if ($option['key'] === 'template-caches') {
 						$option['label'] = Craft::t('filecache', 'Template and file caches');
 						$option['action'] = [FileCachePlugin::$plugin->fileCacheService(), 'deleteAllTemplateAndFileCaches'];

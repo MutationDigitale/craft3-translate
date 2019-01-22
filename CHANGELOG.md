@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.1.6 - 2019-01-22
+
+### Fixed
+- Fix "replace 'template-caches' instead of adding a new one"
+
 ## 1.1.5 - 2019-01-22
 
 ### Changed
