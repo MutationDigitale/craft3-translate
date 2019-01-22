@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.1.4 - 2019-01-22
+
+### Fixed
+- Fixed an error if templatecache didn't exist in DB
+
 ## 1.1.3 - 2019-01-11
 
 ### Changed

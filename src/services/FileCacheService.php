@@ -210,7 +210,10 @@ class FileCacheService extends Component
     {
         $urls = [];
         foreach ($files as $file) {
-            $urls[] = $this->_getUrlFromCacheFile($file);
+        	$url = $this->_getUrlFromCacheFile($file);
+        	if ($url) {
+				$urls[] = $url;
+			}
         }
         $this->startWarmingCache($urls, $queue);
     }
@@ -291,7 +294,10 @@ class FileCacheService extends Component
     {
         $files = [];
         foreach ($cacheIds as $cacheId) {
-            $files[] = $this->_getTemplateCacheKeyById($cacheId);
+        	$file = $this->_getTemplateCacheKeyById($cacheId);
+        	if ($file) {
+				$files[] = $file;
+			}
         }
         return $files;
     }
@@ -312,6 +318,10 @@ class FileCacheService extends Component
     {
         /** @var SettingsModel $settings */
         $settings = FileCachePlugin::$plugin->getSettings();
+
+        if (!$file) {
+			return '';
+		}
 
         $url = str_replace("\\", '/', $file);
         $url = explode($settings->cacheFolderPath, $url)[1];
