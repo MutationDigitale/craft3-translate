@@ -5,13 +5,14 @@ namespace mutation\filecache;
 use Craft;
 use craft\base\Plugin;
 use craft\console\Application as ConsoleApplication;
-use craft\events\DeleteTemplateCachesEvent;
 use craft\events\RegisterCacheOptionsEvent;
 use craft\events\RegisterComponentTypesEvent;
+use craft\services\Elements;
 use craft\services\TemplateCaches;
 use craft\services\Utilities;
 use craft\utilities\ClearCaches;
 use craft\web\Application;
+use craft\web\Response;
 use craft\web\twig\variables\CraftVariable;
 use craft\web\View;
 use mutation\filecache\models\SettingsModel;
@@ -27,10 +28,7 @@ class FileCachePlugin extends Plugin
 	 */
 	public static $plugin;
 
-	/**
-	 * @var array|null
-	 */
-	private $_warmCacheFiles;
+	private $_deleteCaches = false;
 
 	public function init(): void
 	{
@@ -62,6 +60,13 @@ class FileCachePlugin extends Plugin
 
 	private function initEvents(): void
 	{
+		\Craft::$app->on(Application::EVENT_AFTER_REQUEST, function () {
+			if (FileCachePlugin::$plugin->fileCacheService()->isCacheableRequest()) {
+				$cacheFilePath = FileCachePlugin::$plugin->fileCacheService()->getCacheFilePath();
+				FileCachePlugin::$plugin->fileCacheService()->writeCache($cacheFilePath, \Craft::$app->response->data);
+			}
+		});
+
 		Event::on(
 			CraftVariable::class,
 			CraftVariable::EVENT_INIT,
@@ -72,31 +77,9 @@ class FileCachePlugin extends Plugin
 			}
 		);
 
-		Event::on(
-			TemplateCaches::class,
-			TemplateCaches::EVENT_BEFORE_DELETE_CACHES,
-			function (DeleteTemplateCachesEvent $event) {
-				/** @var SettingsModel $settings */
-				$settings = $this->getSettings();
-
-				if (!$settings->cacheEnabled) {
-					return;
-				}
-
-				$this->fileCacheService()->deleteFileCacheByTemplateCacheIds($event->cacheIds);
-				$files = $this->fileCacheService()->getFilesByCacheIds($event->cacheIds);
-
-				if ($settings->automaticallyWarmCache) {
-					if ($this->_warmCacheFiles === null) {
-						Craft::$app->on(Application::EVENT_AFTER_REQUEST, [$this, 'handleResponse']);
-						$this->_warmCacheFiles = [];
-					}
-					foreach ($files as $file) {
-						$this->_warmCacheFiles[$file] = true;
-					}
-				}
-			}
-		);
+		$this->_deleteCaches = false;
+		Event::on(Elements::class, Elements::EVENT_AFTER_DELETE_ELEMENT, [$this, 'handleElementChange']);
+		Event::on(Elements::class, Elements::EVENT_AFTER_SAVE_ELEMENT, [$this, 'handleElementChange']);
 
 		Event::on(Utilities::class, Utilities::EVENT_REGISTER_UTILITY_TYPES,
 			function (RegisterComponentTypesEvent $event) {
@@ -108,21 +91,36 @@ class FileCachePlugin extends Plugin
 			ClearCaches::class,
 			ClearCaches::EVENT_REGISTER_CACHE_OPTIONS,
 			function (RegisterCacheOptionsEvent $event) {
-				foreach ($event->options as &$option) {
-					if ($option['key'] === 'template-caches') {
-						$option['label'] = Craft::t('filecache', 'Template and file caches');
-						$option['action'] = [FileCachePlugin::$plugin->fileCacheService(), 'deleteAllTemplateAndFileCaches'];
-					}
-				}
+				$event->options[] = array(
+					'key' => 'file-caches',
+					'label' => Craft::t('filecache', 'File caches'),
+					'action' => [FileCachePlugin::$plugin->fileCacheService(), 'deleteAllFileCaches']
+				);
 			}
 		);
 	}
 
-	protected function handleResponse()
+	public function handleElementChange(): void
 	{
-		if ($this->_warmCacheFiles !== null) {
-			$this->fileCacheService()->warmCacheByFiles(array_keys($this->_warmCacheFiles), true);
-			$this->_warmCacheFiles = null;
+		/** @var SettingsModel $settings */
+		$settings = $this->getSettings();
+
+		if (!$settings->cacheEnabled) {
+			return;
+		}
+
+		if ($this->_deleteCaches) {
+			return;
+		}
+
+		$this->_deleteCaches = true;
+
+		$this->fileCacheService()->deleteAllFileCaches();
+
+		if ($settings->automaticallyWarmCache) {
+			Craft::$app->response->on(Response::EVENT_AFTER_PREPARE, function(){
+				$this->fileCacheService()->warmAllCache(true);
+			});
 		}
 	}
 

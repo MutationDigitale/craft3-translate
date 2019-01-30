@@ -7,8 +7,7 @@ use craft\base\Component;
 use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\elements\Entry;
-use Exception;
-use GuzzleHttp\Client;
+use craft\helpers\StringHelper;
 use GuzzleHttp\Pool;
 use GuzzleHttp\Psr7\Request;
 use mutation\filecache\FileCachePlugin;
@@ -16,7 +15,6 @@ use mutation\filecache\jobs\WarmCacheJob;
 use mutation\filecache\models\SettingsModel;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
-use yii\db\Query;
 
 class FileCacheService extends Component
 {
@@ -39,6 +37,7 @@ class FileCacheService extends Component
             $response->getIsOk() &&
             Craft::$app->getUser()->getIsGuest() &&
             $this->isCacheableUri($request->getPathInfo()) &&
+			!StringHelper::contains(stripslashes($response->data), 'assets/generate-transform') &&
             $this->isCacheableElement(Craft::$app->urlManager->getMatchedElement());
     }
 
@@ -142,27 +141,6 @@ class FileCacheService extends Component
             unlink($cacheFilePath);
         }
     }
-
-    public function deleteFileCacheByTemplateCacheIds($cacheIds): void
-    {
-        foreach ($cacheIds as $cacheId) {
-            $cacheKey = $this->_getTemplateCacheKeyById($cacheId);
-            $this->deleteFileCacheByPath($cacheKey);
-        }
-    }
-
-    public function deleteAllTemplateCaches(): void
-    {
-        Craft::$app->getDb()->createCommand()
-            ->delete('{{%templatecaches}}')
-            ->execute();
-    }
-
-    public function deleteAllTemplateAndFileCaches(): void
-	{
-		$this->deleteAllTemplateCaches();
-		$this->deleteAllFileCaches();
-	}
 
     public function warmAllCache(bool $queue = false): void
     {
@@ -288,30 +266,6 @@ class FileCacheService extends Component
         $targetPath = $this->_normalizePath(implode('/', $pathSegments));
 
         return $targetPath . DIRECTORY_SEPARATOR . 'index.html';
-    }
-
-    public function getFilesByCacheIds($cacheIds): array
-    {
-        $files = [];
-        foreach ($cacheIds as $cacheId) {
-        	$file = $this->_getTemplateCacheKeyById($cacheId);
-        	if ($file) {
-				$files[] = $file;
-			}
-        }
-        return $files;
-    }
-
-    private function _getTemplateCacheKeyById($id)
-    {
-        return (new Query())
-            ->select('cacheKey')
-            ->from('{{%templatecaches}}')
-            ->where([
-                'and',
-                ['id' => $id]
-            ])
-            ->scalar();
     }
 
     private function _getUrlFromCacheFile($file)
