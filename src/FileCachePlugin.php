@@ -77,7 +77,6 @@ class FileCachePlugin extends Plugin
 			}
 		);
 
-		$this->_deleteCaches = false;
 		Event::on(Elements::class, Elements::EVENT_AFTER_DELETE_ELEMENT, [$this, 'handleElementChange']);
 		Event::on(Elements::class, Elements::EVENT_AFTER_SAVE_ELEMENT, [$this, 'handleElementChange']);
 
@@ -109,18 +108,29 @@ class FileCachePlugin extends Plugin
 			return;
 		}
 
-		if ($this->_deleteCaches) {
+		$this->_deleteCaches = true;
+		Craft::$app->getResponse()->on(Response::EVENT_AFTER_PREPARE, [$this, 'handleResponse']);
+	}
+
+	public function handleResponse(): void
+	{
+		/** @var SettingsModel $settings */
+		$settings = $this->getSettings();
+
+		if (!$settings->cacheEnabled) {
 			return;
 		}
 
-		$this->_deleteCaches = true;
+		if ($this->_deleteCaches) {
+			$this->fileCacheService()->deleteAllFileCaches();
 
-		$this->fileCacheService()->deleteAllFileCaches();
+			if ($settings->automaticallyWarmCache) {
+				Craft::$app->response->on(Response::EVENT_AFTER_PREPARE, function(){
+					$this->fileCacheService()->warmAllCache(true);
+				});
+			}
 
-		if ($settings->automaticallyWarmCache) {
-			Craft::$app->response->on(Response::EVENT_AFTER_PREPARE, function(){
-				$this->fileCacheService()->warmAllCache(true);
-			});
+			$this->_deleteCaches = false;
 		}
 	}
 
