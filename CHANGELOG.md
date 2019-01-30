@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.1.7 - 2019-01-30
+
+### Fixed
+- Fixed warm cache job spawning too many times
+
 ## 1.1.6 - 2019-01-22
 
 ### Fixed

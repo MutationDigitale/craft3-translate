@@ -11,13 +11,13 @@ use craft\events\RegisterComponentTypesEvent;
 use craft\services\TemplateCaches;
 use craft\services\Utilities;
 use craft\utilities\ClearCaches;
+use craft\web\Application;
 use craft\web\twig\variables\CraftVariable;
 use craft\web\View;
 use mutation\filecache\models\SettingsModel;
 use mutation\filecache\services\FileCacheService;
 use mutation\filecache\utilities\CacheUtility;
 use mutation\filecache\variables\FileCacheVariable;
-use yii\base\Application;
 use yii\base\Event;
 
 class FileCachePlugin extends Plugin
@@ -26,6 +26,11 @@ class FileCachePlugin extends Plugin
 	 * @var FileCachePlugin
 	 */
 	public static $plugin;
+
+	/**
+	 * @var array|null
+	 */
+	private $_warmCacheFiles;
 
 	public function init(): void
 	{
@@ -81,13 +86,15 @@ class FileCachePlugin extends Plugin
 				$this->fileCacheService()->deleteFileCacheByTemplateCacheIds($event->cacheIds);
 				$files = $this->fileCacheService()->getFilesByCacheIds($event->cacheIds);
 
-				if (!$settings->automaticallyWarmCache) {
-					return;
+				if ($settings->automaticallyWarmCache) {
+					if ($this->_warmCacheFiles === null) {
+						Craft::$app->on(Application::EVENT_AFTER_REQUEST, [$this, 'handleResponse']);
+						$this->_warmCacheFiles = [];
+					}
+					foreach ($files as $file) {
+						$this->_warmCacheFiles[$file] = true;
+					}
 				}
-
-				\Craft::$app->on(Application::EVENT_AFTER_REQUEST, function () use ($files) {
-					$this->fileCacheService()->warmCacheByFiles($files, true);
-				});
 			}
 		);
 
@@ -109,6 +116,14 @@ class FileCachePlugin extends Plugin
 				}
 			}
 		);
+	}
+
+	protected function handleResponse()
+	{
+		if ($this->_warmCacheFiles !== null) {
+			$this->fileCacheService()->warmCacheByFiles(array_keys($this->_warmCacheFiles), true);
+			$this->_warmCacheFiles = null;
+		}
 	}
 
 	protected function injectJsCsrfToken(): void
