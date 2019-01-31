@@ -36,23 +36,8 @@ class FileCacheService extends Component
             !$request->getIsLivePreview() &&
             $response->getIsOk() &&
             Craft::$app->getUser()->getIsGuest() &&
-            $this->isCacheableUri($request->getPathInfo()) &&
 			!StringHelper::contains(stripslashes($response->data), 'assets/generate-transform') &&
             $this->isCacheableElement(Craft::$app->urlManager->getMatchedElement());
-    }
-
-    public function isCacheableUri(string $uri): bool
-    {
-        /** @var SettingsModel $settings */
-        $settings = FileCachePlugin::$plugin->getSettings();
-
-        foreach ($settings->excludedUriPatterns as $excludedUriPattern) {
-            if ($this->_matchUriPattern($excludedUriPattern, $uri)) {
-                return false;
-            }
-        }
-
-        return true;
     }
 
     public function isCacheableElement(ElementInterface $element): bool
@@ -71,6 +56,10 @@ class FileCacheService extends Component
             if (\in_array($entry->type->handle, $settings->excludedEntryTypes, true)) {
                 return false;
             }
+
+			if (\in_array($entry->site->handle, $settings->excludedSites, true)) {
+				return false;
+			}
         }
 
         return true;
@@ -90,6 +79,10 @@ class FileCacheService extends Component
 			}
 
 			if (\in_array($entry->type->handle, $settings->excludedEntryTypesFromWarming, true)) {
+				return false;
+			}
+
+			if (\in_array($entry->site->handle, $settings->excludedSitesFromWarming, true)) {
 				return false;
 			}
 		}
@@ -163,7 +156,6 @@ class FileCacheService extends Component
                     $uri = ($uri === '__home__' ? '' : $uri);
 
                     if ($uri === null ||
-                        !$this->isCacheableUri($uri) ||
                         !$this->isCacheableElement($element) ||
 						!$this->isWarmeableElement($element)) {
                         continue;
@@ -284,14 +276,6 @@ class FileCacheService extends Component
         $url = '//' . $url;
 
         return $url;
-    }
-
-    private function _matchUriPattern(string $pattern, string $uri): bool
-    {
-        if ($pattern === '') {
-            return false;
-        }
-        return preg_match('#' . trim($pattern, '/') . '#', trim($uri, '/'));
     }
 
     private function _normalizePath($path)

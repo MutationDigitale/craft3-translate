@@ -29,11 +29,6 @@ class SettingsModel extends Model
     /**
      * @var array
      */
-    public $excludedUriPatterns = [];
-
-    /**
-     * @var array
-     */
     public $excludedEntrySections = [];
 
     /**
@@ -44,12 +39,22 @@ class SettingsModel extends Model
 	/**
 	 * @var array
 	 */
+	public $excludedSites = [];
+
+	/**
+	 * @var array
+	 */
 	public $excludedEntrySectionsFromWarming = [];
 
 	/**
 	 * @var array
 	 */
 	public $excludedEntryTypesFromWarming = [];
+
+	/**
+	 * @var array
+	 */
+	public $excludedSitesFromWarming = [];
 
     /**
      * @var boolean
