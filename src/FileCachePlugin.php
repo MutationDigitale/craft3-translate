@@ -59,12 +59,10 @@ class FileCachePlugin extends Plugin
 
 	private function initEvents(): void
 	{
-		\Craft::$app->on(Application::EVENT_AFTER_REQUEST, function () {
-			if (FileCachePlugin::$plugin->fileCacheService()->isCacheableRequest()) {
-				$cacheFilePath = FileCachePlugin::$plugin->fileCacheService()->getCacheFilePath();
-				FileCachePlugin::$plugin->fileCacheService()->writeCache($cacheFilePath, \Craft::$app->response->data);
-			}
-		});
+		\Craft::$app->on(Application::EVENT_AFTER_REQUEST, [$this, 'handleAfterRequest']);
+
+		Event::on(Elements::class, Elements::EVENT_AFTER_DELETE_ELEMENT, [$this, 'handleElementChange']);
+		Event::on(Elements::class, Elements::EVENT_AFTER_SAVE_ELEMENT, [$this, 'handleElementChange']);
 
 		Event::on(
 			CraftVariable::class,
@@ -75,9 +73,6 @@ class FileCachePlugin extends Plugin
 				$variable->set('filecache', FileCacheVariable::class);
 			}
 		);
-
-		Event::on(Elements::class, Elements::EVENT_AFTER_DELETE_ELEMENT, [$this, 'handleElementChange']);
-		Event::on(Elements::class, Elements::EVENT_AFTER_SAVE_ELEMENT, [$this, 'handleElementChange']);
 
 		Event::on(Utilities::class, Utilities::EVENT_REGISTER_UTILITY_TYPES,
 			function (RegisterComponentTypesEvent $event) {
@@ -96,6 +91,14 @@ class FileCachePlugin extends Plugin
 				);
 			}
 		);
+	}
+
+	public function handleAfterRequest()
+	{
+		if ($this->fileCacheService()->isCacheableRequest()) {
+			$cacheFilePath = $this->fileCacheService()->getCacheFilePath();
+			$this->fileCacheService()->writeCache($cacheFilePath, \Craft::$app->response->data);
+		}
 	}
 
 	public function handleElementChange(): void
