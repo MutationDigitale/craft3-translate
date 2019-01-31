@@ -1,26 +1,10 @@
 # File Cache plugin for Craft CMS
 
-Cache pages to HTML files using the template caches `{% cache %}`.
+Cache pages to HTML files.
 
 ## Installation
 
 - Install the plugin
-
-- In your twig layout, wrap all the html between these tags:
-
-```
-{% cache using key craft.filecache.key() if craft.filecache.canCache() %}
-<!DOCTYPE html>
-<html>
-<head>
-    ...
-</head>
-<body>
-    ..
-</body>
-</html>
-{% endcache %}
-```
 
 - Add this url rewrite to the htaccess:
 
@@ -74,7 +58,7 @@ You can visit this url to warm the cache manually: `/admin/utilities/filecache`.
 
 You can also use these 2 console commands (`@web` alias must be set to an absolute url):
 ```
-php craft clear-caches/template-caches
+php craft clear-caches/file-caches
 php craft filecache/cache/warm
 ```
 

@@ -8,7 +8,6 @@ use craft\console\Application as ConsoleApplication;
 use craft\events\RegisterCacheOptionsEvent;
 use craft\events\RegisterComponentTypesEvent;
 use craft\services\Elements;
-use craft\services\TemplateCaches;
 use craft\services\Utilities;
 use craft\utilities\ClearCaches;
 use craft\web\Application;
@@ -125,9 +124,7 @@ class FileCachePlugin extends Plugin
 			$this->fileCacheService()->deleteAllFileCaches();
 
 			if ($settings->automaticallyWarmCache) {
-				Craft::$app->response->on(Response::EVENT_AFTER_PREPARE, function(){
-					$this->fileCacheService()->warmAllCache(true);
-				});
+				$this->fileCacheService()->warmAllCache(true);
 			}
 
 			$this->_deleteCaches = false;
