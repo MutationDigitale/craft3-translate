@@ -1,5 +1,16 @@
 # Changelog
 
+## 2.0.0 - 2019-01-31
+
+### Added
+- Exclude sites from caching and warming
+
+### Changed
+- Removed template caches and simplified the process
+
+### Removed
+- Removed exclude uris
+
 ## 1.1.7 - 2019-01-30
 
 ### Fixed
