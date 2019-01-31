@@ -63,6 +63,7 @@ class FileCachePlugin extends Plugin
 
 		Event::on(Elements::class, Elements::EVENT_AFTER_DELETE_ELEMENT, [$this, 'handleElementChange']);
 		Event::on(Elements::class, Elements::EVENT_AFTER_SAVE_ELEMENT, [$this, 'handleElementChange']);
+		Event::on(Elements::class, Elements::EVENT_AFTER_UPDATE_SLUG_AND_URI, [$this, 'handleElementChange']);
 
 		Event::on(
 			CraftVariable::class,

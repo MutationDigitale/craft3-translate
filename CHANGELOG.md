@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.0.1 - 2019-01-31
+
+### Added
+- Added EVENT_AFTER_UPDATE_SLUG_AND_URI event
+
 ## 2.0.0 - 2019-01-31
 
 ### Added
