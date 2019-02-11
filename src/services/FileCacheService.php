@@ -30,17 +30,23 @@ class FileCacheService extends Component
         $request = \Craft::$app->getRequest();
         $response = \Craft::$app->getResponse();
 
+        if (!($request->getIsSiteRequest() &&
+			$request->getIsGet() &&
+			!$request->getIsActionRequest() &&
+			!$request->getIsLivePreview() &&
+			$response->getIsOk() &&
+			Craft::$app->getUser()->getIsGuest())) {
+        	return false;
+		}
+
+        // Return false if there is still image transforms to be done
+        if (StringHelper::contains(stripslashes($response->data), 'assets/generate-transform')) {
+        	return false;
+		}
+
         $matchedElement = Craft::$app->urlManager->getMatchedElement();
 
-        return $request->getIsSiteRequest() &&
-            $request->getIsGet() &&
-            !$request->getIsActionRequest() &&
-            !$request->getIsLivePreview() &&
-            $response->getIsOk() &&
-            Craft::$app->getUser()->getIsGuest() &&
-			!StringHelper::contains(stripslashes($response->data), 'assets/generate-transform') &&
-			$matchedElement !== false &&
-			$this->isCacheableElement($matchedElement);
+        return $matchedElement !== false && $this->isCacheableElement($matchedElement);
     }
 
     public function isCacheableElement(ElementInterface $element): bool

@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.0.3 - 2019-02-11
+
+### Fixed
+- Fixed an error in isCacheableRequest()
+
 ## 2.0.2 - 2019-02-11
 
 ### Fixed
