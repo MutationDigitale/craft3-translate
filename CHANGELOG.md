@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.0.2 - 2019-02-11
+
+### Fixed
+- Fixed an error when getMatchedElement was returning false
+
 ## 2.0.1 - 2019-01-31
 
 ### Added
