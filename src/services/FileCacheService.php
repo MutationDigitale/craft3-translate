@@ -30,12 +30,12 @@ class FileCacheService extends Component
         $request = \Craft::$app->getRequest();
         $response = \Craft::$app->getResponse();
 
-        if (!($request->getIsSiteRequest() &&
-			$request->getIsGet() &&
-			!$request->getIsActionRequest() &&
-			!$request->getIsLivePreview() &&
-			$response->getIsOk() &&
-			Craft::$app->getUser()->getIsGuest())) {
+        if (!$request->getIsSiteRequest() ||
+			!$request->getIsGet() ||
+			$request->getIsActionRequest() ||
+			$request->getIsLivePreview() ||
+			!$response->getIsOk() ||
+			!Craft::$app->getUser()->getIsGuest()) {
         	return false;
 		}
 

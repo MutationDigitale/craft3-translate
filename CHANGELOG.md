@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.0.4 - 2019-02-11
+
+### Fixed
+- Formatting
+
 ## 2.0.3 - 2019-02-11
 
 ### Fixed
