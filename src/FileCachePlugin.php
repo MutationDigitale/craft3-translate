@@ -148,7 +148,6 @@ class FileCachePlugin extends Plugin
 		$view = Craft::$app->getView();
 		$view->registerJs(<<<Js
 var xhr = new XMLHttpRequest();
-xhr.responseType = 'json';
 xhr.onload = function () {
     if (xhr.status >= 200 && xhr.status < 300) {
         window.csrfTokenName = this.response.csrfTokenName;
@@ -156,6 +155,7 @@ xhr.onload = function () {
     }
 };
 xhr.open('GET', '$url');
+xhr.responseType = 'json';
 xhr.send();
 Js
 			, View::POS_END);

@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.0.5 - 2019-03-06
+
+### Fixed
+- Fixed bug with XMLHttpRequest on IE11
+
 ## 2.0.4 - 2019-02-11
 
 ### Fixed

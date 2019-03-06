@@ -1,7 +1,7 @@
 {
     "name": "mutation/filecache",
     "description": "Cache templates to html files",
-    "version": "2.0.4",
+    "version": "2.0.5",
     "type": "craft-plugin",
     "support": {
         "docs": "https://github.com/MutationDigitale/craft3-htmlcache/blob/master/README.md",
