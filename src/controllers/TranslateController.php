@@ -3,12 +3,13 @@
 namespace mutation\translate\controllers;
 
 use craft\web\Controller;
+use mutation\translate\Translate;
 
 class TranslateController extends Controller
 {
     public function actionIndex($localeId = null)
     {
-        $this->requireAdmin();
+        $this->requirePermission(Translate::UPDATE_TRANSLATIONS_PERMISSION);
 
         if ($localeId == null) {
             $localeId = \Craft::$app->i18n->getPrimarySiteLocaleId();
@@ -21,15 +22,15 @@ class TranslateController extends Controller
         }
 
         $this->renderTemplate('translate/index', array(
-            "translations" => $translations,
-            "currentLocaleId" => $localeId
+            'translations' => $translations,
+            'currentLocaleId' => $localeId
         ));
     }
 
     public function actionSave()
     {
         $this->requirePostRequest();
-        $this->requireAdmin();
+        $this->requirePermission(Translate::UPDATE_TRANSLATIONS_PERMISSION);
 
         $localeId = \Craft::$app->request->post('localeId', \Craft::$app->i18n->getPrimarySiteLocaleId());
         $translations = \Craft::$app->request->post('translations');

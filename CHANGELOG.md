@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.1.0 - 2019-03-24
+
+### Added
+- Added specific permission to edit translations
+
 ## 1.0.12 - 2018-11-17
 
 ### Fixed

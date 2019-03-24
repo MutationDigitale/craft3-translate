@@ -4,6 +4,8 @@ namespace mutation\translate;
 
 use craft\base\Plugin;
 use craft\events\RegisterUrlRulesEvent;
+use craft\events\RegisterUserPermissionsEvent;
+use craft\services\UserPermissions;
 use mutation\translate\controllers\TranslateController;
 use craft\web\UrlManager;
 use yii\base\Event;
@@ -16,20 +18,42 @@ class Translate extends Plugin
         'translate' => TranslateController::class,
     ];
 
-	public function init()
+    const UPDATE_TRANSLATIONS_PERMISSION = 'updateTranslations';
+
+    public function init()
     {
-		$this->name = \Craft::t('translate', 'Translate');
+        $this->name = \Craft::t('translate', 'Translate');
 
-        Event::on(UrlManager::class, UrlManager::EVENT_REGISTER_CP_URL_RULES, function(RegisterUrlRulesEvent $event) {
-            $event->rules['translate'] = 'translate/translate/index';
-            $event->rules['translate/<localeId:[a-zA-Z\-]+>'] = 'translate/translate/index';
-        });
-
-        Event::on(MessageSource::class, MessageSource::EVENT_MISSING_TRANSLATION, function(MissingTranslationEvent $event) {
-            if (\Craft::$app->request->isSiteRequest && $event->category === 'site') {
-                $this->saveTranslationToFile($event->message, $event->language);
+        Event::on(
+            UserPermissions::class,
+            UserPermissions::EVENT_REGISTER_PERMISSIONS,
+            function (RegisterUserPermissionsEvent $event) {
+                $event->permissions['Translate'] = [
+                    self::UPDATE_TRANSLATIONS_PERMISSION => [
+                        'label' => 'Update translations',
+                    ],
+                ];
             }
-        });
+        );
+
+        Event::on(
+            UrlManager::class,
+            UrlManager::EVENT_REGISTER_CP_URL_RULES,
+            function (RegisterUrlRulesEvent $event) {
+                $event->rules['translate'] = 'translate/translate/index';
+                $event->rules['translate/<localeId:[a-zA-Z\-]+>'] = 'translate/translate/index';
+            }
+        );
+
+        Event::on(
+            MessageSource::class,
+            MessageSource::EVENT_MISSING_TRANSLATION,
+            function (MissingTranslationEvent $event) {
+                if (\Craft::$app->request->isSiteRequest && $event->category === 'site') {
+                    $this->saveTranslationToFile($event->message, $event->language);
+                }
+            }
+        );
     }
 
     private function saveTranslationToFile($key, $language)
@@ -43,8 +67,7 @@ class Translate extends Plugin
             $file = fopen($path, 'wb');
             fclose($file);
             $oldTranslations = array();
-        }
-        else {
+        } else {
             $oldTranslations = include($path);
         }
 
