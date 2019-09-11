@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.0.6 - 2019-09-11
+
+### Fixed
+- Replaced getAlias by parseEnv for site url
+
 ## 2.0.5 - 2019-03-06
 
 ### Fixed
