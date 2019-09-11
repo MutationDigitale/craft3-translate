@@ -251,7 +251,7 @@ class FileCacheService extends Component
 
     public function getCacheFilePath(): string
     {
-        $site = \Craft::getAlias(\Craft::$app->sites->getCurrentSite()->baseUrl);
+        $site = \Craft::parseEnv(\Craft::$app->sites->getCurrentSite()->baseUrl);
         $path = \Craft::$app->request->getPathInfo();
 
         /** @var SettingsModel $settings */
