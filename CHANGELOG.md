@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.0.7 - 2019-09-11
+
+### Fixed
+- Removed version from composer.json
+
 ## 2.0.6 - 2019-09-11
 
 ### Fixed
