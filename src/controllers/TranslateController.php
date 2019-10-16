@@ -7,13 +7,14 @@ use craft\helpers\UrlHelper;
 use craft\web\Controller;
 use mutation\translate\models\Message;
 use mutation\translate\models\SourceMessage;
+use mutation\translate\Translate;
 use mutation\translate\TranslateBundle;
 
 class TranslateController extends Controller
 {
     public function actionIndex()
     {
-        $this->requireAdmin();
+        $this->requirePermission(Translate::UPDATE_TRANSLATIONS_PERMISSION);
 
         $this->view->registerAssetBundle(TranslateBundle::class);
 
@@ -29,7 +30,7 @@ class TranslateController extends Controller
     public function actionSave()
     {
         $this->requirePostRequest();
-        $this->requireAdmin();
+        $this->requirePermission(Translate::UPDATE_TRANSLATIONS_PERMISSION);
 
         $translations = Craft::$app->request->post('translations');
 

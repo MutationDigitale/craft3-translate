@@ -5,6 +5,8 @@ namespace mutation\translate;
 use Craft;
 use craft\base\Plugin;
 use craft\events\RegisterUrlRulesEvent;
+use craft\events\RegisterUserPermissionsEvent;
+use craft\services\UserPermissions;
 use mutation\translate\controllers\TranslateController;
 use craft\web\UrlManager;
 use mutation\translate\models\SourceMessage;
@@ -18,12 +20,32 @@ class Translate extends Plugin
         'translate' => TranslateController::class,
     ];
 
+    const UPDATE_TRANSLATIONS_PERMISSION = 'updateTranslations';
+
     public function init()
     {
-        Event::on(UrlManager::class, UrlManager::EVENT_REGISTER_CP_URL_RULES, function (RegisterUrlRulesEvent $event) {
-            $event->rules['translate'] = 'translate/translate/index';
-            $event->rules['translate/<localeId:[a-zA-Z\-]+>'] = 'translate/translate/index';
-        });
+        $this->name = \Craft::t('translate', 'Translate');
+
+        Event::on(
+            UserPermissions::class,
+            UserPermissions::EVENT_REGISTER_PERMISSIONS,
+            function (RegisterUserPermissionsEvent $event) {
+                $event->permissions['Translate'] = [
+                    self::UPDATE_TRANSLATIONS_PERMISSION => [
+                        'label' => 'Update translations',
+                    ],
+                ];
+            }
+        );
+
+        Event::on(
+            UrlManager::class,
+            UrlManager::EVENT_REGISTER_CP_URL_RULES,
+            function (RegisterUrlRulesEvent $event) {
+                $event->rules['translate'] = 'translate/translate/index';
+                $event->rules['translate/<localeId:[a-zA-Z\-]+>'] = 'translate/translate/index';
+            }
+        );
 
         Event::on(
             MessageSource::class,

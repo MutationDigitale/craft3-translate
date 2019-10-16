@@ -1,10 +1,20 @@
 # Changelog
 
-## 1.1 - 2019-10-16
+## 1.2.0 - 2019-10-16
 
 ### Changed
 - Use database to store messages
 - Translate strings side by side
+
+## 1.1.0 - 2019-03-24
+
+### Added
+- Added specific permission to edit translations
+
+## 1.0.12 - 2018-11-17
+
+### Fixed
+- Allow plugin name translation
 
 ## 1.0.11 - 2018-10-25
 
