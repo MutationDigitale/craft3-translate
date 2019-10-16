@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.1 - 2019-10-16
+
+### Changed
+- Use database to store messages
+- Translate strings side by side
+
 ## 1.0.11 - 2018-10-25
 
 ### Fixed

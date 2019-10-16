@@ -6,47 +6,31 @@
     {% set title = "Translate" %}
 {% endif %}
 
-{% block contextMenu %}
-	<div>
-		<div class="btn menubtn" data-icon="world">
-            {{ currentLocaleId ? craft.app.i18n.getLocaleById(currentLocaleId).getDisplayName() }}
-		</div>
-		<div class="menu">
-			<ul class="padded">
-                {% for locale in craft.app.i18n.getSiteLocales() %}
-                    {% set url = url("translate/{handle}"|replace({
-                        '{handle}': locale.id
-                    })) %}
-					<li>
-						<a{% if currentLocaleId and locale.id == currentLocaleId %} class="sel"{% endif %}
-                                {% if url %} href="{{ url }}"{% endif %}>
-                            {{ locale.getDisplayName() }}
-						</a>
-					</li>
-                {% endfor %}
-			</ul>
-		</div>
-	</div>
-{% endblock %}
-
 {% block content %}
 	<input type="hidden" name="action" value="translate/translate/save">
-	<input type="hidden" name="localeId" value="{{ currentLocaleId }}">
     {{ csrfInput() }}
 
-    {% for key, translation in translations %}
-		<div class="field">
-			<div class="heading">
-				<label for="{{ key }}">
-                    {{ key }}
-					<span class="extralight" data-icon="language"
-						  title="{{ 'This field is translatable.' | t('app') }}"></span>
-				</label>
+	<div class="translate-columns">
+		{% for language in craft.app.i18n.getSiteLocales() | sort %}
+			<div>
+				<h2>{{ language.displayName }}</h2>
+				{% for sourceMessage in sourceMessages %}
+					<div class="field">
+						<div class="heading">
+							<label for="{{ sourceMessage.id }}">
+								{{ sourceMessage.message }}
+							</label>
+						</div>
+						<div class="input ltr">
+							<input class="text nicetext fullwidth" type="text"
+								   id="{{ sourceMessage.id }}"
+								   name="translations[{{ language.id }}][{{ sourceMessage.id }}]"
+								   value="{{ sourceMessage.languages[language.id] }}"
+								   data-show-chars-left="" autocomplete="off" placeholder="">
+						</div>
+					</div>
+				{% endfor %}
 			</div>
-			<div class="input ltr">
-				<input class="text nicetext fullwidth" type="text" id="{{ key }}" name="translations[{{ key }}]"
-					   value="{{ translation }}" data-show-chars-left="" autocomplete="off" placeholder="">
-			</div>
-		</div>
-    {% endfor %}
+		{% endfor %}
+	</div>
 {% endblock %}

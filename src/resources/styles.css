@@ -1,0 +1,10 @@
+.translate-columns {
+    display: flex;
+    margin: 0 -12px;
+}
+
+.translate-columns > * {
+    flex-grow: 1;
+    flex-basis: 0;
+    margin: 0 12px;
+}

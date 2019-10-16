@@ -1,7 +1,7 @@
 {
   "name": "mutation/translate",
   "description": "Translate strings in the control panel",
-  "version": "1.0.11",
+  "version": "1.1",
   "type": "craft-plugin",
   "support": {
     "docs": "https://github.com/MutationDigitale/craft3-translate/blob/master/README.md",
@@ -27,7 +27,7 @@
     "handle": "translate",
     "hasCpSettings": false,
     "hasCpSection": true,
-    "schemaVersion": "1.0.0",
+    "schemaVersion": "1.1.0",
     "changelogUrl": "https://raw.githubusercontent.com/MutationDigitale/craft3-translate/master/CHANGELOG.md",
     "class": "mutation\\translate\\Translate"
   }

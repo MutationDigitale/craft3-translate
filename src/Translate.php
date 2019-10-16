@@ -2,10 +2,12 @@
 
 namespace mutation\translate;
 
+use Craft;
 use craft\base\Plugin;
 use craft\events\RegisterUrlRulesEvent;
 use mutation\translate\controllers\TranslateController;
 use craft\web\UrlManager;
+use mutation\translate\models\SourceMessage;
 use yii\base\Event;
 use yii\i18n\MessageSource;
 use yii\i18n\MissingTranslationEvent;
@@ -18,39 +20,30 @@ class Translate extends Plugin
 
     public function init()
     {
-        Event::on(UrlManager::class, UrlManager::EVENT_REGISTER_CP_URL_RULES, function(RegisterUrlRulesEvent $event) {
+        Event::on(UrlManager::class, UrlManager::EVENT_REGISTER_CP_URL_RULES, function (RegisterUrlRulesEvent $event) {
             $event->rules['translate'] = 'translate/translate/index';
             $event->rules['translate/<localeId:[a-zA-Z\-]+>'] = 'translate/translate/index';
         });
 
-        Event::on(MessageSource::class, MessageSource::EVENT_MISSING_TRANSLATION, function(MissingTranslationEvent $event) {
-            if (\Craft::$app->request->isSiteRequest && $event->category === 'site') {
-                $this->saveTranslationToFile($event->message, $event->language);
+        Event::on(
+            MessageSource::class,
+            MessageSource::EVENT_MISSING_TRANSLATION,
+            function (MissingTranslationEvent $event) {
+                if (Craft::$app->request->isSiteRequest &&
+                    $event->message &&
+                    $event->category === 'site') {
+                    $sourceMessage = SourceMessage::find()
+                        ->where(array('message' => $event->message, 'category' => $event->category))
+                        ->one();
+
+                    if (!$sourceMessage) {
+                        $sourceMessage = new SourceMessage();
+                        $sourceMessage->category = $event->category;
+                        $sourceMessage->message = $event->message;
+                        $sourceMessage->save();
+                    }
+                }
             }
-        });
-    }
-
-    private function saveTranslationToFile($key, $language)
-    {
-        $path = \Craft::$app->path->getSiteTranslationsPath() . DIRECTORY_SEPARATOR . $language . DIRECTORY_SEPARATOR . 'site.php';
-
-        if (!file_exists($path)) {
-            if (!file_exists(dirname($path))) {
-                mkdir(dirname($path), 0775, true);
-            }
-            $file = fopen($path, 'wb');
-            fclose($file);
-            $oldTranslations = array();
-        }
-        else {
-            $oldTranslations = include($path);
-        }
-
-        $newTranslations = array_merge($oldTranslations, array($key => $key));
-        ksort($newTranslations);
-
-        $string = "<?php \n\nreturn " . var_export($newTranslations, true) . ';';
-
-        file_put_contents($path, $string);
+        );
     }
 }

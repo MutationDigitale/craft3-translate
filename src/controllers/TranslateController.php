@@ -2,27 +2,27 @@
 
 namespace mutation\translate\controllers;
 
+use Craft;
+use craft\helpers\UrlHelper;
 use craft\web\Controller;
+use mutation\translate\models\Message;
+use mutation\translate\models\SourceMessage;
+use mutation\translate\TranslateBundle;
 
 class TranslateController extends Controller
 {
-    public function actionIndex($localeId = null)
+    public function actionIndex()
     {
         $this->requireAdmin();
 
-        if ($localeId == null) {
-            $localeId = \Craft::$app->i18n->getPrimarySiteLocaleId();
-        }
+        $this->view->registerAssetBundle(TranslateBundle::class);
 
-        $path = \Craft::$app->path->getSiteTranslationsPath() . DIRECTORY_SEPARATOR . $localeId . DIRECTORY_SEPARATOR . 'site.php';
-        $translations = array();
-        if (file_exists($path)) {
-            $translations = include($path);
-        }
+        $sourceMessages = SourceMessage::find()
+            ->where(array('category' => 'site'))
+            ->all();
 
         $this->renderTemplate('translate/index', array(
-            "translations" => $translations,
-            "currentLocaleId" => $localeId
+            'sourceMessages' => $sourceMessages
         ));
     }
 
@@ -31,20 +31,27 @@ class TranslateController extends Controller
         $this->requirePostRequest();
         $this->requireAdmin();
 
-        $localeId = \Craft::$app->request->post('localeId', \Craft::$app->i18n->getPrimarySiteLocaleId());
-        $translations = \Craft::$app->request->post('translations');
-        ksort($translations);
+        $translations = Craft::$app->request->post('translations');
 
-        $string = "<?php \n\nreturn " . var_export($translations, true) . ';';
+        foreach ($translations as $localeId => $item) {
+            foreach ($item as $id => $translation) {
+                $message = Message::find()
+                    ->where(array('language' => $localeId, 'id' => $id))
+                    ->one();
 
-        $path = \Craft::$app->path->getSiteTranslationsPath() . DIRECTORY_SEPARATOR . $localeId . DIRECTORY_SEPARATOR . 'site.php';
+                if (!$message) {
+                    $message = new Message();
+                    $message->id = $id;
+                    $message->language = $localeId;
+                }
 
-        if (file_put_contents($path, $string)) {
-            \Craft::$app->session->setNotice('Translations saved.');
-        } else {
-            \Craft::$app->session->setError('Couldn’t save translations.');
+                $message->translation = trim($translation) !== '' ? $translation : null;
+                $message->save();
+            }
         }
 
-        return $this->redirect(\craft\helpers\UrlHelper::url('translate') . '/' . $localeId);
+        Craft::$app->session->setNotice('Translations saved.');
+
+        return $this->redirect(UrlHelper::url('translate') . '/' . $localeId);
     }
 }
