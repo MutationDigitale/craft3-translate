@@ -24,7 +24,7 @@ class Translate extends Plugin
 
     public function init()
     {
-        $this->name = \Craft::t('translate', 'Translate');
+        $this->name = Craft::t('translate', 'Translate');
 
         Event::on(
             UserPermissions::class,
