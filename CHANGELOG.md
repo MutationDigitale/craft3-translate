@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.2.2 - 2019-10-18
+
+### Fixed
+- Updated migration to Install migration
+
 ## 1.2.1 - 2019-10-18
 
 ### Fixed

@@ -8,7 +8,7 @@ use craft\db\Migration;
 /**
  * m191016_152459_init migration.
  */
-class m191016_152459_init extends Migration
+class Install extends Migration
 {
     /**
      * @inheritdoc
