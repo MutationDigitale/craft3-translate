@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.2.1 - 2019-10-18
+
+### Fixed
+- Fixed error if tables are not created
+
 ## 1.2.0 - 2019-10-16
 
 ### Changed
