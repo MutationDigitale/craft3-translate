@@ -38,7 +38,7 @@ class DbMessageSource extends \yii\i18n\DbMessageSource
     protected function loadMessagesFromDb($category, $language)
     {
         try {
-            parent::loadMessagesFromDb($category, $language);
+            return parent::loadMessagesFromDb($category, $language);
         } catch (Exception $e) {
             return array();
         }

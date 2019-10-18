@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.2.3 - 2019-10-18
+
+### Fixed
+- Fixed loadMessagesFromDb not returning values
+
 ## 1.2.2 - 2019-10-18
 
 ### Fixed
