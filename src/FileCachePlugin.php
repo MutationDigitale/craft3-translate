@@ -3,10 +3,15 @@
 namespace mutation\filecache;
 
 use Craft;
+use craft\base\ElementInterface;
 use craft\base\Plugin;
 use craft\console\Application as ConsoleApplication;
+use craft\events\BatchElementActionEvent;
+use craft\events\DeleteElementEvent;
+use craft\events\ElementEvent;
 use craft\events\RegisterCacheOptionsEvent;
 use craft\events\RegisterComponentTypesEvent;
+use craft\helpers\ElementHelper;
 use craft\services\Elements;
 use craft\services\Utilities;
 use craft\utilities\ClearCaches;
@@ -59,10 +64,12 @@ class FileCachePlugin extends Plugin
 
 	private function initEvents(): void
 	{
-		\Craft::$app->on(Application::EVENT_AFTER_REQUEST, [$this, 'handleAfterRequest']);
+		Craft::$app->on(Application::EVENT_AFTER_REQUEST, [$this, 'handleAfterRequest']);
 
-		Event::on(Elements::class, Elements::EVENT_AFTER_DELETE_ELEMENT, [$this, 'handleElementChange']);
 		Event::on(Elements::class, Elements::EVENT_AFTER_SAVE_ELEMENT, [$this, 'handleElementChange']);
+		Event::on(Elements::class, Elements::EVENT_AFTER_RESAVE_ELEMENT, [$this, 'handleElementChange']);
+		Event::on(Elements::class, Elements::EVENT_AFTER_RESTORE_ELEMENT, [$this, 'handleElementChange']);
+		Event::on(Elements::class, Elements::EVENT_AFTER_DELETE_ELEMENT, [$this, 'handleElementChange']);
 		Event::on(Elements::class, Elements::EVENT_AFTER_UPDATE_SLUG_AND_URI, [$this, 'handleElementChange']);
 
 		Event::on(
@@ -98,16 +105,27 @@ class FileCachePlugin extends Plugin
 	{
 		if ($this->fileCacheService()->isCacheableRequest()) {
 			$cacheFilePath = $this->fileCacheService()->getCacheFilePath();
-			$this->fileCacheService()->writeCache($cacheFilePath, \Craft::$app->response->data);
+			$this->fileCacheService()->writeCache($cacheFilePath, Craft::$app->response->data);
 		}
 	}
 
-	public function handleElementChange(): void
+	public function handleElementChange(Event $event): void
 	{
 		/** @var SettingsModel $settings */
 		$settings = $this->getSettings();
 
 		if (!$settings->cacheEnabled) {
+			return;
+		}
+
+		/** @var ElementEvent|BatchElementActionEvent|DeleteElementEvent $event */
+		$element = $event->element;
+
+		if ($element === null) {
+			return;
+		}
+
+		if (ElementHelper::isDraftOrRevision($element)) {
 			return;
 		}
 

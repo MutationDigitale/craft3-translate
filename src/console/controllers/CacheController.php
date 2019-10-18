@@ -10,20 +10,20 @@ use yii\console\Controller;
 
 class CacheController extends Controller
 {
-    public function actionWarm(): void
-    {
-        /** @var SettingsModel $settings */
-        $settings = FileCachePlugin::$plugin->getSettings();
+	public function actionWarm(): void
+	{
+		/** @var SettingsModel $settings */
+		$settings = FileCachePlugin::$plugin->getSettings();
 
-        if (!$settings->cacheEnabled) {
-            $this->stderr(Craft::t('filecache', 'File cache is disabled.') . PHP_EOL, Console::FG_RED);
-            return;
-        }
+		if (!$settings->cacheEnabled) {
+			$this->stderr(Craft::t('filecache', 'File cache is disabled.') . PHP_EOL, Console::FG_RED);
+			return;
+		}
 
-        $this->stdout(Craft::t('filecache', 'Warming file cache.') . PHP_EOL);
+		$this->stdout(Craft::t('filecache', 'Warming file cache.') . PHP_EOL);
 
-        FileCachePlugin::$plugin->fileCacheService()->warmAllCache();
+		FileCachePlugin::$plugin->fileCacheService()->warmAllCache();
 
-        $this->stdout(Craft::t('filecache', 'File cache successfully warmed.') . PHP_EOL, Console::FG_GREEN);
-    }
+		$this->stdout(Craft::t('filecache', 'File cache successfully warmed.') . PHP_EOL, Console::FG_GREEN);
+	}
 }

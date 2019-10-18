@@ -6,35 +6,35 @@ use craft\base\Model;
 
 class SettingsModel extends Model
 {
-    /**
-     * @var bool
-     */
-    public $cacheEnabled = true;
+	/**
+	 * @var bool
+	 */
+	public $cacheEnabled = true;
 
-    /**
-     * @var string
-     */
-    public $cacheFolderPath = 'web/filecache';
+	/**
+	 * @var string
+	 */
+	public $cacheFolderPath = 'web/filecache';
 
-    /**
-     * @var bool
-     */
-    public $automaticallyWarmCache = true;
+	/**
+	 * @var bool
+	 */
+	public $automaticallyWarmCache = true;
 
-    /**
-     * @var int
-     */
-    public $concurrency = 5;
+	/**
+	 * @var int
+	 */
+	public $concurrency = 5;
 
-    /**
-     * @var array
-     */
-    public $excludedEntrySections = [];
+	/**
+	 * @var array
+	 */
+	public $excludedEntrySections = [];
 
-    /**
-     * @var array
-     */
-    public $excludedEntryTypes = [];
+	/**
+	 * @var array
+	 */
+	public $excludedEntryTypes = [];
 
 	/**
 	 * @var array
@@ -56,8 +56,8 @@ class SettingsModel extends Model
 	 */
 	public $excludedSitesFromWarming = [];
 
-    /**
-     * @var boolean
-     */
-    public $injectJsCsrfToken = false;
+	/**
+	 * @var boolean
+	 */
+	public $injectJsCsrfToken = false;
 }

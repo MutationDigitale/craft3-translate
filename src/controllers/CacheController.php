@@ -10,19 +10,19 @@ use yii\web\Response;
 
 class CacheController extends Controller
 {
-    public function actionWarm(): Response
-    {
-        /** @var SettingsModel $settings */
-        $settings = FileCachePlugin::$plugin->getSettings();
+	public function actionWarm(): Response
+	{
+		/** @var SettingsModel $settings */
+		$settings = FileCachePlugin::$plugin->getSettings();
 
-        if (!$settings->cacheEnabled) {
-            Craft::$app->getSession()->setError(Craft::t('filecache', 'File cache is disabled.'));
-            return $this->redirectToPostedUrl();
-        }
+		if (!$settings->cacheEnabled) {
+			Craft::$app->getSession()->setError(Craft::t('filecache', 'File cache is disabled.'));
+			return $this->redirectToPostedUrl();
+		}
 
-        FileCachePlugin::$plugin->fileCacheService()->warmAllCache(true);
-        Craft::$app->getSession()->setNotice(Craft::t('filecache', 'File cache successfully queued for warming.'));
+		FileCachePlugin::$plugin->fileCacheService()->warmAllCache(true);
+		Craft::$app->getSession()->setNotice(Craft::t('filecache', 'File cache successfully queued for warming.'));
 
-        return $this->redirectToPostedUrl();
-    }
+		return $this->redirectToPostedUrl();
+	}
 }

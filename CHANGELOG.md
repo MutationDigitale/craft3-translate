@@ -1,5 +1,14 @@
 # Changelog
 
+## 2.1.0 - 2019-10-18
+
+### Changed
+- Craft 3.3 necessary now
+- Cache when logged in but not in preview
+- Support drafts and revisions
+- Support resave and restore events
+- Formatting
+
 ## 2.0.7 - 2019-09-11
 
 ### Fixed

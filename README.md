@@ -9,9 +9,7 @@ Cache pages to HTML files.
 - Add this url rewrite to the htaccess:
 
 ```
-RewriteCond %{REQUEST_FILENAME} !\.(css|eot|gif|ico|jpe?g|otf|png|svg|ttf|webp|woff2?)$ [NC]
 RewriteCond %{REQUEST_METHOD} GET
-RewriteCond %{HTTP_COOKIE} !^(.*)_identity=(.*)$ [NC]
 RewriteCond %{DOCUMENT_ROOT}/filecache/%{HTTP_HOST}/%{REQUEST_URI}/index.html -f
 RewriteRule .* /filecache/%{HTTP_HOST}/%{REQUEST_URI}/index.html [L,E=nocache:1]]
 ```

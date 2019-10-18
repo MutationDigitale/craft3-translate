@@ -15,6 +15,7 @@ use mutation\filecache\jobs\WarmCacheJob;
 use mutation\filecache\models\SettingsModel;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
+use function dirname;
 
 class FileCacheService extends Component
 {
@@ -27,15 +28,15 @@ class FileCacheService extends Component
             return false;
         }
 
-        $request = \Craft::$app->getRequest();
-        $response = \Craft::$app->getResponse();
+        $request = Craft::$app->getRequest();
+        $response = Craft::$app->getResponse();
 
         if (!$request->getIsSiteRequest() ||
 			!$request->getIsGet() ||
 			$request->getIsActionRequest() ||
 			$request->getIsLivePreview() ||
-			!$response->getIsOk() ||
-			!Craft::$app->getUser()->getIsGuest()) {
+			$request->getIsPreview() ||
+			!$response->getIsOk()) {
         	return false;
 		}
 
@@ -102,7 +103,7 @@ class FileCacheService extends Component
     public function writeCache($cacheFilePath, $html): void
     {
         if (!file_exists($cacheFilePath)) {
-            $dir = \dirname($cacheFilePath);
+            $dir = dirname($cacheFilePath);
             if (!file_exists($dir)) {
                 if (!mkdir($dir, 0775, true) && !is_dir($dir)) {
                     return;
@@ -134,13 +135,6 @@ class FileCacheService extends Component
         foreach ($files as $fileinfo) {
             $todo = ($fileinfo->isDir() ? 'rmdir' : 'unlink');
             $todo($fileinfo->getRealPath());
-        }
-    }
-
-    public function deleteFileCacheByPath($cacheFilePath): void
-    {
-        if (file_exists($cacheFilePath)) {
-            unlink($cacheFilePath);
         }
     }
 
@@ -183,18 +177,6 @@ class FileCacheService extends Component
         if (\count($urls) > 0) {
             $this->startWarmingCache($urls, $queue);
         }
-    }
-
-    public function warmCacheByFiles($files, bool $queue = false): void
-    {
-        $urls = [];
-        foreach ($files as $file) {
-        	$url = $this->_getUrlFromCacheFile($file);
-        	if ($url) {
-				$urls[] = $url;
-			}
-        }
-        $this->startWarmingCache($urls, $queue);
     }
 
     public function startWarmingCache($urls, bool $queue = false): void
@@ -251,8 +233,8 @@ class FileCacheService extends Component
 
     public function getCacheFilePath(): string
     {
-        $site = \Craft::parseEnv(\Craft::$app->sites->getCurrentSite()->baseUrl);
-        $path = \Craft::$app->request->getPathInfo();
+        $site = Craft::parseEnv(Craft::$app->sites->getCurrentSite()->baseUrl);
+        $path = Craft::$app->request->getPathInfo();
 
         /** @var SettingsModel $settings */
         $settings = FileCachePlugin::$plugin->getSettings();
@@ -267,24 +249,6 @@ class FileCacheService extends Component
         $targetPath = $this->_normalizePath(implode('/', $pathSegments));
 
         return $targetPath . DIRECTORY_SEPARATOR . 'index.html';
-    }
-
-    private function _getUrlFromCacheFile($file)
-    {
-        /** @var SettingsModel $settings */
-        $settings = FileCachePlugin::$plugin->getSettings();
-
-        if (!$file) {
-			return '';
-		}
-
-        $url = str_replace("\\", '/', $file);
-        $url = explode($settings->cacheFolderPath, $url)[1];
-        $url = ltrim($url, '/');
-        $url = preg_replace('/\/index.html$/', '', $url);
-        $url = '//' . $url;
-
-        return $url;
     }
 
     private function _normalizePath($path)
