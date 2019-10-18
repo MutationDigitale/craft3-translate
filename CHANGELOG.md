@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.1.1 - 2019-10-18
+
+### Changed
+- Prevent caching if `enableDebugToolbarForSite` is `true`
+
 ## 2.1.0 - 2019-10-18
 
 ### Changed

@@ -1,34 +1,34 @@
 {
-    "name": "mutation/filecache",
-    "description": "Cache templates to html files",
-    "type": "craft-plugin",
-    "support": {
-        "docs": "https://github.com/MutationDigitale/craft3-htmlcache/blob/master/README.md",
-        "issues": "https://github.com/MutationDigitale/craft3-htmlcache/issues"
-    },
-    "license": "MIT",
-    "authors": [
-        {
-            "name": "Mutation Digitale",
-            "homepage": "https://mutation.io/"
-        }
-    ],
-    "require": {
-        "php": ">=7.1",
-        "craftcms/cms": "^3.3.0"
-    },
-    "autoload": {
-        "psr-4": {
-            "mutation\\filecache\\": "src/"
-        }
-    },
-    "extra": {
-        "name": "File Cache",
-        "handle": "filecache",
-        "hasCpSettings": false,
-        "hasCpSection": false,
-        "schemaVersion": "1.0.0",
-        "changelogUrl": "https://raw.githubusercontent.com/MutationDigitale/craft3-htmlcache/master/CHANGELOG.md",
-        "class": "mutation\\filecache\\FileCachePlugin"
+  "name": "mutation/filecache",
+  "description": "Cache templates to html files",
+  "type": "craft-plugin",
+  "support": {
+    "docs": "https://github.com/MutationDigitale/craft3-htmlcache/blob/master/README.md",
+    "issues": "https://github.com/MutationDigitale/craft3-htmlcache/issues"
+  },
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Mutation Digitale",
+      "homepage": "https://mutation.io/"
     }
+  ],
+  "require": {
+    "php": ">=7.1",
+    "craftcms/cms": "^3.3.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "mutation\\filecache\\": "src/"
+    }
+  },
+  "extra": {
+    "name": "File Cache",
+    "handle": "filecache",
+    "hasCpSettings": false,
+    "hasCpSection": false,
+    "schemaVersion": "1.0.0",
+    "changelogUrl": "https://raw.githubusercontent.com/MutationDigitale/craft3-htmlcache/master/CHANGELOG.md",
+    "class": "mutation\\filecache\\FileCachePlugin"
+  }
 }

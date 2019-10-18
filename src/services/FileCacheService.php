@@ -7,6 +7,7 @@ use craft\base\Component;
 use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\elements\Entry;
+use craft\elements\User;
 use craft\helpers\StringHelper;
 use GuzzleHttp\Pool;
 use GuzzleHttp\Psr7\Request;
@@ -33,11 +34,22 @@ class FileCacheService extends Component
 
         if (!$request->getIsSiteRequest() ||
 			!$request->getIsGet() ||
+			$request->getIsConsoleRequest() ||
 			$request->getIsActionRequest() ||
-			$request->getIsLivePreview() ||
 			$request->getIsPreview() ||
 			!$response->getIsOk()) {
         	return false;
+		}
+
+		/** @var User|null $user */
+		$user = Craft::$app->getUser()->getIdentity();
+		if ($user !== null) {
+			if (!Craft::$app->getIsLive() && !$user->can('accessSiteWhenSystemIsOff')) {
+				return false;
+			}
+			if ($user->getPreference('enableDebugToolbarForSite')) {
+				return false;
+			}
 		}
 
         // Return false if there is still image transforms to be done
