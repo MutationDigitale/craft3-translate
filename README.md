@@ -32,9 +32,6 @@ return [
 		'cacheFolderPath' => 'web/filecache',
 		'automaticallyWarmCache' => true,
 		'concurrency' => 5,
-	],
-	'dev' => [
-		'cacheEnabled' => false
 	]
 ];
 
