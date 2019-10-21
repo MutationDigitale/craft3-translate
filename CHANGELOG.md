@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.1.4 - 2019-10-21
+
+### Changed
+- Always disable cache when `devMode` is `true`
+
 ## 2.1.3 - 2019-10-21
 
 ### Changed
