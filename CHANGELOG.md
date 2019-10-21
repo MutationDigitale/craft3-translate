@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.2.6 - 2019-10-21
+
+### Added
+- Migrate existing php translations to db translations on install
+
 ## 1.2.5 - 2019-10-21
 
 ### Fixed

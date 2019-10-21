@@ -4,6 +4,8 @@ namespace mutation\translate\migrations;
 
 use Craft;
 use craft\db\Migration;
+use Exception;
+use mutation\translate\models\SourceMessage;
 
 /**
  * m191016_152459_init migration.
@@ -45,6 +47,42 @@ class Install extends Migration
         $this->addForeignKey('fk_message_source_message', '{{%message}}', 'id', '{{%source_message}}', 'id', 'CASCADE', 'RESTRICT');
         $this->createIndex('idx_source_message_category', '{{%source_message}}', 'category');
         $this->createIndex('idx_message_language', '{{%message}}', 'language');
+
+        $sites = Craft::$app->sites->getAllSites();
+        $translations = array();
+        foreach ($sites as $site) {
+            $path = Craft::$app->path->getSiteTranslationsPath() . DIRECTORY_SEPARATOR . $site->language . DIRECTORY_SEPARATOR . 'site.php';
+            $siteTranslations = array();
+            if (file_exists($path)) {
+                $siteTranslations = include($path);
+            }
+            foreach ($siteTranslations as $key => $translation) {
+                $translations[$key][$site->language] = $translation;
+            }
+        }
+
+        foreach ($translations as $message => $sites) {
+            try {
+                $languages = array();
+                foreach ($sites as $site => $translation) {
+                    $languages[$site] = $translation;
+                }
+
+                $sourceMessage = SourceMessage::find()
+                    ->where(array('message' => $message, 'category' => 'site'))
+                    ->one();
+
+                if (!$sourceMessage) {
+                    $sourceMessage = new SourceMessage();
+                    $sourceMessage->category = 'site';
+                    $sourceMessage->message = $message;
+                    $sourceMessage->languages = $languages;
+                    $sourceMessage->save();
+                }
+            } catch (Exception $exception) {
+
+            }
+        }
     }
 
     /**
