@@ -22,6 +22,26 @@ class FileCacheVariable
 		return $this->injectDynamicHtml($url);
 	}
 
+	public function injectJsCsrfToken(): Markup
+	{
+		$url = '/' . Craft::$app->getConfig()->getGeneral()->actionTrigger . '/filecache/csrf/js';
+		$view = Craft::$app->getView();
+		$view->registerJs(<<<Js
+var xhr = new XMLHttpRequest();
+xhr.onload = function () {
+    if (xhr.status >= 200 && xhr.status < 300) {
+        window.csrfTokenName = this.response.csrfTokenName;
+	    window.csrfTokenValue = this.response.csrfTokenValue;
+    }
+};
+xhr.open('GET', '$url');
+xhr.responseType = 'json';
+xhr.send();
+Js
+			, View::POS_END);
+		return Template::raw($view);
+	}
+
 	private function injectDynamicHtml(string $url): Markup
 	{
 		$view = Craft::$app->getView();

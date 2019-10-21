@@ -19,7 +19,7 @@ class SettingsModel extends Model
 	/**
 	 * @var bool
 	 */
-	public $automaticallyWarmCache = true;
+	public $automaticallyWarmCache = false;
 
 	/**
 	 * @var int
@@ -55,9 +55,4 @@ class SettingsModel extends Model
 	 * @var array
 	 */
 	public $excludedSitesFromWarming = [];
-
-	/**
-	 * @var boolean
-	 */
-	public $injectJsCsrfToken = false;
 }

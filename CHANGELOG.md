@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.1.2 - 2019-10-21
+
+### Changed
+- Removed `injectJsCsrfToken` settings, call the twig variable  `injectJsCsrfToken` instead
+- Do not automatically warm cache
+
 ## 2.1.1 - 2019-10-18
 
 ### Changed

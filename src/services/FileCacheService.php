@@ -16,7 +16,9 @@ use mutation\filecache\jobs\WarmCacheJob;
 use mutation\filecache\models\SettingsModel;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
+use function count;
 use function dirname;
+use function in_array;
 
 class FileCacheService extends Component
 {
@@ -71,15 +73,15 @@ class FileCacheService extends Component
             /** @var Entry $element */
             $entry = $element;
 
-            if (\in_array($entry->section->handle, $settings->excludedEntrySections, true)) {
+            if (in_array($entry->section->handle, $settings->excludedEntrySections, true)) {
                 return false;
             }
 
-            if (\in_array($entry->type->handle, $settings->excludedEntryTypes, true)) {
+            if (in_array($entry->type->handle, $settings->excludedEntryTypes, true)) {
                 return false;
             }
 
-			if (\in_array($entry->site->handle, $settings->excludedSites, true)) {
+			if (in_array($entry->site->handle, $settings->excludedSites, true)) {
 				return false;
 			}
         }
@@ -96,15 +98,15 @@ class FileCacheService extends Component
 			/** @var Entry $element */
 			$entry = $element;
 
-			if (\in_array($entry->section->handle, $settings->excludedEntrySectionsFromWarming, true)) {
+			if (in_array($entry->section->handle, $settings->excludedEntrySectionsFromWarming, true)) {
 				return false;
 			}
 
-			if (\in_array($entry->type->handle, $settings->excludedEntryTypesFromWarming, true)) {
+			if (in_array($entry->type->handle, $settings->excludedEntryTypesFromWarming, true)) {
 				return false;
 			}
 
-			if (\in_array($entry->site->handle, $settings->excludedSitesFromWarming, true)) {
+			if (in_array($entry->site->handle, $settings->excludedSitesFromWarming, true)) {
 				return false;
 			}
 		}
@@ -144,9 +146,9 @@ class FileCacheService extends Component
             RecursiveIteratorIterator::CHILD_FIRST
         );
 
-        foreach ($files as $fileinfo) {
-            $todo = ($fileinfo->isDir() ? 'rmdir' : 'unlink');
-            $todo($fileinfo->getRealPath());
+        foreach ($files as $fileInfo) {
+            $todo = ($fileInfo->isDir() ? 'rmdir' : 'unlink');
+            $todo($fileInfo->getRealPath());
         }
     }
 
@@ -177,7 +179,7 @@ class FileCacheService extends Component
                     }
 
                     $url = $element->getUrl();
-                    if ($url === null || \in_array($url, $urls, true)) {
+                    if ($url === null || in_array($url, $urls, true)) {
                         continue;
                     }
 
@@ -186,7 +188,7 @@ class FileCacheService extends Component
             }
         }
 
-        if (\count($urls) > 0) {
+        if (count($urls) > 0) {
             $this->startWarmingCache($urls, $queue);
         }
     }

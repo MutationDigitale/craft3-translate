@@ -31,7 +31,6 @@ return [
 		'excludedSitesFromWarming' => [],
 		'cacheFolderPath' => 'web/filecache',
 		'automaticallyWarmCache' => true,
-		'injectJsCsrfToken' => true,
 		'concurrency' => 5,
 	],
 	'dev' => [
@@ -61,15 +60,19 @@ php craft filecache/cache/warm
 
 ## Dynamic content
 
-Set this setting `injectJsCsrfToken` to `true` to inject the csrf token to `window` object in javascript.
-
 Use this template code to inject the csrf token in html:
 
 ```
 {{ craft.filecache.injectCsrfInput() }}
 ```
 
-or this code to inject any url as html:
+Use this template code to inject the csrf token as global Javascript variables:
+
+```
+{{ craft.filecache.injectJsCsrfToken() }}
+```
+
+Use this template code to inject any url as html:
 
 ```
 {{ craft.filecache.injectUrl('URL') }}
