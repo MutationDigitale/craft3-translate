@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.2.5 - 2019-10-21
+
+### Fixed
+- Fixed how site translations in `app.php` config are registered
+
 ## 1.2.4 - 2019-10-21
 
 ### Changed

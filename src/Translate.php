@@ -6,6 +6,7 @@ use Craft;
 use craft\base\Plugin;
 use craft\events\RegisterUrlRulesEvent;
 use craft\events\RegisterUserPermissionsEvent;
+use craft\i18n\I18N;
 use craft\services\UserPermissions;
 use mutation\translate\controllers\TranslateController;
 use craft\web\UrlManager;
@@ -32,9 +33,10 @@ class Translate extends Plugin
 
     private function initDbMessages()
     {
-        $i18n = Craft::$app->getComponents()['i18n'];
+        /** @var I18N $i18n */
+        $i18n = Craft::$app->getComponents(false)['i18n'];
 
-        $i18n['translations']['site'] = [
+        $i18n->translations['site'] = [
             'class' => DbMessageSource::class,
             'sourceLanguage' => 'en-US',
             'forceTranslation' => true,
