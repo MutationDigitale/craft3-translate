@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.1.3 - 2019-10-21
+
+### Changed
+- Fixed twig variable  `injectJsCsrfToken`
+
 ## 2.1.2 - 2019-10-21
 
 ### Changed
