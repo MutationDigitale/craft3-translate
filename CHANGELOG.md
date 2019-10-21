@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.2.4 - 2019-10-21
+
+### Changed
+- Automatically register site translations in `app.php` config
+
 ## 1.2.3 - 2019-10-18
 
 ### Fixed

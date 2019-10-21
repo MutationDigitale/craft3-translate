@@ -26,6 +26,27 @@ class Translate extends Plugin
     {
         $this->name = Craft::t('translate', 'Translate');
 
+        $this->initDbMessages();
+        $this->initEvents();
+    }
+
+    private function initDbMessages()
+    {
+        $i18n = Craft::$app->getComponents()['i18n'];
+
+        $i18n['translations']['site'] = [
+            'class' => DbMessageSource::class,
+            'sourceLanguage' => 'en-US',
+            'forceTranslation' => true,
+        ];
+
+        Craft::$app->setComponents([
+            'i18n' => $i18n
+        ]);
+    }
+
+    private function initEvents()
+    {
         Event::on(
             UserPermissions::class,
             UserPermissions::EVENT_REGISTER_PERMISSIONS,
