@@ -27,7 +27,7 @@ class FileCacheService extends Component
         /** @var SettingsModel $settings */
         $settings = FileCachePlugin::$plugin->getSettings();
 
-        if (!$settings->cacheEnabled) {
+        if (!$settings->cacheEnabled || Craft::$app->getConfig()->getGeneral()->devMode) {
             return false;
         }
 
@@ -50,6 +50,10 @@ class FileCacheService extends Component
 				return false;
 			}
 			if ($user->getPreference('enableDebugToolbarForSite')) {
+				return false;
+			}
+			if (Craft::$app->plugins->isPluginEnabled('admin-bar') &&
+				(Craft::$app->getUser()->getIsAdmin() || Craft::$app->getUser()->checkPermission('accessCp'))) {
 				return false;
 			}
 		}

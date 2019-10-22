@@ -15,7 +15,7 @@ class CacheController extends Controller
 		/** @var SettingsModel $settings */
 		$settings = FileCachePlugin::$plugin->getSettings();
 
-		if (!$settings->cacheEnabled) {
+		if (!$settings->cacheEnabled || Craft::$app->getConfig()->getGeneral()->devMode) {
 			$this->stderr(Craft::t('filecache', 'File cache is disabled.') . PHP_EOL, Console::FG_RED);
 			return;
 		}

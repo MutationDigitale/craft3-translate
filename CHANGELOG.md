@@ -1,5 +1,13 @@
 # Changelog
 
+## 2.1.5 - 2019-10-22
+
+### Added
+- Take into account the admin bar plugin
+
+### Fixed
+- Fixed "Always disable cache when `devMode` is `true`"
+
 ## 2.1.4 - 2019-10-21
 
 ### Changed

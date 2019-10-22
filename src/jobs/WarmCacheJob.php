@@ -14,7 +14,7 @@ class WarmCacheJob extends BaseJob implements RetryableJobInterface
 
 	public function execute($queue): void
 	{
-		if (!FileCachePlugin::$plugin->getSettings()->cacheEnabled) {
+		if (!FileCachePlugin::$plugin->getSettings()->cacheEnabled || Craft::$app->getConfig()->getGeneral()->devMode) {
 			Craft::warning('WarmCacheJob: Cache is not enabled', 'filecache');
 			return;
 		}

@@ -56,12 +56,4 @@ class SettingsModel extends Model
 	 * @var array
 	 */
 	public $excludedSitesFromWarming = [];
-
-	public function __construct($config = [])
-	{
-		if (Craft::$app->getConfig()->getGeneral()->devMode) {
-			$this->cacheEnabled = false;
-		}
-		parent::__construct($config);
-	}
 }

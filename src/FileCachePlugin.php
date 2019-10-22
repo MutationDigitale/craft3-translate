@@ -113,7 +113,7 @@ class FileCachePlugin extends Plugin
 		/** @var SettingsModel $settings */
 		$settings = $this->getSettings();
 
-		if (!$settings->cacheEnabled) {
+		if (!$settings->cacheEnabled || Craft::$app->getConfig()->getGeneral()->devMode) {
 			return;
 		}
 
@@ -137,7 +137,7 @@ class FileCachePlugin extends Plugin
 		/** @var SettingsModel $settings */
 		$settings = $this->getSettings();
 
-		if (!$settings->cacheEnabled) {
+		if (!$settings->cacheEnabled || Craft::$app->getConfig()->getGeneral()->devMode) {
 			return;
 		}
 
