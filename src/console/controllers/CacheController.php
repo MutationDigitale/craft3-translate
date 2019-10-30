@@ -10,7 +10,7 @@ use yii\console\Controller;
 
 class CacheController extends Controller
 {
-	public function actionWarm(): void
+	public function actionWarm()
 	{
 		/** @var SettingsModel $settings */
 		$settings = FileCachePlugin::$plugin->getSettings();

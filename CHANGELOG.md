@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.1.7 - 2019-10-30
+
+### Changed
+- Fixed PHP 7.0 error
+
 ## 2.1.6 - 2019-10-30
 
 ### Changed

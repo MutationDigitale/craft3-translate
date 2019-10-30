@@ -118,7 +118,7 @@ class FileCacheService extends Component
 		return true;
 	}
 
-    public function writeCache($cacheFilePath, $html): void
+    public function writeCache($cacheFilePath, $html)
     {
         if (!file_exists($cacheFilePath)) {
             $dir = dirname($cacheFilePath);
@@ -134,7 +134,7 @@ class FileCacheService extends Component
         file_put_contents($cacheFilePath, trim($html));
     }
 
-    public function deleteAllFileCaches(): void
+    public function deleteAllFileCaches()
     {
         /** @var SettingsModel $settings */
         $settings = FileCachePlugin::$plugin->getSettings();
@@ -156,7 +156,7 @@ class FileCacheService extends Component
         }
     }
 
-    public function warmAllCache(bool $queue = false): void
+    public function warmAllCache(bool $queue = false)
     {
         $urls = [];
 
@@ -197,7 +197,7 @@ class FileCacheService extends Component
         }
     }
 
-    public function startWarmingCache($urls, bool $queue = false): void
+    public function startWarmingCache($urls, bool $queue = false)
     {
         if ($queue === true) {
             Craft::$app->getQueue()->push(new WarmCacheJob(['urls' => $urls]));
@@ -207,7 +207,7 @@ class FileCacheService extends Component
         $this->warmCacheByUrls($urls);
     }
 
-    public function warmCacheByUrls($urls, $fullfiledCallback = null, $rejectedCallback = null): void
+    public function warmCacheByUrls($urls, $fullfiledCallback = null, $rejectedCallback = null)
     {
         /** @var SettingsModel $settings */
         $settings = FileCachePlugin::$plugin->getSettings();

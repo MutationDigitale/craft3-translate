@@ -34,7 +34,7 @@ class FileCachePlugin extends Plugin
 
 	private $_deleteCaches = false;
 
-	public function init(): void
+	public function init()
 	{
 		parent::init();
 
@@ -61,7 +61,7 @@ class FileCachePlugin extends Plugin
 		return new SettingsModel();
 	}
 
-	private function initEvents(): void
+	private function initEvents()
 	{
 		Craft::$app->on(Application::EVENT_AFTER_REQUEST, [$this, 'handleAfterRequest']);
 
@@ -108,7 +108,7 @@ class FileCachePlugin extends Plugin
 		}
 	}
 
-	public function handleElementChange(Event $event): void
+	public function handleElementChange(Event $event)
 	{
 		/** @var SettingsModel $settings */
 		$settings = $this->getSettings();
@@ -132,7 +132,7 @@ class FileCachePlugin extends Plugin
 		Craft::$app->getResponse()->on(Response::EVENT_AFTER_PREPARE, [$this, 'handleResponse']);
 	}
 
-	public function handleResponse(): void
+	public function handleResponse()
 	{
 		/** @var SettingsModel $settings */
 		$settings = $this->getSettings();
