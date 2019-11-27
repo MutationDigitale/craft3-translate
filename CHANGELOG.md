@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.2.7 - 2019-11-27
+
+### Fixed
+- Fixed migrations
+
 ## 1.2.6 - 2019-10-21
 
 ### Added

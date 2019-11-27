@@ -8,9 +8,9 @@ use Exception;
 use mutation\translate\models\SourceMessage;
 
 /**
- * m191016_152459_init migration.
+ * m191127_192413_sources_messages migration.
  */
-class Install extends Migration
+class m191127_192413_sources_messages extends Migration
 {
     /**
      * @inheritdoc
