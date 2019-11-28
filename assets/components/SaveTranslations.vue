@@ -2,8 +2,8 @@
     <div>
         <button type="button" class="btn submit" @click="save()"
                 :disabled="sourceMessageInputs === null || isSaving">
-            <span v-if="isSaving">Saving...</span>
-            <span v-else>Save</span>
+            <span v-if="isSaving">{{ t('Saving') }}...</span>
+            <span v-else>{{ t('Save') }}</span>
         </button>
     </div>
 </template>
@@ -50,6 +50,9 @@ export default {
         .finally(() => {
           this.isSaving = false;
         });
+    },
+    t: function (str) {
+      return this.$craft.t('app', str);
     }
   }
 };

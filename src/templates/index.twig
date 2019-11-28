@@ -1,5 +1,13 @@
 {% extends "_layouts/cp" %}
 
+{% do view.registerTranslations('app', [
+    "Saving",
+    "Save",
+    "translations",
+    "Translations saved",
+    "No results"
+]) %}
+
 {% if title is not defined %}
     {% set title = "Translate" | t('translate') %}
 {% endif %}
@@ -15,6 +23,6 @@
     <save-translations></save-translations>
 {% endblock %}
 
-{% block content %}
+{% block main %}
     <translations-list></translations-list>
 {% endblock %}

@@ -54,7 +54,7 @@ class TranslateController extends Controller
         $this->requirePostRequest();
         $this->requirePermission(Translate::UPDATE_TRANSLATIONS_PERMISSION);
 
-        $translations = Craft::$app->request->post('translations');
+        $translations = Craft::$app->request->getRequiredBodyParam('translations');
 
         foreach ($translations as $localeId => $item) {
             foreach ($item as $id => $translation) {
@@ -73,8 +73,8 @@ class TranslateController extends Controller
             }
         }
 
-        Craft::$app->session->setNotice('Translations saved.');
-
-        return $this->redirect(UrlHelper::url('translate') . '/' . $localeId);
+        return $this->asJson([
+            'success' => true
+        ]);
     }
 }

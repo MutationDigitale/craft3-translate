@@ -1,10 +1,11 @@
 import Vue from 'vue';
-import { EventBus } from "./EventBus.js";
+import { EventBus } from './EventBus.js';
 import SaveTranslations from './components/SaveTranslations.vue';
 import TranslationsList from './components/TranslationsList.vue';
 
 Vue.prototype.$csrfTokenName = window.csrfTokenName;
 Vue.prototype.$csrfTokenValue = window.csrfTokenValue;
+Vue.prototype.$craft = window.Craft;
 
 new Vue({
   el: '#main',
@@ -12,9 +13,9 @@ new Vue({
     SaveTranslations,
     TranslationsList
   },
-  mounted() {
+  mounted () {
     EventBus.$on('translations-saved', () => {
-      Craft.cp.displayNotice(Craft.t('app', 'Translations saved'));
+      this.$craft.cp.displayNotice(this.$craft.t('app', 'Translations saved'));
     });
   }
 });

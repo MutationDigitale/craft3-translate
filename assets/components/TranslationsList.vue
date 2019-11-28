@@ -1,26 +1,72 @@
 <template>
-    <div>
-        <div class="translate-columns">
-            <div v-for="language in languages" v-bind:key="language.id">
-                <h2>{{ language.displayName }}</h2>
-                <div v-for="(sourceMessage, key) in sourceMessages" v-bind:key="sourceMessage.id" class="field"
-                     :class="{'modified': isModified(sourceMessage, key, language)}">
-                    <div class="heading">
-                        <label :for="sourceMessage.id">
-                            {{ sourceMessage.message }}
-                        </label>
+    <div id="content-container">
+        <div id="content">
+            <div class="toolbar">
+                <div class="flex">
+                    <div class="flex-grow texticon search icon clearable">
+                        <input class="text fullwidth" type="text" autocomplete="off" placeholder="Search"
+                               v-model="search">
+                        <div class="clear hidden" title="Clear"></div>
                     </div>
-                    <div class="input ltr">
-                        <input class="text nicetext fullwidth" type="text"
-                               :id="sourceMessage.id"
-                               v-model="sourceMessage.languages[language.id]"
-                               @change="change()"
-                               @keyup="change()"
-                               data-show-chars-left="" autocomplete="off" placeholder="">
+                </div>
+            </div>
+            <div class="translate-columns-header">
+                <div v-for="language in languages" v-bind:key="language.id">
+                    <h2>{{ language.displayName }}</h2>
+                </div>
+            </div>
+            <div class="translate-columns">
+                <div v-for="language in languages" v-bind:key="language.id">
+                    <div v-for="sourceMessage in displayedSourceMessages" v-bind:key="sourceMessage.id" class="field"
+                         :class="{'modified': isModified(sourceMessage, language)}">
+                        <div class="heading">
+                            <label :for="sourceMessage.id">
+                                {{ sourceMessage.message }}
+                            </label>
+                        </div>
+                        <div class="input ltr">
+                            <input class="text nicetext fullwidth" type="text"
+                                   :id="sourceMessage.id"
+                                   v-model="sourceMessage.languages[language.id]"
+                                   @change="change()"
+                                   @keyup="change()"
+                                   data-show-chars-left="" autocomplete="off" placeholder="">
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
+        <div id="footer">
+            <div class="pagination">
+                <div class="page-info">
+                    {{(page-1)*perPage}}-{{((page-1)*perPage)+displayedSourceMessages.length}} {{t('translations')}} /
+                    {{filteredSourceMessages.length}}
+                </div>
+
+                <div v-if="pages.length > 1">
+                    <button class="btn page-link" type="button"
+                            :disabled="page === 1" @click="page = 1">«
+                    </button>
+                    <button class="btn page-link" type="button" data-icon="leftangle"
+                            :disabled="page === 1" @click="page--"></button>
+
+                    <button class="btn page-link" type="button"
+                            :class="{'active': pageNumber === page}"
+                            v-for="pageNumber in pages.slice(page < 5 ? 0 : page - 5, page+5)"
+                            v-bind:key="pageNumber"
+                            @click="page = pageNumber">
+                        {{pageNumber}}
+                    </button>
+
+                    <button class="btn page-link" type="button" data-icon="rightangle"
+                            :disabled="page === pages.length" @click="page++"></button>
+                    <button class="btn page-link" type="button"
+                            :disabled="page === pages.length" @click="page = pages.length">»
+                    </button>
+                </div>
+            </div>
+        </div>
+
     </div>
 </template>
 
@@ -33,9 +79,13 @@ export default {
     return {
       isLoading: false,
       isSaving: false,
+      search: '',
       languages: [],
       originalSourceMessages: [],
       sourceMessages: [],
+      page: 1,
+      perPage: 20,
+      pages: []
     };
   },
   mounted () {
@@ -44,6 +94,22 @@ export default {
     EventBus.$on('translations-saved', () => {
       this.originalSourceMessages = this.copyObj(this.sourceMessages);
     });
+  },
+  computed: {
+    filteredSourceMessages () {
+      return this.sourceMessages.filter((sourceMessage) => {
+        if (sourceMessage.message === null || this.search === null) return true;
+        return sourceMessage.message.toLowerCase().trim().includes(this.search.toLowerCase().trim());
+      });
+    },
+    displayedSourceMessages () {
+      return this.paginate(this.filteredSourceMessages);
+    }
+  },
+  watch: {
+    filteredSourceMessages () {
+      this.setPages();
+    }
   },
   methods: {
     getTranslations: function () {
@@ -63,12 +129,26 @@ export default {
           this.isLoading = false;
         });
     },
+    setPages () {
+      let numberOfPages = Math.ceil(this.filteredSourceMessages.length / this.perPage);
+      this.pages = [];
+      for (let index = 1; index <= numberOfPages; index++) {
+        this.pages.push(index);
+      }
+    },
+    paginate (sourceMessages) {
+      let page = this.page;
+      let perPage = this.perPage;
+      let from = (page * perPage) - perPage;
+      let to = (page * perPage);
+      return sourceMessages.slice(from, to);
+    },
     change: function () {
       let sourceMessages = null;
 
-      this.sourceMessages.forEach((sourceMessage, key) => {
+      this.sourceMessages.forEach((sourceMessage) => {
         this.languages.forEach((language) => {
-          if (this.isModified(sourceMessage, key, language)) {
+          if (this.isModified(sourceMessage, language)) {
             if (sourceMessages === null) {
               sourceMessages = [];
             }
@@ -84,17 +164,29 @@ export default {
 
       EventBus.$emit('translations-modified', sourceMessages);
     },
-    isModified: function (sourceMessage, key, language) {
-      const originalValue = this.originalSourceMessages[key].languages[language.id];
-      const newValue = sourceMessage.languages[language.id];
+    isModified: function (sourceMessage, language) {
+      const originalSourceMessage = this.originalSourceMessages.find(obj => {
+        return obj.id === sourceMessage.id;
+      });
+      let originalValue = originalSourceMessage.languages[language.id];
+      if (originalValue !== null) {
+        originalValue = originalValue.trim();
+      }
+      let newValue = sourceMessage.languages[language.id];
+      if (newValue !== null) {
+        newValue = newValue.trim();
+      }
       if ((originalValue === '' || originalValue === null) &&
-        newValue === '' || newValue === null) {
+        (newValue === '' || newValue === null)) {
         return false;
       }
       return originalValue !== newValue;
     },
-    copyObj: function(obj) {
+    copyObj: function (obj) {
       return JSON.parse(JSON.stringify(obj));
+    },
+    t: function (str) {
+      return this.$craft.t('app', str);
     }
   }
 };
@@ -105,18 +197,50 @@ export default {
     content: ' *';
 }
 
-.modified .text {
-    border-color: black;
+.modified .text:not(:focus) {
+    border-color: rgba(0, 0, 20, 0.5);
 }
 
+.translate-columns-header {
+    background: #fff;
+    padding-bottom: 24px;
+}
+
+.translate-columns-header,
 .translate-columns {
     display: flex;
     margin: 0 -12px;
 }
 
+.translate-columns-header > *,
 .translate-columns > * {
     flex-grow: 1;
     flex-basis: 0;
     margin: 0 12px;
+}
+
+.pagination {
+    padding: 8px 0;
+    display: flex;
+    align-items: center;
+}
+
+.pagination .page-info {
+    margin-right: auto;
+    padding: 6px 0;
+}
+
+.pagination .page-link {
+    margin-left: 12px;
+}
+
+.pagination .page-link.active {
+    pointer-events: none;
+    background: rgba(0, 0, 20, 0.1);
+}
+
+.pagination .page-link:disabled {
+    pointer-events: none;
+    opacity: 0.5;
 }
 </style>
