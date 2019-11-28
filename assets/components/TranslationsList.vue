@@ -259,6 +259,7 @@ export default {
 .translate-columns-header,
 .translate-columns {
     display: flex;
+    margin: 0 -12px;
 }
 
 .translate-columns-header > *,
@@ -267,8 +268,8 @@ export default {
     flex-basis: 0;
 }
 
-.translate-columns {
-    margin: 0 -12px;
+.translate-columns-header > * {
+    padding: 0 12px;
 }
 
 .translate-table {
