@@ -1,0 +1,4 @@
+#main-container #crumbs.empty + #main #header {
+    padding-top: 24px;
+    padding-bottom: 24px;
+}

@@ -1,38 +1,44 @@
 <template>
     <div id="content-container">
         <div id="content">
-            <div class="toolbar">
-                <div class="flex">
-                    <div class="flex-grow texticon search icon clearable">
-                        <input class="text fullwidth" type="text" autocomplete="off" placeholder="Search"
-                               v-model="search">
-                        <div class="clear hidden" title="Clear"></div>
+            <div class="content-header">
+                <div class="toolbar">
+                    <div class="flex">
+                        <div class="flex-grow texticon search icon clearable">
+                            <input class="text fullwidth" type="text" autocomplete="off" placeholder="Search"
+                                   v-model="search">
+                            <div class="clear hidden" title="Clear"></div>
+                        </div>
                     </div>
                 </div>
-            </div>
-            <div class="translate-columns-header">
-                <div v-for="language in languages" v-bind:key="language.id">
-                    <h2>{{ language.displayName }}</h2>
+                <div class="translate-columns-header">
+                    <div v-for="language in languages" v-bind:key="language.id">
+                        <h2>{{ language.displayName }}</h2>
+                    </div>
                 </div>
             </div>
             <div class="translate-columns">
                 <div v-for="language in languages" v-bind:key="language.id">
-                    <div v-for="sourceMessage in displayedSourceMessages" v-bind:key="sourceMessage.id" class="field"
-                         :class="{'modified': isModified(sourceMessage, language)}">
-                        <div class="heading">
-                            <label :for="sourceMessage.id">
-                                {{ sourceMessage.message }}
-                            </label>
-                        </div>
-                        <div class="input ltr">
-                            <input class="text nicetext fullwidth" type="text"
-                                   :id="sourceMessage.id"
-                                   v-model="sourceMessage.languages[language.id]"
-                                   @change="change()"
-                                   @keyup="change()"
-                                   data-show-chars-left="" autocomplete="off" placeholder="">
-                        </div>
-                    </div>
+                    <table class="translate-table">
+                        <tbody>
+                        <tr v-for="sourceMessage in displayedSourceMessages" v-bind:key="sourceMessage.id"
+                            :class="{'modified': isModified(sourceMessage, language)}">
+                            <td>
+                                <label :for="sourceMessage.id">
+                                    {{ sourceMessage.message }}
+                                </label>
+                            </td>
+                            <td>
+                                <input class="text nicetext fullwidth" type="text"
+                                       :id="sourceMessage.id"
+                                       v-model="sourceMessage.languages[language.id]"
+                                       @change="change()"
+                                       @keyup="change()"
+                                       data-show-chars-left="" autocomplete="off" placeholder="">
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
@@ -84,7 +90,7 @@ export default {
       originalSourceMessages: [],
       sourceMessages: [],
       page: 1,
-      perPage: 20,
+      perPage: 30,
       pages: []
     };
   },
@@ -93,6 +99,31 @@ export default {
 
     EventBus.$on('translations-saved', () => {
       this.originalSourceMessages = this.copyObj(this.sourceMessages);
+    });
+
+    const adjustment = 12;
+    const content = document.querySelector('#content');
+    const contentHeader = document.querySelector('.content-header');
+    const translateColumns = document.querySelector('.translate-columns');
+    let stuck = false;
+    const stickPoint = contentHeader.offsetTop;
+
+    content.addEventListener('scroll', () => {
+      const distance = contentHeader.offsetTop - (content.offsetTop + content.scrollTop);
+      const offset = (content.offsetTop + content.scrollTop);
+      if ((distance <= adjustment) && !stuck) {
+        contentHeader.classList.add('fixed');
+        contentHeader.style.top = content.offsetTop + 'px';
+        contentHeader.style.width = this.getElementContentWidth(content) + 'px';
+        translateColumns.style.paddingTop = (contentHeader.clientHeight - adjustment) + 'px';
+        stuck = true;
+      } else if (stuck && (offset <= (stickPoint - adjustment))) {
+        contentHeader.classList.remove('fixed');
+        contentHeader.style.top = '';
+        contentHeader.style.width = '';
+        translateColumns.style.paddingTop = '';
+        stuck = false;
+      }
     });
   },
   computed: {
@@ -187,36 +218,82 @@ export default {
     },
     t: function (str) {
       return this.$craft.t('app', str);
+    },
+    getElementContentWidth: function (element) {
+      const styles = window.getComputedStyle(element);
+      const padding = parseFloat(styles.paddingLeft) + parseFloat(styles.paddingRight);
+
+      return element.clientWidth - padding;
     }
   }
 };
 </script>
 
 <style scoped>
-.modified label::after {
-    content: ' *';
+.content-header {
+    background: #fff;
+    margin: 0 -12px;
+    padding-left: 12px;
+    padding-right: 12px;
 }
 
-.modified .text:not(:focus) {
-    border-color: rgba(0, 0, 20, 0.5);
+.content-header.fixed {
+    position: fixed;
+    z-index: 1;
+    padding-top: 12px;
+}
+
+.toolbar {
+    margin-bottom: 12px;
+}
+
+.toolbar .flex:not(.flex-nowrap) > * {
+    margin-bottom: 0;
 }
 
 .translate-columns-header {
     background: #fff;
-    padding-bottom: 24px;
+    padding-bottom: 12px;
 }
 
 .translate-columns-header,
 .translate-columns {
     display: flex;
-    margin: 0 -12px;
 }
 
 .translate-columns-header > *,
 .translate-columns > * {
     flex-grow: 1;
     flex-basis: 0;
-    margin: 0 12px;
+}
+
+.translate-columns {
+    margin: 0 -12px;
+}
+
+.translate-table {
+    width: 100%;
+}
+
+.translate-table td {
+    padding: 6px 12px;
+}
+
+.translate-table tr:nth-child(2n) td {
+    background-color: #fafbfc;
+}
+
+.translate-table label {
+    font-weight: bold;
+    color: #576575;
+}
+
+.translate-table tr.modified td {
+    background-color: #fcfbe2;
+}
+
+.modified label::after {
+    content: ' *';
 }
 
 .pagination {

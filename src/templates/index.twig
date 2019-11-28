@@ -12,17 +12,17 @@
     {% set title = "Translate" | t('translate') %}
 {% endif %}
 
-{% block foot %}
-    <script>
-    window.csrfTokenName = "{{ craft.app.config.general.csrfTokenName|e('js') }}";
-    window.csrfTokenValue = "{{ craft.app.request.csrfToken|e('js') }}";
-    </script>
-{% endblock %}
-
 {% block actionButton %}
     <save-translations></save-translations>
 {% endblock %}
 
 {% block main %}
     <translations-list></translations-list>
+{% endblock %}
+
+{% block foot %}
+    <script>
+    window.csrfTokenName = "{{ craft.app.config.general.csrfTokenName|e('js') }}";
+    window.csrfTokenValue = "{{ craft.app.request.csrfToken|e('js') }}";
+    </script>
 {% endblock %}
