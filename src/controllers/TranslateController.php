@@ -18,13 +18,35 @@ class TranslateController extends Controller
 
         $this->view->registerAssetBundle(TranslateBundle::class);
 
+        $this->renderTemplate('translate/index');
+    }
+
+    public function actionGetTranslations()
+    {
+        $this->requirePermission(Translate::UPDATE_TRANSLATIONS_PERMISSION);
+
         $sourceMessages = SourceMessage::find()
             ->where(array('category' => 'site'))
             ->all();
 
-        $this->renderTemplate('translate/index', array(
-            'sourceMessages' => $sourceMessages
-        ));
+        $languages = Craft::$app->i18n->getSiteLocales();
+        sort($languages);
+
+        return $this->asJson([
+            'languages' => array_map(function ($lang) {
+                return [
+                    'id' => $lang->id,
+                    'displayName' => $lang->displayName
+                ];
+            }, $languages),
+            'sourceMessages' => array_map(function ($sourceMessage) {
+                return [
+                    'id' => $sourceMessage->id,
+                    'message' => $sourceMessage->message,
+                    'languages' => $sourceMessage->languages
+                ];
+            }, $sourceMessages),
+        ]);
     }
 
     public function actionSave()

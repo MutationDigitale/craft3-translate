@@ -18,6 +18,10 @@ class TranslateBundle extends AssetBundle
             'styles.css',
         ];
 
+        $this->js = [
+            'main.js'
+        ];
+
         parent::init();
     }
 }

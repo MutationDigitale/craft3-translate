@@ -1,36 +1,20 @@
 {% extends "_layouts/cp" %}
 
-{% set fullPageForm = true %}
-
 {% if title is not defined %}
     {% set title = "Translate" | t('translate') %}
 {% endif %}
 
-{% block content %}
-	<input type="hidden" name="action" value="translate/translate/save">
-    {{ csrfInput() }}
+{% block foot %}
+    <script>
+    window.csrfTokenName = "{{ craft.app.config.general.csrfTokenName|e('js') }}";
+    window.csrfTokenValue = "{{ craft.app.request.csrfToken|e('js') }}";
+    </script>
+{% endblock %}
 
-	<div class="translate-columns">
-		{% for language in craft.app.i18n.getSiteLocales() | sort %}
-			<div>
-				<h2>{{ language.displayName }}</h2>
-				{% for sourceMessage in sourceMessages %}
-					<div class="field">
-						<div class="heading">
-							<label for="{{ sourceMessage.id }}">
-								{{ sourceMessage.message }}
-							</label>
-						</div>
-						<div class="input ltr">
-							<input class="text nicetext fullwidth" type="text"
-								   id="{{ sourceMessage.id }}"
-								   name="translations[{{ language.id }}][{{ sourceMessage.id }}]"
-								   value="{{ sourceMessage.languages[language.id] }}"
-								   data-show-chars-left="" autocomplete="off" placeholder="">
-						</div>
-					</div>
-				{% endfor %}
-			</div>
-		{% endfor %}
-	</div>
+{% block actionButton %}
+    <save-translations></save-translations>
+{% endblock %}
+
+{% block content %}
+    <translations-list></translations-list>
 {% endblock %}
