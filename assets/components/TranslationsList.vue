@@ -1,6 +1,6 @@
 <template>
     <div id="content-container">
-        <div id="content">
+        <div id="content" ref="content">
             <div class="content-header">
                 <div class="toolbar">
                     <div class="flex">
@@ -46,23 +46,27 @@
 
                 <div v-if="pages.length > 1">
                     <button class="btn page-link" type="button"
-                            :disabled="page === 1" @click="page = 1">«
+                            :disabled="page === 1"
+                            @click="setPage(1)">«
                     </button>
                     <button class="btn page-link" type="button" data-icon="leftangle"
-                            :disabled="page === 1" @click="page--"></button>
+                            :disabled="page === 1"
+                            @click="setPage(page-1)"></button>
 
                     <button class="btn page-link" type="button"
                             :class="{'active': pageNumber === page}"
                             v-for="pageNumber in pages.slice(page < 5 ? 0 : page - 5, page+5)"
                             v-bind:key="pageNumber"
-                            @click="page = pageNumber">
+                            @click="setPage(pageNumber)">
                         {{pageNumber}}
                     </button>
 
                     <button class="btn page-link" type="button" data-icon="rightangle"
-                            :disabled="page === pages.length" @click="page++"></button>
+                            :disabled="page === pages.length"
+                            @click="setPage(page+1)"></button>
                     <button class="btn page-link" type="button"
-                            :disabled="page === pages.length" @click="page = pages.length">»
+                            :disabled="page === pages.length"
+                            @click="setPage(pages.length)">»
                     </button>
                 </div>
             </div>
@@ -185,6 +189,10 @@ export default {
       }
       return originalValue !== newValue;
     },
+    setPage: function (nb) {
+      this.page = nb;
+      this.$refs.content.scrollTop = 0;
+    },
     stickyElements: function () {
       const content = document.querySelector('#content');
       const contentHeader = document.querySelector('.content-header');
@@ -279,6 +287,10 @@ export default {
     padding: 6px 12px;
     background-color: #fff;
     width: 33.3333%;
+}
+
+.translate-table tr td:first-child {
+    line-height: 1.2em;
 }
 
 .translate-table tr:nth-child(2n) td {
