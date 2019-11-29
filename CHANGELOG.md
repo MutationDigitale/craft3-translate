@@ -8,6 +8,7 @@
 ### Changed
 - Performance improvements to loading message
 - Performance improvements to search
+- Performance improvements to save
 
 ### Fixed
 - Css fixed for older Craft versions

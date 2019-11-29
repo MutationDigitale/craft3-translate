@@ -10,7 +10,8 @@
                             <div class="clear hidden" title="Clear"></div>
                         </div>
                         <div>
-                            <div class="btn" role="checkbox" tabindex="0" :aria-checked="emptyMessages ? 'true' : 'false'"
+                            <div class="btn" role="checkbox" tabindex="0"
+                                 :aria-checked="emptyMessages ? 'true' : 'false'"
                                  @click="toggleEmptyMessages()">
                                 <div class="checkbox" :class="{'checked': emptyMessages}"></div>
                                 <span>{{ t('Empty translations') }}</span>
@@ -127,6 +128,7 @@ export default {
 
     EventBus.$on('translations-saved', () => {
       this.originalSourceMessages = this.copyObj(this.sourceMessages);
+      this.change();
     });
 
     this.stickyElements();
@@ -221,7 +223,7 @@ export default {
           this.isDeleting = false;
         });
     },
-    toggleEmptyMessages() {
+    toggleEmptyMessages () {
       this.emptyMessages = !this.emptyMessages;
     },
     setPages () {
@@ -290,9 +292,7 @@ export default {
       EventBus.$emit('translations-modified', sourceMessages);
     },
     isModified (sourceMessage, language) {
-      const originalSourceMessage = this.originalSourceMessages.find(obj => {
-        return obj.id === sourceMessage.id;
-      });
+      let originalSourceMessage = this.originalSourceMessages[this.sourceMessages.indexOf(sourceMessage)];
       let originalValue = originalSourceMessage.languages[language.id];
       if (originalValue !== null) {
         originalValue = originalValue.trim();
