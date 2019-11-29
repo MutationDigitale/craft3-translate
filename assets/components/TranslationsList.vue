@@ -216,7 +216,7 @@ export default {
       for (let index = 1; index <= numberOfPages; index++) {
         this.pages.push(index);
       }
-      if (this.page > this.pages.length) {
+      if (this.page > this.pages.length && this.pages.length > 0) {
         this.page = this.pages.length;
       }
     },
