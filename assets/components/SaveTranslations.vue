@@ -41,10 +41,16 @@ export default {
 
       axios
         .post('', formData)
-        .then(() => {
-          EventBus.$emit('translations-saved');
+        .then((response) => {
+          if (response.data.success) {
+            EventBus.$emit('translations-saved');
+          }
+          else {
+            EventBus.$emit('translations-saved-error');
+          }
         })
         .catch((error) => {
+          EventBus.$emit('translations-saved-error');
           console.log(error);
         })
         .finally(() => {

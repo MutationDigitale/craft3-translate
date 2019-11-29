@@ -17,5 +17,14 @@ new Vue({
     EventBus.$on('translations-saved', () => {
       this.$craft.cp.displayNotice(this.$craft.t('app', 'Translations saved'));
     });
+    EventBus.$on('translations-saved-error', () => {
+      this.$craft.cp.displayError(this.$craft.t('app', 'Translations not saved'));
+    });
+    EventBus.$on('translation-added', () => {
+      this.$craft.cp.displayNotice(this.$craft.t('app', 'Translation added'));
+    });
+    EventBus.$on('translation-added-error', () => {
+      this.$craft.cp.displayError(this.$craft.t('app', 'Translation not added'));
+    });
   }
 });

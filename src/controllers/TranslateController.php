@@ -49,6 +49,34 @@ class TranslateController extends Controller
         ]);
     }
 
+    public function actionAdd()
+    {
+        $this->requirePostRequest();
+        $this->requirePermission(Translate::UPDATE_TRANSLATIONS_PERMISSION);
+
+        $message = Craft::$app->request->getRequiredBodyParam('message');
+        $category = 'site';
+
+        $sourceMessage = SourceMessage::find()
+            ->where(array('message' => $message, 'category' => $category))
+            ->one();
+
+        if ($sourceMessage) {
+            return $this->asJson([
+                'success' => false
+            ]);
+        }
+
+        $sourceMessage = new SourceMessage();
+        $sourceMessage->category = $category;
+        $sourceMessage->message = $message;
+        $success = $sourceMessage->save();
+
+        return $this->asJson([
+            'success' => $success
+        ]);
+    }
+
     public function actionSave()
     {
         $this->requirePostRequest();

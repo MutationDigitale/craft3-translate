@@ -9,10 +9,17 @@
                                    v-model="search">
                             <div class="clear hidden" title="Clear"></div>
                         </div>
+                        <div>
+                            <input class="text" type="text" v-model="messageToAdd" :placeholder="t('Message')">
+                            <button class="btn" type="button" @click="addMessage()"
+                                    :disabled="messageToAdd === null || messageToAdd.trim() === ''">
+                                {{ t('Add') }}
+                            </button>
+                        </div>
                     </div>
                 </div>
                 <div class="translate-columns-header">
-                    <div>Key</div>
+                    <div>{{ t('Key') }}</div>
                     <div v-for="language in languages" v-bind:key="language.id">
                         {{ language.displayName }}
                     </div>
@@ -83,14 +90,15 @@ export default {
   data () {
     return {
       isLoading: false,
-      isSaving: false,
+      isAdding: false,
       search: '',
       languages: [],
       originalSourceMessages: [],
       sourceMessages: [],
       page: 1,
       perPage: 40,
-      pages: []
+      pages: [],
+      messageToAdd: '',
     };
   },
   mounted () {
@@ -119,7 +127,7 @@ export default {
     }
   },
   methods: {
-    getTranslations: function () {
+    getTranslations () {
       this.isLoading = true;
 
       axios
@@ -136,6 +144,34 @@ export default {
           this.isLoading = false;
         });
     },
+    addMessage () {
+      this.isAdding = true;
+
+      const formData = new FormData();
+
+      formData.append(this.$csrfTokenName, this.$csrfTokenValue);
+      formData.append('action', 'translate/translate/add');
+      formData.append('message', this.messageToAdd);
+
+      axios
+        .post('', formData)
+        .then((response) => {
+          if (response.data.success) {
+            EventBus.$emit('translation-added');
+            this.getTranslations();
+          }
+          else {
+            EventBus.$emit('translation-added-error');
+          }
+        })
+        .catch((error) => {
+          EventBus.$emit('translation-added-error');
+          console.log(error);
+        })
+        .finally(() => {
+          this.isAdding = false;
+        });
+    },
     setPages () {
       let numberOfPages = Math.ceil(this.filteredSourceMessages.length / this.perPage);
       this.pages = [];
@@ -150,7 +186,7 @@ export default {
       let to = (page * perPage);
       return sourceMessages.slice(from, to);
     },
-    change: function () {
+    change () {
       let sourceMessages = null;
 
       this.sourceMessages.forEach((sourceMessage) => {
@@ -171,7 +207,7 @@ export default {
 
       EventBus.$emit('translations-modified', sourceMessages);
     },
-    isModified: function (sourceMessage, language) {
+    isModified (sourceMessage, language) {
       const originalSourceMessage = this.originalSourceMessages.find(obj => {
         return obj.id === sourceMessage.id;
       });
@@ -189,11 +225,11 @@ export default {
       }
       return originalValue !== newValue;
     },
-    setPage: function (nb) {
+    setPage (nb) {
       this.page = nb;
       this.$refs.content.scrollTop = 0;
     },
-    stickyElements: function () {
+    stickyElements () {
       const content = document.querySelector('#content');
       const contentHeader = document.querySelector('.content-header');
       const translateTable = document.querySelector('.translate-table');
@@ -218,13 +254,13 @@ export default {
         }
       });
     },
-    copyObj: function (obj) {
+    copyObj (obj) {
       return JSON.parse(JSON.stringify(obj));
     },
-    t: function (str) {
+    t (str) {
       return this.$craft.t('app', str);
     },
-    getElementContentWidth: function (element) {
+    getElementContentWidth (element) {
       const styles = window.getComputedStyle(element);
       const padding = parseFloat(styles.paddingLeft) + parseFloat(styles.paddingRight);
 
@@ -303,6 +339,11 @@ export default {
 
 .translate-table tr td.modified {
     background-color: #fcfbe2;
+}
+
+.btn:disabled {
+    pointer-events: none;
+    opacity: 0.5;
 }
 
 .pagination {
