@@ -122,8 +122,21 @@ export default {
   computed: {
     filteredSourceMessages () {
       return this.sourceMessages.filter((sourceMessage) => {
-        if (sourceMessage.message === null || this.search === null) return true;
-        return sourceMessage.message.toLowerCase().trim().includes(this.search.toLowerCase().trim());
+        if (sourceMessage.message === null || this.search === null) {
+          return true;
+        }
+        const search = this.search.toLowerCase().trim();
+        let foundLanguage = false;
+        this.languages.forEach((language) => {
+          if (sourceMessage.languages[language.id] !== null &&
+            sourceMessage.languages[language.id].toLowerCase().trim().includes(search)) {
+            foundLanguage = true;
+          }
+        });
+        if (foundLanguage) {
+          return true;
+        }
+        return sourceMessage.message.toLowerCase().trim().includes(search);
       });
     },
     displayedSourceMessages () {
@@ -168,8 +181,7 @@ export default {
           if (response.data.success) {
             EventBus.$emit('translation-added');
             this.getTranslations();
-          }
-          else {
+          } else {
             EventBus.$emit('translation-added-error');
           }
         })
@@ -182,7 +194,7 @@ export default {
           this.messageToAdd = '';
         });
     },
-    deleteMessage(messageId) {
+    deleteMessage (messageId) {
       this.isDeleting = true;
 
       const formData = new FormData();
@@ -197,8 +209,7 @@ export default {
           if (response.data.success) {
             EventBus.$emit('translation-deleted');
             this.getTranslations();
-          }
-          else {
+          } else {
             EventBus.$emit('translation-deleted-error');
           }
         })
