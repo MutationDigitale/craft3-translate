@@ -77,6 +77,24 @@ class TranslateController extends Controller
         ]);
     }
 
+    public function actionDelete()
+    {
+        $this->requirePostRequest();
+        $this->requirePermission(Translate::UPDATE_TRANSLATIONS_PERMISSION);
+
+        $id = Craft::$app->request->getRequiredBodyParam('sourceMessageId');
+
+        $sourceMessage = SourceMessage::find()
+            ->where(array('id' => $id))
+            ->one();
+
+        $success = $sourceMessage->delete();
+
+        return $this->asJson([
+            'success' => $success
+        ]);
+    }
+
     public function actionSave()
     {
         $this->requirePostRequest();

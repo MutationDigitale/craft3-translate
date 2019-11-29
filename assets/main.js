@@ -26,5 +26,11 @@ new Vue({
     EventBus.$on('translation-added-error', () => {
       this.$craft.cp.displayError(this.$craft.t('app', 'Translation not added'));
     });
+    EventBus.$on('translation-deleted', () => {
+      this.$craft.cp.displayNotice(this.$craft.t('app', 'Translation deleted'));
+    });
+    EventBus.$on('translation-deleted-error', () => {
+      this.$craft.cp.displayError(this.$craft.t('app', 'Translation not deleted'));
+    });
   }
 });

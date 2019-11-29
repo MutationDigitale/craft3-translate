@@ -19,26 +19,34 @@
                     </div>
                 </div>
                 <div class="translate-columns-header">
-                    <div>{{ t('Key') }}</div>
-                    <div v-for="language in languages" v-bind:key="language.id">
+                    <div :style="'width: ' + (94/(languages.length + 1)) + '%'">{{ t('Key') }}</div>
+                    <div v-for="language in languages" v-bind:key="language.id"
+                         :style="'width: ' + (94/(languages.length + 1)) + '%'">
                         {{ language.displayName }}
                     </div>
+                    <div style="width: 6%">{{ t('Actions') }}</div>
                 </div>
             </div>
             <table class="translate-table">
                 <tbody>
                 <tr v-for="sourceMessage in displayedSourceMessages" v-bind:key="sourceMessage.id">
-                    <td>
+                    <td :width="(94/(languages.length + 1)) + '%'">
                         <span>{{ sourceMessage.message }}</span>
                     </td>
 
                     <td v-for="language in languages" v-bind:key="language.id"
-                        :class="{'modified': isModified(sourceMessage, language)}">
+                        :class="{'modified': isModified(sourceMessage, language)}"
+                        :width="(94/(languages.length + 1)) + '%'">
                         <input class="text nicetext fullwidth" type="text"
                                v-model="sourceMessage.languages[language.id]"
                                @change="change()"
                                @keyup="change()"
                                data-show-chars-left="" autocomplete="off" placeholder="">
+                    </td>
+
+                    <td width="6%">
+                        <button type="button" class="btn" data-icon="trash"
+                                @click="deleteMessage(sourceMessage.id)"></button>
                     </td>
                 </tr>
                 </tbody>
@@ -91,6 +99,7 @@ export default {
     return {
       isLoading: false,
       isAdding: false,
+      isDeleting: false,
       search: '',
       languages: [],
       originalSourceMessages: [],
@@ -170,6 +179,35 @@ export default {
         })
         .finally(() => {
           this.isAdding = false;
+          this.messageToAdd = '';
+        });
+    },
+    deleteMessage(messageId) {
+      this.isDeleting = true;
+
+      const formData = new FormData();
+
+      formData.append(this.$csrfTokenName, this.$csrfTokenValue);
+      formData.append('action', 'translate/translate/delete');
+      formData.append('sourceMessageId', messageId);
+
+      axios
+        .post('', formData)
+        .then((response) => {
+          if (response.data.success) {
+            EventBus.$emit('translation-deleted');
+            this.getTranslations();
+          }
+          else {
+            EventBus.$emit('translation-deleted-error');
+          }
+        })
+        .catch((error) => {
+          EventBus.$emit('translation-deleted-error');
+          console.log(error);
+        })
+        .finally(() => {
+          this.isDeleting = false;
         });
     },
     setPages () {
@@ -177,6 +215,9 @@ export default {
       this.pages = [];
       for (let index = 1; index <= numberOfPages; index++) {
         this.pages.push(index);
+      }
+      if (this.page > this.pages.length) {
+        this.page = this.pages.length;
       }
     },
     paginate (sourceMessages) {
@@ -305,8 +346,9 @@ export default {
 }
 
 .translate-columns-header > * {
-    flex-grow: 1;
-    flex-basis: 0;
+    flex-shrink: 0;
+    flex-grow: 0;
+    box-sizing: border-box;
 }
 
 .translate-columns-header > * {
@@ -318,11 +360,10 @@ export default {
     margin: 0 -12px 12px -12px;
 }
 
-.translate-table td,
-.translate-table th {
+.translate-table td {
     padding: 6px 12px;
     background-color: #fff;
-    width: 33.3333%;
+    box-sizing: border-box;
 }
 
 .translate-table tr td:first-child {
