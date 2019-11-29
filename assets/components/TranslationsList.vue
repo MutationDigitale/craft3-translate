@@ -12,35 +12,30 @@
                     </div>
                 </div>
                 <div class="translate-columns-header">
+                    <div>Key</div>
                     <div v-for="language in languages" v-bind:key="language.id">
-                        <h2>{{ language.displayName }}</h2>
+                        {{ language.displayName }}
                     </div>
                 </div>
             </div>
-            <div class="translate-columns">
-                <div v-for="language in languages" v-bind:key="language.id">
-                    <table class="translate-table">
-                        <tbody>
-                        <tr v-for="sourceMessage in displayedSourceMessages" v-bind:key="sourceMessage.id"
-                            :class="{'modified': isModified(sourceMessage, language)}">
-                            <td>
-                                <label :for="sourceMessage.id">
-                                    {{ sourceMessage.message }}
-                                </label>
-                            </td>
-                            <td>
-                                <input class="text nicetext fullwidth" type="text"
-                                       :id="sourceMessage.id"
-                                       v-model="sourceMessage.languages[language.id]"
-                                       @change="change()"
-                                       @keyup="change()"
-                                       data-show-chars-left="" autocomplete="off" placeholder="">
-                            </td>
-                        </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+            <table class="translate-table">
+                <tbody>
+                <tr v-for="sourceMessage in displayedSourceMessages" v-bind:key="sourceMessage.id">
+                    <td>
+                        <span>{{ sourceMessage.message }}</span>
+                    </td>
+
+                    <td v-for="language in languages" v-bind:key="language.id"
+                        :class="{'modified': isModified(sourceMessage, language)}">
+                        <input class="text nicetext fullwidth" type="text"
+                               v-model="sourceMessage.languages[language.id]"
+                               @change="change()"
+                               @keyup="change()"
+                               data-show-chars-left="" autocomplete="off" placeholder="">
+                    </td>
+                </tr>
+                </tbody>
+            </table>
         </div>
         <div id="footer">
             <div class="pagination">
@@ -90,7 +85,7 @@ export default {
       originalSourceMessages: [],
       sourceMessages: [],
       page: 1,
-      perPage: 30,
+      perPage: 40,
       pages: []
     };
   },
@@ -101,30 +96,7 @@ export default {
       this.originalSourceMessages = this.copyObj(this.sourceMessages);
     });
 
-    const adjustment = 12;
-    const content = document.querySelector('#content');
-    const contentHeader = document.querySelector('.content-header');
-    const translateColumns = document.querySelector('.translate-columns');
-    let stuck = false;
-    const stickPoint = contentHeader.offsetTop;
-
-    content.addEventListener('scroll', () => {
-      const distance = contentHeader.offsetTop - (content.offsetTop + content.scrollTop);
-      const offset = (content.offsetTop + content.scrollTop);
-      if ((distance <= adjustment) && !stuck) {
-        contentHeader.classList.add('fixed');
-        contentHeader.style.top = content.offsetTop + 'px';
-        contentHeader.style.width = this.getElementContentWidth(content) + 'px';
-        translateColumns.style.paddingTop = (contentHeader.clientHeight - adjustment) + 'px';
-        stuck = true;
-      } else if (stuck && (offset <= (stickPoint - adjustment))) {
-        contentHeader.classList.remove('fixed');
-        contentHeader.style.top = '';
-        contentHeader.style.width = '';
-        translateColumns.style.paddingTop = '';
-        stuck = false;
-      }
-    });
+    this.stickyElements();
   },
   computed: {
     filteredSourceMessages () {
@@ -213,6 +185,31 @@ export default {
       }
       return originalValue !== newValue;
     },
+    stickyElements: function () {
+      const content = document.querySelector('#content');
+      const contentHeader = document.querySelector('.content-header');
+      const translateTable = document.querySelector('.translate-table');
+      let stuck = false;
+      const stickPoint = contentHeader.offsetTop;
+
+      content.addEventListener('scroll', () => {
+        const distance = contentHeader.offsetTop - (content.offsetTop + content.scrollTop);
+        const offset = (content.offsetTop + content.scrollTop);
+        if ((distance <= 0) && !stuck) {
+          contentHeader.classList.add('fixed');
+          contentHeader.style.top = content.offsetTop + 'px';
+          contentHeader.style.width = this.getElementContentWidth(content) + 'px';
+          translateTable.style.paddingTop = contentHeader.clientHeight + 'px';
+          stuck = true;
+        } else if (stuck && (offset <= stickPoint)) {
+          contentHeader.classList.remove('fixed');
+          contentHeader.style.top = '';
+          contentHeader.style.width = '';
+          translateTable.style.paddingTop = '';
+          stuck = false;
+        }
+      });
+    },
     copyObj: function (obj) {
       return JSON.parse(JSON.stringify(obj));
     },
@@ -230,17 +227,19 @@ export default {
 </script>
 
 <style scoped>
+#main-container #main #main-content #content-container #content {
+    padding-top: 12px;
+}
+
 .content-header {
     background: #fff;
     margin: 0 -12px;
-    padding-left: 12px;
-    padding-right: 12px;
+    padding: 12px;
 }
 
 .content-header.fixed {
     position: fixed;
     z-index: 1;
-    padding-top: 12px;
 }
 
 .toolbar {
@@ -253,17 +252,15 @@ export default {
 
 .translate-columns-header {
     background: #fff;
-    padding-bottom: 12px;
 }
 
-.translate-columns-header,
-.translate-columns {
+.translate-columns-header {
     display: flex;
     margin: 0 -12px;
+    font-weight: bold;
 }
 
-.translate-columns-header > *,
-.translate-columns > * {
+.translate-columns-header > * {
     flex-grow: 1;
     flex-basis: 0;
 }
@@ -273,28 +270,27 @@ export default {
 }
 
 .translate-table {
-    width: 100%;
+    width: calc(100% + 24px);
+    margin: 0 -12px 12px -12px;
 }
 
-.translate-table td {
+.translate-table td,
+.translate-table th {
     padding: 6px 12px;
+    background-color: #fff;
+    width: 33.3333%;
 }
 
 .translate-table tr:nth-child(2n) td {
-    background-color: #fafbfc;
+    background-color: #f8f9fa;
 }
 
-.translate-table label {
-    font-weight: bold;
-    color: #576575;
+.translate-table tr:hover td {
+    background-color: #f3f4f5;
 }
 
-.translate-table tr.modified td {
+.translate-table tr td.modified {
     background-color: #fcfbe2;
-}
-
-.modified label::after {
-    content: ' *';
 }
 
 .pagination {
