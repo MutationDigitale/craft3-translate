@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.3.1 - 2019-11-29
+
+### Added
+- Allow to filter empty translations
+
+### Changed
+- Performance improvements to loading message
+- Performance improvements to search
+
+### Fixed
+- Css fixed for older Craft versions
+
 ## 1.3.0 - 2019-11-29
 
 ### Added

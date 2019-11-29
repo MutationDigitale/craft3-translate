@@ -10,6 +10,13 @@
                             <div class="clear hidden" title="Clear"></div>
                         </div>
                         <div>
+                            <div class="btn" role="checkbox" tabindex="0" :aria-checked="emptyMessages ? 'true' : 'false'"
+                                 @click="toggleEmptyMessages()">
+                                <div class="checkbox" :class="{'checked': emptyMessages}"></div>
+                                <span>{{ t('Empty translations') }}</span>
+                            </div>
+                        </div>
+                        <div>
                             <input class="text" type="text" v-model="messageToAdd" :placeholder="t('Message')">
                             <button class="btn" type="button" @click="addMessage()"
                                     :disabled="messageToAdd === null || messageToAdd.trim() === ''">
@@ -53,7 +60,7 @@
             </table>
         </div>
         <div id="footer">
-            <div class="pagination">
+            <div class="translate-pagination">
                 <div class="page-info">
                     {{(page-1)*perPage}}-{{((page-1)*perPage)+displayedSourceMessages.length}} {{t('translations')}} /
                     {{filteredSourceMessages.length}}
@@ -101,9 +108,12 @@ export default {
       isAdding: false,
       isDeleting: false,
       search: '',
+      emptyMessages: false,
       languages: [],
       originalSourceMessages: [],
       sourceMessages: [],
+      filteredSourceMessages: [],
+      filterSourceMessageDebounceFn: null,
       page: 1,
       perPage: 40,
       pages: [],
@@ -111,6 +121,8 @@ export default {
     };
   },
   mounted () {
+    this.filterSourceMessageDebounceFn = this.debounce(this.filterSourceMessages, 250);
+
     this.getTranslations();
 
     EventBus.$on('translations-saved', () => {
@@ -120,30 +132,17 @@ export default {
     this.stickyElements();
   },
   computed: {
-    filteredSourceMessages () {
-      return this.sourceMessages.filter((sourceMessage) => {
-        if (sourceMessage.message === null || this.search === null) {
-          return true;
-        }
-        const search = this.search.toLowerCase().trim();
-        let foundLanguage = false;
-        this.languages.forEach((language) => {
-          if (sourceMessage.languages[language.id] !== null &&
-            sourceMessage.languages[language.id].toLowerCase().trim().includes(search)) {
-            foundLanguage = true;
-          }
-        });
-        if (foundLanguage) {
-          return true;
-        }
-        return sourceMessage.message.toLowerCase().trim().includes(search);
-      });
-    },
     displayedSourceMessages () {
       return this.paginate(this.filteredSourceMessages);
     }
   },
   watch: {
+    search () {
+      this.filterSourceMessageDebounceFn();
+    },
+    emptyMessages () {
+      this.filterSourceMessages();
+    },
     filteredSourceMessages () {
       this.setPages();
     }
@@ -157,6 +156,7 @@ export default {
         .then((response) => {
           this.languages = response.data.languages;
           this.sourceMessages = response.data.sourceMessages;
+          this.filteredSourceMessages = this.sourceMessages;
           this.originalSourceMessages = this.copyObj(this.sourceMessages);
         })
         .catch((error) => {
@@ -221,6 +221,9 @@ export default {
           this.isDeleting = false;
         });
     },
+    toggleEmptyMessages() {
+      this.emptyMessages = !this.emptyMessages;
+    },
     setPages () {
       let numberOfPages = Math.ceil(this.filteredSourceMessages.length / this.perPage);
       this.pages = [];
@@ -238,11 +241,38 @@ export default {
       let to = (page * perPage);
       return sourceMessages.slice(from, to);
     },
+    filterSourceMessages () {
+      let sourceMessages = this.sourceMessages.filter((sourceMessage) => {
+        if (sourceMessage.message === null || this.search === null) {
+          return true;
+        }
+        const search = this.search.toLowerCase().trim();
+        for (const language of this.languages) {
+          if (sourceMessage.languages[language.id] !== null &&
+            sourceMessage.languages[language.id].toLowerCase().trim().includes(search)) {
+            return true;
+          }
+        }
+        return sourceMessage.message.toLowerCase().trim().includes(search);
+      });
+      if (this.emptyMessages) {
+        sourceMessages = sourceMessages.filter((sourceMessage) => {
+          for (const language of this.languages) {
+            if (sourceMessage.languages[language.id] === null ||
+              sourceMessage.languages[language.id].trim() === '') {
+              return true;
+            }
+          }
+          return false;
+        });
+      }
+      this.filteredSourceMessages = sourceMessages;
+    },
     change () {
       let sourceMessages = null;
 
-      this.sourceMessages.forEach((sourceMessage) => {
-        this.languages.forEach((language) => {
+      for (const sourceMessage of this.sourceMessages) {
+        for (const language of this.languages) {
           if (this.isModified(sourceMessage, language)) {
             if (sourceMessages === null) {
               sourceMessages = [];
@@ -254,8 +284,8 @@ export default {
               ? sourceMessage.languages[language.id]
               : '';
           }
-        });
-      });
+        }
+      }
 
       EventBus.$emit('translations-modified', sourceMessages);
     },
@@ -317,6 +347,20 @@ export default {
       const padding = parseFloat(styles.paddingLeft) + parseFloat(styles.paddingRight);
 
       return element.clientWidth - padding;
+    },
+    debounce (func, wait, immediate) {
+      let timeout;
+      return function () {
+        const context = this, args = arguments;
+        const later = function () {
+          timeout = null;
+          if (!immediate) func.apply(context, args);
+        };
+        const callNow = immediate && !timeout;
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+        if (callNow) func.apply(context, args);
+      };
     }
   }
 };
@@ -369,6 +413,7 @@ export default {
 .translate-table {
     width: calc(100% + 24px);
     margin: 0 -12px 12px -12px;
+    table-layout: fixed;
 }
 
 .translate-table td {
@@ -393,33 +438,46 @@ export default {
     background-color: #fcfbe2;
 }
 
+.btn .checkbox + span {
+    vertical-align: top;
+    display: inline-block;
+    margin-left: 5px;
+}
+
 .btn:disabled {
     pointer-events: none;
     opacity: 0.5;
 }
 
-.pagination {
+.translate-pagination {
     padding: 8px 0;
     display: flex;
     align-items: center;
 }
 
-.pagination .page-info {
+.translate-pagination .page-info {
     margin-right: auto;
     padding: 6px 0;
 }
 
-.pagination .page-link {
+.translate-pagination .page-link {
     margin-left: 12px;
 }
 
-.pagination .page-link.active {
+.translate-pagination .page-link.active {
     pointer-events: none;
     background: rgba(0, 0, 20, 0.1);
 }
 
-.pagination .page-link:disabled {
+.translate-pagination .page-link:disabled {
     pointer-events: none;
     opacity: 0.5;
+}
+
+#footer {
+    z-index: 1;
+    box-shadow: 0 -1px 0 rgba(0, 0, 20, 0.1);
+    padding: 10px 24px;
+    background: #fff;
 }
 </style>

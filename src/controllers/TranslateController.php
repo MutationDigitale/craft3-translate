@@ -3,6 +3,7 @@
 namespace mutation\translate\controllers;
 
 use Craft;
+use craft\db\Query;
 use craft\helpers\UrlHelper;
 use craft\web\Controller;
 use mutation\translate\models\Message;
@@ -25,12 +26,40 @@ class TranslateController extends Controller
     {
         $this->requirePermission(Translate::UPDATE_TRANSLATIONS_PERMISSION);
 
-        $sourceMessages = SourceMessage::find()
-            ->where(array('category' => 'site'))
+        $siteLocales = Craft::$app->i18n->getSiteLocales();
+        sort($siteLocales);
+
+        $rows = (new Query())
+            ->from('{{%source_message}} AS s')
+            ->innerJoin('{{%message}} AS m', 'm.id = s.id')
+            ->where(['s.category' => 'site'])
+            ->limit(null)
             ->all();
 
-        $languages = Craft::$app->i18n->getSiteLocales();
-        sort($languages);
+        $groups = [];
+        foreach ($rows as $row) {
+            $groups[$row['id']][] = $row;
+        }
+
+        $sourceMessages = [];
+        foreach ($groups as $group) {
+            $languages = [];
+            foreach ($group as $item) {
+                $languages[$item['language']] = $item['translation'];
+            }
+            if (count($languages) < count($siteLocales)) {
+                foreach ($siteLocales as $siteLocale) {
+                    if (!array_key_exists($siteLocale->id, $languages)) {
+                        $languages[$siteLocale->id] = '';
+                    }
+                }
+            }
+            $sourceMessages[] = [
+                'id' => $group[0]['id'],
+                'message' => $group[0]['message'],
+                'languages' => $languages
+            ];
+        }
 
         return $this->asJson([
             'languages' => array_map(function ($lang) {
@@ -38,14 +67,8 @@ class TranslateController extends Controller
                     'id' => $lang->id,
                     'displayName' => $lang->displayName
                 ];
-            }, $languages),
-            'sourceMessages' => array_map(function ($sourceMessage) {
-                return [
-                    'id' => $sourceMessage->id,
-                    'message' => $sourceMessage->message,
-                    'languages' => $sourceMessage->languages
-                ];
-            }, $sourceMessages),
+            }, $siteLocales),
+            'sourceMessages' => $sourceMessages,
         ]);
     }
 
