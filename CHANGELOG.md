@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.3.0 - 2019-11-29
+
+### Added
+- Ability to search messages
+- Ability to add a new message
+- Ability to delete a message
+- Pagination
+
+## Changed
+- Improvements to admin UI (everything ajax now)
+
 ## 1.2.7 - 2019-11-27
 
 ### Fixed
