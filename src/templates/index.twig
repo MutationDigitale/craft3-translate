@@ -27,8 +27,33 @@
     <save-translations></save-translations>
 {% endblock %}
 
+{% block sidebar %}
+    {% if categories|length > 1 %}
+        <nav>
+            <ul>
+                {% for cat in categories %}
+                    <li><a{% if cat == category %} class="sel"{% endif %} href="?category={{ cat }}">{{ cat }}</a>
+                    </li>
+                {% endfor %}
+            </ul>
+        </nav>
+    {% endif %}
+{% endblock %}
+
+{% set sidebar = (sidebar ?? block('sidebar') ?? '')|trim %}
+
 {% block main %}
-    <translations-list></translations-list>
+    {% if sidebar is not empty %}
+        <a id="sidebar-toggle">
+            <span id="selected-sidebar-item-label"></span>&nbsp;
+            <span data-icon="downangle"></span>
+        </a>
+        <div id="sidebar" class="sidebar">
+            {{ sidebar|raw }}
+        </div>
+    {% endif %}
+
+    <translations-list category="{{ category }}"></translations-list>
 {% endblock %}
 
 {% block foot %}

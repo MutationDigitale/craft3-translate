@@ -103,6 +103,9 @@ import axios from 'axios';
 import { EventBus } from '../EventBus';
 
 export default {
+  props: {
+    category: String
+  },
   data () {
     return {
       isLoading: false,
@@ -154,7 +157,7 @@ export default {
       this.isLoading = true;
 
       axios
-        .get('/actions/translate/translate/get-translations')
+        .get('/actions/translate/translate/get-translations?category=' + this.category)
         .then((response) => {
           this.languages = response.data.languages;
           this.sourceMessages = response.data.sourceMessages;
@@ -176,6 +179,7 @@ export default {
       formData.append(this.$csrfTokenName, this.$csrfTokenValue);
       formData.append('action', 'translate/translate/add');
       formData.append('message', this.messageToAdd);
+      formData.append('category', this.category);
 
       axios
         .post('', formData)

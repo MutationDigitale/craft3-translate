@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.4.0 - 2019-11-30
+
+### Added
+- Allow multiple categories for translations
+
 ## 1.3.2 - 2019-11-29
 
 ### Fixed

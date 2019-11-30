@@ -1,0 +1,15 @@
+{% import "_includes/forms" as forms %}
+
+{{ forms.editableTableField({
+    label: 'Categories',
+    instructions: '',
+    id: 'categories',
+    name: 'categories',
+    cols: [
+        {
+            heading : 'Category',
+            type: 'singleline'
+        },
+    ],
+    rows: settings['categories']
+}) }}

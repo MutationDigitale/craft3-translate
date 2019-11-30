@@ -19,12 +19,23 @@ class TranslateController extends Controller
 
         $this->view->registerAssetBundle(TranslateBundle::class);
 
-        $this->renderTemplate('translate/index');
+        $categories = Translate::getInstance()->settings->getCategories();
+        $category = Craft::$app->request->getParam('category');
+        if (!$category) {
+            $category = $categories[0];
+        }
+
+        $this->renderTemplate('translate/index', [
+            'category' => $category,
+            'categories' => $categories
+        ]);
     }
 
     public function actionGetTranslations()
     {
         $this->requirePermission(Translate::UPDATE_TRANSLATIONS_PERMISSION);
+
+        $category = Craft::$app->request->getParam('category');
 
         $siteLocales = Craft::$app->i18n->getSiteLocales();
         sort($siteLocales);
@@ -32,7 +43,7 @@ class TranslateController extends Controller
         $rows = (new Query())
             ->from('{{%source_message}} AS s')
             ->innerJoin('{{%message}} AS m', 'm.id = s.id')
-            ->where(['s.category' => 'site'])
+            ->where(['s.category' => $category])
             ->limit(null)
             ->all();
 
@@ -78,7 +89,7 @@ class TranslateController extends Controller
         $this->requirePermission(Translate::UPDATE_TRANSLATIONS_PERMISSION);
 
         $message = Craft::$app->request->getRequiredBodyParam('message');
-        $category = 'site';
+        $category = Craft::$app->request->getRequiredBodyParam('category');
 
         $sourceMessage = SourceMessage::find()
             ->where(array('message' => $message, 'category' => $category))

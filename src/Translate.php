@@ -10,6 +10,7 @@ use craft\i18n\I18N;
 use craft\services\UserPermissions;
 use mutation\translate\controllers\TranslateController;
 use craft\web\UrlManager;
+use mutation\translate\models\Settings;
 use mutation\translate\models\SourceMessage;
 use yii\base\Event;
 use yii\i18n\MessageSource;
@@ -31,16 +32,30 @@ class Translate extends Plugin
         $this->initEvents();
     }
 
+    protected function createSettingsModel()
+    {
+        return new Settings();
+    }
+
+    protected function settingsHtml()
+    {
+        return Craft::$app->getView()->renderTemplate('translate/settings', [
+            'settings' => $this->getSettings()
+        ]);
+    }
+
     private function initDbMessages()
     {
         /** @var I18N $i18n */
         $i18n = Craft::$app->getComponents(false)['i18n'];
 
-        $i18n->translations['site'] = [
-            'class' => DbMessageSource::class,
-            'sourceLanguage' => 'en-US',
-            'forceTranslation' => true,
-        ];
+        foreach ($this->getSettings()->getCategories() as $category) {
+            $i18n->translations[$category] = [
+                'class' => DbMessageSource::class,
+                'sourceLanguage' => 'en-US',
+                'forceTranslation' => true,
+            ];
+        }
 
         Craft::$app->setComponents([
             'i18n' => $i18n
@@ -74,9 +89,8 @@ class Translate extends Plugin
             MessageSource::class,
             MessageSource::EVENT_MISSING_TRANSLATION,
             function (MissingTranslationEvent $event) {
-                if (Craft::$app->request->isSiteRequest &&
-                    $event->message &&
-                    $event->category === 'site') {
+                if ($event->message &&
+                    in_array($event->category, $this->getSettings()->getCategories(), true)) {
                     $sourceMessage = SourceMessage::find()
                         ->where(array('message' => $event->message, 'category' => $event->category))
                         ->one();
