@@ -27,33 +27,12 @@
     <save-translations></save-translations>
 {% endblock %}
 
-{% block sidebar %}
-    {% if categories|length > 1 %}
-        <nav>
-            <ul>
-                {% for cat in categories %}
-                    <li><a{% if cat == category %} class="sel"{% endif %} href="?category={{ cat }}">{{ cat }}</a>
-                    </li>
-                {% endfor %}
-            </ul>
-        </nav>
-    {% endif %}
-{% endblock %}
-
-{% set sidebar = (sidebar ?? block('sidebar') ?? '')|trim %}
+{% set sidebar = true %}
 
 {% block main %}
-    {% if sidebar is not empty %}
-        <a id="sidebar-toggle">
-            <span id="selected-sidebar-item-label"></span>&nbsp;
-            <span data-icon="downangle"></span>
-        </a>
-        <div id="sidebar" class="sidebar">
-            {{ sidebar|raw }}
-        </div>
-    {% endif %}
+    <translations-menu :categories="{{ categories | json_encode }}"></translations-menu>
 
-    <translations-list category="{{ category }}"></translations-list>
+    <translations-list></translations-list>
 {% endblock %}
 
 {% block foot %}

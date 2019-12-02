@@ -2,6 +2,7 @@ import Vue from 'vue';
 import { EventBus } from './EventBus.js';
 import SaveTranslations from './components/SaveTranslations.vue';
 import TranslationsList from './components/TranslationsList.vue';
+import TranslationsMenu from './components/TranslationsMenu.vue';
 
 Vue.prototype.$csrfTokenName = window.csrfTokenName;
 Vue.prototype.$csrfTokenValue = window.csrfTokenValue;
@@ -11,7 +12,8 @@ new Vue({
   el: '#main',
   components: {
     SaveTranslations,
-    TranslationsList
+    TranslationsList,
+    TranslationsMenu
   },
   mounted () {
     EventBus.$on('translations-saved', () => {

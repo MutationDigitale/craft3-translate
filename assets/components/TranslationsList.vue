@@ -24,6 +24,7 @@
                                 {{ t('Add') }}
                             </button>
                         </div>
+                        <div class="spinner" :class="{'invisible': !isLoading}"></div>
                     </div>
                 </div>
                 <div class="translate-columns-header">
@@ -94,7 +95,6 @@
                 </div>
             </div>
         </div>
-
     </div>
 </template>
 
@@ -103,9 +103,6 @@ import axios from 'axios';
 import { EventBus } from '../EventBus';
 
 export default {
-  props: {
-    category: String
-  },
   data () {
     return {
       isLoading: false,
@@ -122,18 +119,22 @@ export default {
       perPage: 40,
       pages: [],
       messageToAdd: '',
+      category: null
     };
   },
-  mounted () {
+  created () {
     this.filterSourceMessageDebounceFn = this.debounce(this.filterSourceMessages, 250);
 
-    this.getTranslations();
+    EventBus.$on('category-changed', (cat) => {
+      this.changeCategory(cat);
+    });
 
     EventBus.$on('translations-saved', () => {
       this.originalSourceMessages = this.copyObj(this.sourceMessages);
       this.change();
     });
-
+  },
+  mounted () {
     this.stickyElements();
   },
   computed: {
@@ -153,6 +154,13 @@ export default {
     }
   },
   methods: {
+    changeCategory (cat) {
+      this.category = cat;
+      this.languages = [];
+      this.sourceMessages = [];
+      this.filteredSourceMessages = [];
+      this.getTranslations();
+    },
     getTranslations () {
       this.isLoading = true;
 
@@ -372,13 +380,13 @@ export default {
 
 <style scoped>
 #main-container #main #main-content #content-container #content {
-    padding-top: 12px;
+    padding-top: 14px;
 }
 
 .content-header {
     background: #fff;
-    margin: 0 -12px;
-    padding: 12px;
+    margin: 0 -10px;
+    padding: 10px 10px 0 10px;
 }
 
 .content-header.fixed {
@@ -387,7 +395,7 @@ export default {
 }
 
 .toolbar {
-    margin-bottom: 12px;
+    margin-bottom: 15px;
 }
 
 .toolbar .flex:not(.flex-nowrap) > * {
@@ -396,12 +404,12 @@ export default {
 
 .translate-columns-header {
     background: #fff;
-}
-
-.translate-columns-header {
     display: flex;
-    margin: 0 -12px;
+    margin: 0 -10px;
+    padding: 0 0 10px 0;
     font-weight: bold;
+    color: rgba(0, 0, 0, 0.5);
+    border-bottom: 1px dotted #e3e5e8;
 }
 
 .translate-columns-header > * {
@@ -411,17 +419,17 @@ export default {
 }
 
 .translate-columns-header > * {
-    padding: 0 12px;
+    padding: 0 10px;
 }
 
 .translate-table {
-    width: calc(100% + 24px);
-    margin: 0 -12px 12px -12px;
+    width: calc(100% + 20px);
+    margin: 0 -10px 10px -10px;
     table-layout: fixed;
 }
 
 .translate-table td {
-    padding: 6px 12px;
+    padding: 5px 10px;
     background-color: #fff;
     box-sizing: border-box;
 }
@@ -454,7 +462,6 @@ export default {
 }
 
 .translate-pagination {
-    padding: 8px 0;
     display: flex;
     align-items: center;
 }

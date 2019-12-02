@@ -20,13 +20,8 @@ class TranslateController extends Controller
         $this->view->registerAssetBundle(TranslateBundle::class);
 
         $categories = Translate::getInstance()->settings->getCategories();
-        $category = Craft::$app->request->getParam('category');
-        if (!$category) {
-            $category = $categories[0];
-        }
 
         $this->renderTemplate('translate/index', [
-            'category' => $category,
             'categories' => $categories
         ]);
     }
