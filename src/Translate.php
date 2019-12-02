@@ -37,13 +37,6 @@ class Translate extends Plugin
         return new Settings();
     }
 
-    protected function settingsHtml()
-    {
-        return Craft::$app->getView()->renderTemplate('translate/settings', [
-            'settings' => $this->getSettings()
-        ]);
-    }
-
     private function initDbMessages()
     {
         /** @var I18N $i18n */

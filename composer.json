@@ -24,7 +24,7 @@
   "extra": {
     "name": "Translate",
     "handle": "translate",
-    "hasCpSettings": true,
+    "hasCpSettings": false,
     "hasCpSection": true,
     "schemaVersion": "1.1.0",
     "changelogUrl": "https://raw.githubusercontent.com/MutationDigitale/craft3-translate/master/CHANGELOG.md",

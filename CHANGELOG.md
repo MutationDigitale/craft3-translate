@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.4.1 - 2019-12-02
+
+### Changed
+- Removed admin settings ui and use simple array in settings instead
+
 ## 1.4.0 - 2019-11-30
 
 ### Added
