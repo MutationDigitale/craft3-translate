@@ -5,15 +5,15 @@
                 <div class="toolbar">
                     <div class="flex">
                         <div class="selectallcontainer">
-                            <div class="btn" role="checkbox" tabindex="0" aria-checked="false">
+                            <div class="btn" role="checkbox" tabindex="0" :aria-checked="ariaChecked"
+                                 @click="toggleCheckedSourceMessages()">
                                 <div class="checkbox"
                                      :class="{
                                         'checked': checkedSourceMessages.length > 0 &&
                                             checkedSourceMessages.length === displayedSourceMessages.length,
                                         'indeterminate': checkedSourceMessages.length > 0 &&
                                             checkedSourceMessages.length !== displayedSourceMessages.length
-                                     }"
-                                     @click="toggleCheckedSourceMessages()"></div>
+                                     }"></div>
                             </div>
                         </div>
                         <div v-show="checkedSourceMessages.length > 0">
@@ -186,6 +186,17 @@ export default {
   computed: {
     displayedSourceMessages () {
       return this.paginate(this.filteredSourceMessages);
+    },
+    ariaChecked () {
+      if (this.checkedSourceMessages.length === 0) {
+        return 'false';
+      } else {
+        if (this.checkedSourceMessages.length === this.displayedSourceMessages.length) {
+          return 'true';
+        } else {
+          return 'mixed';
+        }
+      }
     }
   },
   watch: {

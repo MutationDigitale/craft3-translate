@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.4.4 - 2019-12-02
+
+### Fixed
+- Fixed a bug with the checkbox
+
 ## 1.4.3 - 2019-12-02
 
 ### Changed
