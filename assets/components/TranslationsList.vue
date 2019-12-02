@@ -4,58 +4,103 @@
             <div class="content-header">
                 <div class="toolbar">
                     <div class="flex">
-                        <div class="flex-grow texticon search icon clearable">
+                        <div class="selectallcontainer">
+                            <div class="btn" role="checkbox" tabindex="0" aria-checked="false">
+                                <div class="checkbox"
+                                     :class="{
+                                        'checked': checkedSourceMessages.length > 0 &&
+                                            checkedSourceMessages.length === displayedSourceMessages.length,
+                                        'indeterminate': checkedSourceMessages.length > 0 &&
+                                            checkedSourceMessages.length !== displayedSourceMessages.length
+                                     }"
+                                     @click="toggleCheckedSourceMessages()"></div>
+                            </div>
+                        </div>
+                        <div v-show="checkedSourceMessages.length > 0">
+                            <div class="btn menubtn" data-icon="settings" :title="t('Actions')"></div>
+                            <div class="menu">
+                                <ul>
+                                    <li>
+                                        <a class="error" @click="deleteMessages()">
+                                            {{ t('Delete') }}
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div v-show="checkedSourceMessages.length === 0">
+                            <div class="btn menubtn statusmenubtn">
+                                <span class="status" :class="{'pending': emptyMessages}"></span>
+                                {{ !emptyMessages ? t('All') : t('Empty') }}
+                            </div>
+                            <div class="menu">
+                                <ul class="padded">
+                                    <li>
+                                        <a :class="{'sel': !emptyMessages}"
+                                           @click="emptyMessages = false">
+                                            <span class="status"></span>{{ t('All') }}
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a :class="{'sel': emptyMessages}"
+                                           @click="emptyMessages = true">
+                                            <span class="status pending"></span>{{ t('Empty') }}
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div v-show="checkedSourceMessages.length === 0"
+                             class="flex-grow texticon search icon clearable">
                             <input class="text fullwidth" type="text" autocomplete="off" placeholder="Search"
                                    v-model="search">
                             <div class="clear hidden" title="Clear"></div>
                         </div>
-                        <div>
-                            <div class="btn" role="checkbox" tabindex="0"
-                                 :aria-checked="emptyMessages ? 'true' : 'false'"
-                                 @click="toggleEmptyMessages()">
-                                <div class="checkbox" :class="{'checked': emptyMessages}"></div>
-                                <span>{{ t('Empty translations') }}</span>
-                            </div>
-                        </div>
-                        <div>
+                        <div v-show="checkedSourceMessages.length === 0">
                             <input class="text" type="text" v-model="messageToAdd" :placeholder="t('Message')">
                             <button class="btn" type="button" @click="addMessage()"
                                     :disabled="messageToAdd === null || messageToAdd.trim() === ''">
                                 {{ t('Add') }}
                             </button>
                         </div>
-                        <div class="spinner" :class="{'invisible': !isLoading}"></div>
+                        <div class="spinner" :class="{'invisible': !(isLoading || isAdding || isDeleting)}"></div>
                     </div>
                 </div>
                 <div class="translate-columns-header">
-                    <div :style="'width: ' + (94/(languages.length + 1)) + '%'">{{ t('Key') }}</div>
+                    <div class="checkbox-cell" style="width: 4%"></div>
+                    <div :style="'width: ' + (96/(languages.length + 1)) + '%'">{{ t('Key') }}</div>
                     <div v-for="language in languages" v-bind:key="language.id"
-                         :style="'width: ' + (94/(languages.length + 1)) + '%'">
+                         :style="'width: ' + (96/(languages.length + 1)) + '%'">
                         {{ language.displayName }}
                     </div>
-                    <div style="width: 6%">{{ t('Actions') }}</div>
                 </div>
             </div>
             <table class="translate-table">
                 <tbody>
-                <tr v-for="sourceMessage in displayedSourceMessages" v-bind:key="sourceMessage.id">
-                    <td :width="(94/(languages.length + 1)) + '%'">
+                <tr v-for="sourceMessage in displayedSourceMessages" v-bind:key="sourceMessage.id"
+                    :class="{'sel': checkedSourceMessages.indexOf(sourceMessage.id) > -1}">
+                    <td class="checkbox-cell" width="4%">
+                        <input :id="'source-message-' + sourceMessage.id" type="checkbox" class="checkbox"
+                               :title="t('Select')"
+                               :value="sourceMessage.id"
+                               v-model="checkedSourceMessages">
+                        <label :for="'source-message-' + sourceMessage.id"></label>
+                    </td>
+
+                    <td :width="(96/(languages.length + 1)) + '%'">
+                        <div class="mobile-only cell-label">{{ t('Key') }}</div>
                         <span>{{ sourceMessage.message }}</span>
                     </td>
 
                     <td v-for="language in languages" v-bind:key="language.id"
                         :class="{'modified': isModified(sourceMessage, language)}"
-                        :width="(94/(languages.length + 1)) + '%'">
+                        :width="(96/(languages.length + 1)) + '%'">
+                        <div class="mobile-only cell-label">{{ language.displayName }}</div>
                         <input class="text nicetext fullwidth" type="text"
                                v-model="sourceMessage.languages[language.id]"
                                @change="change()"
                                @keyup="change()"
                                data-show-chars-left="" autocomplete="off" placeholder="">
-                    </td>
-
-                    <td width="6%">
-                        <button type="button" class="btn" data-icon="trash"
-                                @click="deleteMessage(sourceMessage.id)"></button>
                     </td>
                 </tr>
                 </tbody>
@@ -68,7 +113,7 @@
                     {{filteredSourceMessages.length}}
                 </div>
 
-                <div v-if="pages.length > 1">
+                <div v-show="pages.length > 1">
                     <button class="btn page-link" type="button"
                             :disabled="page === 1"
                             @click="setPage(1)">«
@@ -79,7 +124,7 @@
 
                     <button class="btn page-link" type="button"
                             :class="{'active': pageNumber === page}"
-                            v-for="pageNumber in pages.slice(page < 5 ? 0 : page - 5, page+5)"
+                            v-for="pageNumber in pages.slice(page < 3 ? 0 : page - 3, page + 3)"
                             v-bind:key="pageNumber"
                             @click="setPage(pageNumber)">
                         {{pageNumber}}
@@ -114,6 +159,7 @@ export default {
       originalSourceMessages: [],
       sourceMessages: [],
       filteredSourceMessages: [],
+      checkedSourceMessages: [],
       filterSourceMessageDebounceFn: null,
       page: 1,
       perPage: 40,
@@ -159,9 +205,11 @@ export default {
       this.languages = [];
       this.sourceMessages = [];
       this.filteredSourceMessages = [];
-      this.getTranslations();
+      this.emptyMessages = false;
+      this.checkedSourceMessages = [];
+      this.loadSourceMessages();
     },
-    getTranslations () {
+    loadSourceMessages () {
       this.isLoading = true;
 
       axios
@@ -179,6 +227,11 @@ export default {
           this.isLoading = false;
         });
     },
+    updateSourceMessages (newSourceMessages) {
+      this.sourceMessages = newSourceMessages;
+      this.filteredSourceMessages = this.sourceMessages;
+      this.originalSourceMessages = this.copyObj(this.sourceMessages);
+    },
     addMessage () {
       this.isAdding = true;
 
@@ -194,7 +247,8 @@ export default {
         .then((response) => {
           if (response.data.success) {
             EventBus.$emit('translation-added');
-            this.getTranslations();
+            this.sourceMessages.push(response.data.sourceMessage);
+            this.updateSourceMessages(this.sourceMessages);
           } else {
             EventBus.$emit('translation-added-error');
           }
@@ -208,21 +262,28 @@ export default {
           this.messageToAdd = '';
         });
     },
-    deleteMessage (messageId) {
+    deleteMessages () {
       this.isDeleting = true;
 
       const formData = new FormData();
 
       formData.append(this.$csrfTokenName, this.$csrfTokenValue);
       formData.append('action', 'translate/translate/delete');
-      formData.append('sourceMessageId', messageId);
+
+      for (const sourceMessageId of this.checkedSourceMessages) {
+        formData.append('sourceMessageId[]', sourceMessageId);
+      }
 
       axios
         .post('', formData)
         .then((response) => {
           if (response.data.success) {
             EventBus.$emit('translation-deleted');
-            this.getTranslations();
+            const sourceMessages = this.sourceMessages.filter((sourceMessage) => {
+              return this.checkedSourceMessages.indexOf(sourceMessage.id) === -1;
+            });
+            this.updateSourceMessages(sourceMessages);
+            this.checkedSourceMessages = [];
           } else {
             EventBus.$emit('translation-deleted-error');
           }
@@ -234,9 +295,6 @@ export default {
         .finally(() => {
           this.isDeleting = false;
         });
-    },
-    toggleEmptyMessages () {
-      this.emptyMessages = !this.emptyMessages;
     },
     setPages () {
       let numberOfPages = Math.ceil(this.filteredSourceMessages.length / this.perPage);
@@ -323,6 +381,16 @@ export default {
       this.page = nb;
       this.$refs.content.scrollTop = 0;
     },
+    toggleCheckedSourceMessages () {
+      if (this.checkedSourceMessages.length > 0) {
+        this.checkedSourceMessages = [];
+      } else {
+        this.checkedSourceMessages = [];
+        for (const sourceMessage of this.displayedSourceMessages) {
+          this.checkedSourceMessages.push(sourceMessage.id);
+        }
+      }
+    },
     stickyElements () {
       const content = document.querySelector('#content');
       const contentHeader = document.querySelector('.content-header');
@@ -395,11 +463,7 @@ export default {
 }
 
 .toolbar {
-    margin-bottom: 15px;
-}
-
-.toolbar .flex:not(.flex-nowrap) > * {
-    margin-bottom: 0;
+    margin-bottom: 8px;
 }
 
 .translate-columns-header {
@@ -434,6 +498,11 @@ export default {
     box-sizing: border-box;
 }
 
+.translate-table td.checkbox-cell {
+    position: relative;
+    padding-bottom: 0;
+}
+
 .translate-table tr td:first-child {
     line-height: 1.2em;
 }
@@ -448,6 +517,10 @@ export default {
 
 .translate-table tr td.modified {
     background-color: #fcfbe2;
+}
+
+.translate-table tr.sel td:not(.checkbox-cell) {
+    background: #d5d8dd;
 }
 
 .btn .checkbox + span {
@@ -490,5 +563,38 @@ export default {
     box-shadow: 0 -1px 0 rgba(0, 0, 20, 0.1);
     padding: 10px 24px;
     background: #fff;
+}
+
+.cell-label {
+    margin-bottom: 4px;
+    font-weight: bold;
+    color: rgba(0, 0, 0, 0.5);
+}
+
+.mobile-only {
+    display: none;
+}
+
+@media (max-width: 613px) {
+    .mobile-only {
+        display: block;
+    }
+
+    .translate-columns-header {
+        display: none;
+    }
+
+    .translate-table,
+    .translate-table tbody,
+    .translate-table tr,
+    .translate-table td {
+        display: block;
+    }
+
+    .translate-table tbody,
+    .translate-table tr,
+    .translate-table td {
+        width: 100%;
+    }
 }
 </style>

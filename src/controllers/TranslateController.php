@@ -10,6 +10,7 @@ use mutation\translate\models\Message;
 use mutation\translate\models\SourceMessage;
 use mutation\translate\Translate;
 use mutation\translate\TranslateBundle;
+use yii\web\NotFoundHttpException;
 
 class TranslateController extends Controller
 {
@@ -101,8 +102,18 @@ class TranslateController extends Controller
         $sourceMessage->message = $message;
         $success = $sourceMessage->save();
 
+        $languages = [];
+        foreach (Craft::$app->i18n->getSiteLocales() as $one) {
+            $languages[$one->id] = '';
+        }
+
         return $this->asJson([
-            'success' => $success
+            'success' => $success,
+            'sourceMessage' => [
+                'id' => $sourceMessage->id,
+                'message' => $sourceMessage->message,
+                'languages' => $languages
+            ]
         ]);
     }
 
@@ -111,16 +122,24 @@ class TranslateController extends Controller
         $this->requirePostRequest();
         $this->requirePermission(Translate::UPDATE_TRANSLATIONS_PERMISSION);
 
-        $id = Craft::$app->request->getRequiredBodyParam('sourceMessageId');
+        $sourceMessageIds = Craft::$app->request->getRequiredBodyParam('sourceMessageId');
 
-        $sourceMessage = SourceMessage::find()
-            ->where(array('id' => $id))
-            ->one();
+        foreach ($sourceMessageIds as $sourceMessageId) {
+            $sourceMessage = SourceMessage::find()
+                ->where(array('id' => $sourceMessageId))
+                ->one();
 
-        $success = $sourceMessage->delete();
+            if (!$sourceMessage) {
+                throw new NotFoundHttpException('Source message not found');
+            }
+
+            if (!$sourceMessage->delete()) {
+                return $this->asJson(['success' => false]);
+            }
+        }
 
         return $this->asJson([
-            'success' => $success
+            'success' => true
         ]);
     }
 

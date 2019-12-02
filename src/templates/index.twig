@@ -16,7 +16,8 @@
     "Actions",
     "Message",
     "No results",
-    "Empty translations"
+    "All",
+    "Empty",
 ]) %}
 
 {% if title is not defined %}
@@ -30,7 +31,9 @@
 {% set sidebar = true %}
 
 {% block main %}
-    <translations-menu :categories="{{ categories | json_encode }}"></translations-menu>
+    {% if categories|length > 1 %}
+        <translations-menu :categories="{{ categories | json_encode }}"></translations-menu>
+    {% endif %}
 
     <translations-list></translations-list>
 {% endblock %}
