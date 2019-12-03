@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.4.5 - 2019-12-03
+
+### Fixed
+- Fixed an error when there is only one category
+
 ## 1.4.4 - 2019-12-02
 
 ### Fixed

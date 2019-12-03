@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <div v-if="categories.length > 1">
         <a id="sidebar-toggle" @click="toggleSidebar()">
             <span id="selected-sidebar-item-label">{{ category }}</span>&nbsp;
             <span data-icon="downangle"></span>

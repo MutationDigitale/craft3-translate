@@ -28,12 +28,10 @@
     <save-translations></save-translations>
 {% endblock %}
 
-{% set sidebar = true %}
+{% set sidebar = categories|length > 1 %}
 
 {% block main %}
-    {% if categories|length > 1 %}
-        <translations-menu :categories="{{ categories | json_encode }}"></translations-menu>
-    {% endif %}
+    <translations-menu :categories="{{ categories | json_encode }}"></translations-menu>
 
     <translations-list></translations-list>
 {% endblock %}
