@@ -1,8 +1,10 @@
 # Translate plugin for Craft CMS
 
-This plugin allows you to have your static message translations in your database for select categories while having an admin interface to edit your translations side by side.
+This plugin allows you to have your static message translations in your database for select categories while having an admin interface to edit your translations side by side. 
 
-> On installation, it will migrate your existing PHP site translations to your database.
+When a page is visited on the site, missing translations will automatically be added to your database. If a translation is missing, you can also add them manually in the CP.
+
+On installation, it will migrate your existing PHP site translations to your database.
 
 ![Screenshot](./img/translate-plugin-screenhot.png)
 
@@ -20,7 +22,7 @@ php craft install/plugin translate
 
 You can now edit your tranlastions in the control panel `/admin/translate`.
 
-> You have a special permission for the Translate plugin `Update translations`
+You have a special permission for the Translate plugin `Update translations`
 
 To configure the source message categories you want to have in your database and control panel, create a file `translate.php` in your `config` directory and write the categories your want:
 ```
