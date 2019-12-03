@@ -8,8 +8,8 @@ use craft\events\RegisterUrlRulesEvent;
 use craft\events\RegisterUserPermissionsEvent;
 use craft\i18n\I18N;
 use craft\services\UserPermissions;
-use mutation\translate\controllers\TranslateController;
 use craft\web\UrlManager;
+use mutation\translate\controllers\TranslateController;
 use mutation\translate\models\Settings;
 use mutation\translate\models\SourceMessage;
 use yii\base\Event;
@@ -50,9 +50,11 @@ class Translate extends Plugin
             ];
         }
 
-        Craft::$app->setComponents([
-            'i18n' => $i18n
-        ]);
+        Craft::$app->setComponents(
+            [
+                'i18n' => $i18n
+            ]
+        );
     }
 
     private function initEvents()

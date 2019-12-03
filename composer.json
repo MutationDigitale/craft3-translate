@@ -16,6 +16,9 @@
   "require": {
     "craftcms/cms": "^3.1.0"
   },
+  "require-dev": {
+    "friendsofphp/php-cs-fixer": "^2.16"
+  },
   "autoload": {
     "psr-4": {
       "mutation\\translate\\": "src/"
@@ -29,5 +32,10 @@
     "schemaVersion": "1.1.0",
     "changelogUrl": "https://raw.githubusercontent.com/MutationDigitale/craft3-translate/master/CHANGELOG.md",
     "class": "mutation\\translate\\Translate"
+  },
+  "scripts": {
+    "cs-fix": [
+      "php-cs-fixer fix src --rules=@PSR12"
+    ]
   }
 }

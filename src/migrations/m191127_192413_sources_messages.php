@@ -23,28 +23,44 @@ class m191127_192413_sources_messages extends Migration
             $tableOptions = 'CHARACTER SET utf8 COLLATE utf8_unicode_ci ENGINE=InnoDB';
         }
 
-        $this->createTable('{{%source_message}}', [
-            'id' => $this->primaryKey(),
-            'dateCreated' => $this->dateTime()->notNull(),
-            'dateUpdated' => $this->dateTime()->notNull(),
-            'uid' => $this->uid(),
+        $this->createTable(
+            '{{%source_message}}',
+            [
+                'id' => $this->primaryKey(),
+                'dateCreated' => $this->dateTime()->notNull(),
+                'dateUpdated' => $this->dateTime()->notNull(),
+                'uid' => $this->uid(),
 
-            'category' => $this->string(),
-            'message' => $this->text(),
-        ], $tableOptions);
+                'category' => $this->string(),
+                'message' => $this->text(),
+            ],
+            $tableOptions
+        );
 
-        $this->createTable('{{%message}}', [
-            'id' => $this->integer()->notNull(),
-            'dateCreated' => $this->dateTime()->notNull(),
-            'dateUpdated' => $this->dateTime()->notNull(),
-            'uid' => $this->uid(),
+        $this->createTable(
+            '{{%message}}',
+            [
+                'id' => $this->integer()->notNull(),
+                'dateCreated' => $this->dateTime()->notNull(),
+                'dateUpdated' => $this->dateTime()->notNull(),
+                'uid' => $this->uid(),
 
-            'language' => $this->string(16)->notNull(),
-            'translation' => $this->text(),
-        ], $tableOptions);
+                'language' => $this->string(16)->notNull(),
+                'translation' => $this->text(),
+            ],
+            $tableOptions
+        );
 
         $this->addPrimaryKey('pk_message_id_language', '{{%message}}', ['id', 'language']);
-        $this->addForeignKey('fk_message_source_message', '{{%message}}', 'id', '{{%source_message}}', 'id', 'CASCADE', 'RESTRICT');
+        $this->addForeignKey(
+            'fk_message_source_message',
+            '{{%message}}',
+            'id',
+            '{{%source_message}}',
+            'id',
+            'CASCADE',
+            'RESTRICT'
+        );
         $this->createIndex('idx_source_message_category', '{{%source_message}}', 'category');
         $this->createIndex('idx_message_language', '{{%message}}', 'language');
 
@@ -57,7 +73,8 @@ class m191127_192413_sources_messages extends Migration
             $sites = Craft::$app->sites->getAllSites();
             $translations = array();
             foreach ($sites as $site) {
-                $path = Craft::$app->path->getSiteTranslationsPath() . DIRECTORY_SEPARATOR . $site->language . DIRECTORY_SEPARATOR . 'site.php';
+                $path = Craft::$app->path->getSiteTranslationsPath()
+                    . DIRECTORY_SEPARATOR . $site->language . DIRECTORY_SEPARATOR . 'site.php';
                 $siteTranslations = array();
                 if (file_exists($path)) {
                     $siteTranslations = include($path);
@@ -86,7 +103,6 @@ class m191127_192413_sources_messages extends Migration
                 }
             }
         } catch (Exception $exception) {
-
         }
     }
 

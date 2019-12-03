@@ -3,13 +3,14 @@
 namespace mutation\translate\models;
 
 use Craft;
+use yii\db\ActiveQuery;
 use yii\db\ActiveRecord;
 use yii\helpers\ArrayHelper;
 
 /**
  * This is the model class for table "source_message".
  *
- * @property integer $id
+ * @property int $id
  * @property string $category
  * @property string $message
  *
@@ -58,11 +59,11 @@ class SourceMessage extends ActiveRecord
     }
 
     /**
-     * @return \yii\db\ActiveQuery
+     * @return ActiveQuery
      */
     public function getMessages()
     {
-        return $this->hasMany(Message::className(), ['id' => 'id']);
+        return $this->hasMany(Message::class, ['id' => 'id']);
     }
 
     public function getTranslations()
@@ -87,9 +88,9 @@ class SourceMessage extends ActiveRecord
         if (parent::beforeDelete()) {
             Message::deleteAll(['id' => $this->id]);
             return true;
-        } else {
-            return false;
         }
+
+        return false;
     }
 
     public function afterSave($insert, $changedAttributes)

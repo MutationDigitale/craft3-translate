@@ -2,13 +2,12 @@
 
 namespace mutation\translate\models;
 
-use Yii;
 use yii\db\ActiveRecord;
 
 /**
  * This is the model class for table "message".
  *
- * @property integer $id
+ * @property int $id
  * @property string $language
  * @property string $translation
  *
@@ -34,7 +33,13 @@ class Message extends ActiveRecord
             [['id'], 'integer'],
             [['translation'], 'string'],
             [['language'], 'string', 'max' => 16],
-            [['id'], 'exist', 'skipOnError' => true, 'targetClass' => SourceMessage::className(), 'targetAttribute' => ['id' => 'id']],
+            [
+                ['id'],
+                'exist',
+                'skipOnError' => true,
+                'targetClass' => SourceMessage::class,
+                'targetAttribute' => ['id' => 'id']
+            ],
         ];
     }
 

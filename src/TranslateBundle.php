@@ -1,4 +1,5 @@
 <?php
+
 namespace mutation\translate;
 
 use craft\web\AssetBundle;

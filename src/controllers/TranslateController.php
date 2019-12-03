@@ -4,7 +4,6 @@ namespace mutation\translate\controllers;
 
 use Craft;
 use craft\db\Query;
-use craft\helpers\UrlHelper;
 use craft\web\Controller;
 use mutation\translate\models\Message;
 use mutation\translate\models\SourceMessage;
@@ -22,9 +21,12 @@ class TranslateController extends Controller
 
         $categories = Translate::getInstance()->settings->getCategories();
 
-        $this->renderTemplate('translate/index', [
-            'categories' => $categories
-        ]);
+        $this->renderTemplate(
+            'translate/index',
+            [
+                'categories' => $categories
+            ]
+        );
     }
 
     public function actionGetTranslations()
@@ -68,15 +70,20 @@ class TranslateController extends Controller
             ];
         }
 
-        return $this->asJson([
-            'languages' => array_map(function ($lang) {
-                return [
-                    'id' => $lang->id,
-                    'displayName' => $lang->displayName
-                ];
-            }, $siteLocales),
-            'sourceMessages' => $sourceMessages,
-        ]);
+        return $this->asJson(
+            [
+                'languages' => array_map(
+                    function ($lang) {
+                        return [
+                            'id' => $lang->id,
+                            'displayName' => $lang->displayName
+                        ];
+                    },
+                    $siteLocales
+                ),
+                'sourceMessages' => $sourceMessages,
+            ]
+        );
     }
 
     public function actionAdd()
@@ -92,9 +99,11 @@ class TranslateController extends Controller
             ->one();
 
         if ($sourceMessage) {
-            return $this->asJson([
-                'success' => false
-            ]);
+            return $this->asJson(
+                [
+                    'success' => false
+                ]
+            );
         }
 
         $sourceMessage = new SourceMessage();
@@ -107,14 +116,16 @@ class TranslateController extends Controller
             $languages[$one->id] = '';
         }
 
-        return $this->asJson([
-            'success' => $success,
-            'sourceMessage' => [
-                'id' => $sourceMessage->id,
-                'message' => $sourceMessage->message,
-                'languages' => $languages
+        return $this->asJson(
+            [
+                'success' => $success,
+                'sourceMessage' => [
+                    'id' => $sourceMessage->id,
+                    'message' => $sourceMessage->message,
+                    'languages' => $languages
+                ]
             ]
-        ]);
+        );
     }
 
     public function actionDelete()
@@ -138,9 +149,11 @@ class TranslateController extends Controller
             }
         }
 
-        return $this->asJson([
-            'success' => true
-        ]);
+        return $this->asJson(
+            [
+                'success' => true
+            ]
+        );
     }
 
     public function actionSave()
@@ -167,8 +180,10 @@ class TranslateController extends Controller
             }
         }
 
-        return $this->asJson([
-            'success' => true
-        ]);
+        return $this->asJson(
+            [
+                'success' => true
+            ]
+        );
     }
 }
