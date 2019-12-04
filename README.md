@@ -1,6 +1,8 @@
 # Translate plugin for Craft CMS
 
-This plugins adds a control panel interface to edit your static translations. 
+This plugins adds a control panel interface to edit your static translations in the database. 
+
+![Screenshot](./img/translate-plugin-screenhot.png)
 
 ## Features
 
@@ -12,8 +14,6 @@ This plugins adds a control panel interface to edit your static translations.
 - Add or delete translations in the control panel.
 - On installation, your existing PHP site translations will be migrated to your database.
 - Export your translations in a CSV file.
-
-![Screenshot](./img/translate-plugin-screenhot.png)
 
 ## Requirements
 
