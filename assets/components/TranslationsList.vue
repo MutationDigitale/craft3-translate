@@ -219,6 +219,7 @@ export default {
       this.emptyMessages = false;
       this.checkedSourceMessages = [];
       this.loadSourceMessages();
+      EventBus.$emit('translations-modified', null);
     },
     loadSourceMessages () {
       this.isLoading = true;

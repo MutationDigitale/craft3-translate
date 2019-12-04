@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.4.6 - 2019-12-04
+
+### Fixed
+- Fixed a problem when changing category
+
 ## 1.4.5 - 2019-12-03
 
 ### Fixed

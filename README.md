@@ -37,3 +37,7 @@ return [
 	]
 ];
 ```
+
+## Roadmap
+
+- Export and import translations
