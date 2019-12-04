@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.4.9 - 2019-12-04
+
+### Fixed
+- Fixed a small JS error
+
 ## 1.4.8 - 2019-12-04
 
 ### Added

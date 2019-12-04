@@ -181,6 +181,7 @@ export default {
       for (const sourceMessage of this.sourceMessages) {
         this.$set(sourceMessage, 'isModified', null);
       }
+      EventBus.$emit('translations-modified', this.modifiedMessages);
     });
   },
   mounted () {
