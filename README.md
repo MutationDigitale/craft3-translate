@@ -1,6 +1,6 @@
 # Translate plugin for Craft CMS
 
-This plugins adds a control panel interface for your clients to edit your static translations for each language side by side. Filter the ones missing a translation and search by keywords.
+This plugins adds a control panel interface for your clients to edit your static translations for each language side by side. Filter those missing a translation and search by keywords.
 
 Also, for the categories you choose, the translations will be kept inside your database instead of PHP files, the same as your content, for a better deployment workflow.
 
