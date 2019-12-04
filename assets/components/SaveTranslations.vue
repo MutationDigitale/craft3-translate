@@ -60,7 +60,7 @@ export default {
         });
     },
     t: function (str) {
-      return this.$craft.t('app', str);
+      return this.$craft.t('translate', str);
     }
   }
 };

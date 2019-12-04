@@ -7,6 +7,7 @@ use craft\base\Model;
 class Settings extends Model
 {
     public $categories = ['site'];
+    public $addMissingSiteRequestOnly = true;
 
     public function getCategories()
     {

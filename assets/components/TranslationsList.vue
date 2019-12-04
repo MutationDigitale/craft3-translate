@@ -1,77 +1,79 @@
 <template>
     <div id="content-container">
         <div id="content" ref="content">
-            <div class="content-header">
-                <div class="toolbar">
-                    <div class="flex">
-                        <div class="selectallcontainer">
-                            <div class="btn" role="checkbox" tabindex="0" :aria-checked="ariaChecked"
-                                 @click="toggleCheckedSourceMessages()">
-                                <div class="checkbox"
-                                     :class="{
+            <div class="content-header-wrapper">
+                <div class="content-header">
+                    <div class="toolbar">
+                        <div class="flex">
+                            <div class="selectallcontainer">
+                                <div class="btn" role="checkbox" tabindex="0" :aria-checked="ariaChecked"
+                                     @click="toggleCheckedSourceMessages()">
+                                    <div class="checkbox"
+                                         :class="{
                                         'checked': checkedSourceMessages.length > 0 &&
                                             checkedSourceMessages.length === displayedSourceMessages.length,
                                         'indeterminate': checkedSourceMessages.length > 0 &&
                                             checkedSourceMessages.length !== displayedSourceMessages.length
                                      }"></div>
+                                </div>
                             </div>
-                        </div>
-                        <div v-show="checkedSourceMessages.length > 0">
-                            <div class="btn menubtn" data-icon="settings" :title="t('Actions')"></div>
-                            <div class="menu">
-                                <ul>
-                                    <li>
-                                        <a class="error" @click="deleteMessages()">
-                                            {{ t('Delete') }}
-                                        </a>
-                                    </li>
-                                </ul>
+                            <div v-show="checkedSourceMessages.length > 0">
+                                <div class="btn menubtn" data-icon="settings" :title="t('Actions')"></div>
+                                <div class="menu">
+                                    <ul>
+                                        <li>
+                                            <a class="error" @click="deleteMessages()">
+                                                {{ t('Delete') }}
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </div>
                             </div>
-                        </div>
-                        <div v-show="checkedSourceMessages.length === 0">
-                            <div class="btn menubtn statusmenubtn">
-                                <span class="status" :class="{'pending': emptyMessages}"></span>
-                                {{ !emptyMessages ? t('All') : t('Empty') }}
+                            <div v-show="checkedSourceMessages.length === 0">
+                                <div class="btn menubtn statusmenubtn">
+                                    <span class="status" :class="{'pending': emptyMessages}"></span>
+                                    {{ !emptyMessages ? t('All') : t('Empty') }}
+                                </div>
+                                <div class="menu">
+                                    <ul class="padded">
+                                        <li>
+                                            <a :class="{'sel': !emptyMessages}"
+                                               @click="emptyMessages = false">
+                                                <span class="status"></span>{{ t('All') }}
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a :class="{'sel': emptyMessages}"
+                                               @click="emptyMessages = true">
+                                                <span class="status pending"></span>{{ t('Empty') }}
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </div>
                             </div>
-                            <div class="menu">
-                                <ul class="padded">
-                                    <li>
-                                        <a :class="{'sel': !emptyMessages}"
-                                           @click="emptyMessages = false">
-                                            <span class="status"></span>{{ t('All') }}
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a :class="{'sel': emptyMessages}"
-                                           @click="emptyMessages = true">
-                                            <span class="status pending"></span>{{ t('Empty') }}
-                                        </a>
-                                    </li>
-                                </ul>
+                            <div v-show="checkedSourceMessages.length === 0"
+                                 class="flex-grow texticon search icon clearable">
+                                <input class="text fullwidth" type="text" autocomplete="off" placeholder="Search"
+                                       v-model="search">
+                                <div class="clear hidden" title="Clear"></div>
                             </div>
+                            <div v-show="checkedSourceMessages.length === 0">
+                                <input class="text" type="text" v-model="messageToAdd" :placeholder="t('Message')">
+                                <button class="btn" type="button" @click="addMessage()"
+                                        :disabled="messageToAdd === null || messageToAdd.trim() === ''">
+                                    {{ t('Add') }}
+                                </button>
+                            </div>
+                            <div class="spinner" :class="{'invisible': !(isLoading || isAdding || isDeleting)}"></div>
                         </div>
-                        <div v-show="checkedSourceMessages.length === 0"
-                             class="flex-grow texticon search icon clearable">
-                            <input class="text fullwidth" type="text" autocomplete="off" placeholder="Search"
-                                   v-model="search">
-                            <div class="clear hidden" title="Clear"></div>
-                        </div>
-                        <div v-show="checkedSourceMessages.length === 0">
-                            <input class="text" type="text" v-model="messageToAdd" :placeholder="t('Message')">
-                            <button class="btn" type="button" @click="addMessage()"
-                                    :disabled="messageToAdd === null || messageToAdd.trim() === ''">
-                                {{ t('Add') }}
-                            </button>
-                        </div>
-                        <div class="spinner" :class="{'invisible': !(isLoading || isAdding || isDeleting)}"></div>
                     </div>
-                </div>
-                <div class="translate-columns-header">
-                    <div class="checkbox-cell" style="width: 4%"></div>
-                    <div :style="'width: ' + (96/(languages.length + 1)) + '%'">{{ t('Key') }}</div>
-                    <div v-for="language in languages" v-bind:key="language.id"
-                         :style="'width: ' + (96/(languages.length + 1)) + '%'">
-                        {{ language.displayName }}
+                    <div class="translate-columns-header">
+                        <div class="checkbox-cell" style="width: 4%"></div>
+                        <div :style="'width: ' + (96/(languages.length + 1)) + '%'">{{ t('Key') }}</div>
+                        <div v-for="language in languages" v-bind:key="language.id"
+                             :style="'width: ' + (96/(languages.length + 1)) + '%'">
+                            {{ language.displayName }}
+                        </div>
                     </div>
                 </div>
             </div>
@@ -416,7 +418,7 @@ export default {
     stickyElements () {
       const content = document.querySelector('#content');
       const contentHeader = document.querySelector('.content-header');
-      const translateTable = document.querySelector('.translate-table');
+      const contentHeaderWrapper = document.querySelector('.content-header-wrapper');
       let stuck = false;
       const stickPoint = contentHeader.offsetTop;
 
@@ -424,16 +426,16 @@ export default {
         const distance = contentHeader.offsetTop - (content.offsetTop + content.scrollTop);
         const offset = (content.offsetTop + content.scrollTop);
         if ((distance <= 0) && !stuck) {
+          contentHeaderWrapper.style.height = contentHeader.clientHeight + 'px';
           contentHeader.classList.add('fixed');
           contentHeader.style.top = content.offsetTop + 'px';
           contentHeader.style.width = this.getElementContentWidth(content) + 'px';
-          translateTable.style.paddingTop = contentHeader.clientHeight + 'px';
           stuck = true;
         } else if (stuck && (offset <= stickPoint)) {
+          contentHeaderWrapper.style.height = '';
           contentHeader.classList.remove('fixed');
           contentHeader.style.top = '';
           contentHeader.style.width = '';
-          translateTable.style.paddingTop = '';
           stuck = false;
         }
       });
@@ -442,7 +444,7 @@ export default {
       return JSON.parse(JSON.stringify(obj));
     },
     t (str) {
-      return this.$craft.t('app', str);
+      return this.$craft.t('translate', str);
     },
     getElementContentWidth (element) {
       const styles = window.getComputedStyle(element);

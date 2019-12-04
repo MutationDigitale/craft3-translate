@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.5.0 - 2019-12-04
+
+### Added
+- Added a new page to export translations by categories
+
+### Changed
+- By default, add missing translations only for site requests. Configurable with the `$addMissingSiteRequestOnly` settings
+
+### Fixed
+- Fixed a bug with the fixed element on scroll
+
 ## 1.4.9 - 2019-12-04
 
 ### Fixed

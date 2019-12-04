@@ -3,7 +3,6 @@
 namespace mutation\translate\controllers;
 
 use Craft;
-use craft\db\Query;
 use craft\web\Controller;
 use mutation\translate\models\Message;
 use mutation\translate\models\SourceMessage;
@@ -19,14 +18,11 @@ class TranslateController extends Controller
 
         $this->view->registerAssetBundle(TranslateBundle::class);
 
-        $categories = Translate::getInstance()->settings->getCategories();
+        $variables = [];
+        $variables['selectedSubnavItem'] = 'translations';
+        $variables['categories'] = Translate::getInstance()->settings->categories;
 
-        $this->renderTemplate(
-            'translate/index',
-            [
-                'categories' => $categories
-            ]
-        );
+        $this->renderTemplate('translate/index', $variables);
     }
 
     public function actionGetTranslations()
@@ -38,37 +34,7 @@ class TranslateController extends Controller
         $siteLocales = Craft::$app->i18n->getSiteLocales();
         sort($siteLocales);
 
-        $rows = (new Query())
-            ->from('{{%source_message}} AS s')
-            ->innerJoin('{{%message}} AS m', 'm.id = s.id')
-            ->where(['s.category' => $category])
-            ->limit(null)
-            ->all();
-
-        $groups = [];
-        foreach ($rows as $row) {
-            $groups[$row['id']][] = $row;
-        }
-
-        $sourceMessages = [];
-        foreach ($groups as $group) {
-            $languages = [];
-            foreach ($group as $item) {
-                $languages[$item['language']] = $item['translation'];
-            }
-            if (count($languages) < count($siteLocales)) {
-                foreach ($siteLocales as $siteLocale) {
-                    if (!array_key_exists($siteLocale->id, $languages)) {
-                        $languages[$siteLocale->id] = '';
-                    }
-                }
-            }
-            $sourceMessages[] = [
-                'id' => $group[0]['id'],
-                'message' => $group[0]['message'],
-                'languages' => $languages
-            ];
-        }
+        $sourceMessages = Translate::getInstance()->sourceMessage->getSourceMessagesArrayByCategory($category);
 
         return $this->asJson(
             [

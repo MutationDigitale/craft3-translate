@@ -17,22 +17,22 @@ new Vue({
   },
   mounted () {
     EventBus.$on('translations-saved', () => {
-      this.$craft.cp.displayNotice(this.$craft.t('app', 'Translations saved'));
+      this.$craft.cp.displayNotice(this.$craft.t('translate', 'Translations saved'));
     });
     EventBus.$on('translations-saved-error', () => {
-      this.$craft.cp.displayError(this.$craft.t('app', 'Translations not saved'));
+      this.$craft.cp.displayError(this.$craft.t('translate', 'Translations not saved'));
     });
     EventBus.$on('translation-added', () => {
-      this.$craft.cp.displayNotice(this.$craft.t('app', 'Translation added'));
+      this.$craft.cp.displayNotice(this.$craft.t('translate', 'Translation added'));
     });
     EventBus.$on('translation-added-error', () => {
-      this.$craft.cp.displayError(this.$craft.t('app', 'Translation not added'));
+      this.$craft.cp.displayError(this.$craft.t('translate', 'Translation not added'));
     });
     EventBus.$on('translation-deleted', () => {
-      this.$craft.cp.displayNotice(this.$craft.t('app', 'Translation deleted'));
+      this.$craft.cp.displayNotice(this.$craft.t('translate', 'Translation deleted'));
     });
     EventBus.$on('translation-deleted-error', () => {
-      this.$craft.cp.displayError(this.$craft.t('app', 'Translation not deleted'));
+      this.$craft.cp.displayError(this.$craft.t('translate', 'Translation not deleted'));
     });
   }
 });

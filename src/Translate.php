@@ -23,13 +23,30 @@ class Translate extends Plugin
     ];
 
     const UPDATE_TRANSLATIONS_PERMISSION = 'updateTranslations';
+    const EXPORT_TRANSLATIONS_PERMISSION = 'exportTranslations';
 
     public function init()
     {
         $this->name = Craft::t('translate', 'Translate');
 
+        $this->setComponents(
+            [
+                'sourceMessage' => services\SourceMessage::class,
+            ]
+        );
+
         $this->initDbMessages();
         $this->initEvents();
+    }
+
+    public function getCpNavItem()
+    {
+        $item = parent::getCpNavItem();
+        $item['subnav'] = [
+            'translations' => ['label' => 'Messages', 'url' => 'translate'],
+            'export' => ['label' => 'Export', 'url' => 'translate/export'],
+        ];
+        return $item;
     }
 
     protected function createSettingsModel()
@@ -42,7 +59,7 @@ class Translate extends Plugin
         /** @var I18N $i18n */
         $i18n = Craft::$app->getComponents(false)['i18n'];
 
-        foreach ($this->getSettings()->getCategories() as $category) {
+        foreach ($this->getSettings()->categories as $category) {
             $i18n->translations[$category] = [
                 'class' => DbMessageSource::class,
                 'sourceLanguage' => 'en-US',
@@ -67,6 +84,9 @@ class Translate extends Plugin
                     self::UPDATE_TRANSLATIONS_PERMISSION => [
                         'label' => 'Update translations',
                     ],
+                    self::EXPORT_TRANSLATIONS_PERMISSION => [
+                        'label' => 'Export translations',
+                    ]
                 ];
             }
         );
@@ -76,7 +96,7 @@ class Translate extends Plugin
             UrlManager::EVENT_REGISTER_CP_URL_RULES,
             function (RegisterUrlRulesEvent $event) {
                 $event->rules['translate'] = 'translate/translate/index';
-                $event->rules['translate/<localeId:[a-zA-Z\-]+>'] = 'translate/translate/index';
+                $event->rules['translate/export'] = 'translate/export/index';
             }
         );
 
@@ -84,8 +104,9 @@ class Translate extends Plugin
             MessageSource::class,
             MessageSource::EVENT_MISSING_TRANSLATION,
             function (MissingTranslationEvent $event) {
-                if ($event->message &&
-                    in_array($event->category, $this->getSettings()->getCategories(), true)) {
+                if ((Craft::$app->request->isSiteRequest || !$this->getSettings()->addMissingSiteRequestOnly) &&
+                    $event->message &&
+                    in_array($event->category, $this->getSettings()->categories, true)) {
                     $sourceMessage = SourceMessage::find()
                         ->where(array('message' => $event->message, 'category' => $event->category))
                         ->one();
