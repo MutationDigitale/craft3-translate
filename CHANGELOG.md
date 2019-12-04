@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.4.7 - 2019-12-04
+
+### Fixed
+- Performance improvements
+
 ## 1.4.6 - 2019-12-04
 
 ### Fixed

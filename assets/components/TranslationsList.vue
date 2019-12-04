@@ -93,13 +93,15 @@
                     </td>
 
                     <td v-for="language in languages" v-bind:key="language.id"
-                        :class="{'modified': isModified(sourceMessage, language)}"
+                        :class="{'modified': typeof sourceMessage.isModified !== 'undefined' &&
+                            sourceMessage.isModified !== null &&
+                            sourceMessage.isModified[language.id] === true}"
                         :width="(96/(languages.length + 1)) + '%'">
                         <div class="mobile-only cell-label">{{ language.displayName }}</div>
                         <input class="text nicetext fullwidth" type="text"
                                v-model="sourceMessage.languages[language.id]"
-                               @change="change()"
-                               @keyup="change()"
+                               @change="change(sourceMessage, language)"
+                               @keyup="change(sourceMessage, language)"
                                data-show-chars-left="" autocomplete="off" placeholder="">
                     </td>
                 </tr>
@@ -160,7 +162,7 @@ export default {
       sourceMessages: [],
       filteredSourceMessages: [],
       checkedSourceMessages: [],
-      filterSourceMessageDebounceFn: null,
+      modifiedMessages: {},
       page: 1,
       perPage: 40,
       pages: [],
@@ -169,15 +171,16 @@ export default {
     };
   },
   created () {
-    this.filterSourceMessageDebounceFn = this.debounce(this.filterSourceMessages, 250);
-
     EventBus.$on('category-changed', (cat) => {
       this.changeCategory(cat);
     });
 
     EventBus.$on('translations-saved', () => {
       this.originalSourceMessages = this.copyObj(this.sourceMessages);
-      this.change();
+      this.modifiedMessages = {};
+      for (const sourceMessage of this.sourceMessages) {
+        this.$set(sourceMessage, 'isModified', null);
+      }
     });
   },
   mounted () {
@@ -201,7 +204,7 @@ export default {
   },
   watch: {
     search () {
-      this.filterSourceMessageDebounceFn();
+      this.filterSourceMessages();
     },
     emptyMessages () {
       this.filterSourceMessages();
@@ -218,8 +221,9 @@ export default {
       this.filteredSourceMessages = [];
       this.emptyMessages = false;
       this.checkedSourceMessages = [];
+      this.modifiedMessages = {};
+      EventBus.$emit('translations-modified', this.modifiedMessages);
       this.loadSourceMessages();
-      EventBus.$emit('translations-modified', null);
     },
     loadSourceMessages () {
       this.isLoading = true;
@@ -352,26 +356,31 @@ export default {
       }
       this.filteredSourceMessages = sourceMessages;
     },
-    change () {
-      let sourceMessages = null;
+    change (sourceMessage, language) {
+      if (typeof sourceMessage.isModified === 'undefined' || sourceMessage.isModified === null) {
+        this.$set(sourceMessage, 'isModified', {});
+      }
 
-      for (const sourceMessage of this.sourceMessages) {
-        for (const language of this.languages) {
-          if (this.isModified(sourceMessage, language)) {
-            if (sourceMessages === null) {
-              sourceMessages = [];
-            }
-            if (!(language.id in sourceMessages)) {
-              sourceMessages[language.id] = [];
-            }
-            sourceMessages[language.id][sourceMessage.id] = sourceMessage.languages[language.id]
-              ? sourceMessage.languages[language.id]
-              : '';
+      if (this.isModified(sourceMessage, language)) {
+        this.$set(sourceMessage.isModified, language.id, true);
+        if (!(language.id in this.modifiedMessages)) {
+          this.modifiedMessages[language.id] = {};
+        }
+        this.modifiedMessages[language.id][sourceMessage.id] = sourceMessage.languages[language.id]
+          ? sourceMessage.languages[language.id]
+          : '';
+      } else {
+        this.$set(sourceMessage.isModified, language.id, false);
+        if (language.id in this.modifiedMessages && sourceMessage.id in this.modifiedMessages[language.id]) {
+          delete this.modifiedMessages[language.id][sourceMessage.id];
+
+          if (Object.keys(this.modifiedMessages[language.id]).length === 0) {
+            delete this.modifiedMessages[language.id];
           }
         }
       }
 
-      EventBus.$emit('translations-modified', sourceMessages);
+      EventBus.$emit('translations-modified', this.modifiedMessages);
     },
     isModified (sourceMessage, language) {
       let originalSourceMessage = this.originalSourceMessages[this.sourceMessages.indexOf(sourceMessage)];
@@ -439,20 +448,6 @@ export default {
       const padding = parseFloat(styles.paddingLeft) + parseFloat(styles.paddingRight);
 
       return element.clientWidth - padding;
-    },
-    debounce (func, wait, immediate) {
-      let timeout;
-      return function () {
-        const context = this, args = arguments;
-        const later = function () {
-          timeout = null;
-          if (!immediate) func.apply(context, args);
-        };
-        const callNow = immediate && !timeout;
-        clearTimeout(timeout);
-        timeout = setTimeout(later, wait);
-        if (callNow) func.apply(context, args);
-      };
     }
   }
 };
