@@ -2,7 +2,7 @@
 
 This plugins adds a control panel interface for your clients to edit your static translations for each language side by side. Filter the ones missing a translation and search by keywords.
 
-Also, for picked categories, the translations will be kept inside your database, the same as your content, for a better deployment workflow.
+Also, for the categories you choose, the translations will be kept inside your database instead of PHP files, the same as your content, for a better deployment workflow.
 
 When a page is visited on the site, missing translations will automatically be added to your database. If a translation is missing, you can also add them manually in the CP or delete the ones no longer needed.
 
