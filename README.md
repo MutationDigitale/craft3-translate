@@ -1,3 +1,5 @@
+No longer maintained. Use the Blitz plugin instead (https://github.com/putyourlightson/craft-blitz).
+
 # File Cache plugin for Craft CMS
 
 Cache pages to HTML files.
