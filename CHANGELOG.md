@@ -3,10 +3,10 @@
 ## 1.5.1 - 2019-12-08
 
 ### Added
-- Save on ctrl/meta + s key
+- Save on ctrl/meta + s key (issue #1)
 
 ### Changed
-- Changed input texts to textarea to allow multiline strings
+- Changed input texts to textarea to allow multiline strings (issue #1)
 
 ### Fixed
 - Fixed action url in JS to get translations
