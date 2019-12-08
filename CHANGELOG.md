@@ -3,10 +3,10 @@
 ## 1.5.1 - 2019-12-08
 
 ### Added
-- Save on ctrl/meta + s key (issue #1)
+- Save on ctrl/meta + s key ([#1](https://github.com/MutationDigitale/craft3-translate/issues/1))
 
 ### Changed
-- Changed input texts to textarea to allow multiline strings (issue #1)
+- Changed input texts to textarea to allow multiline strings ([#1](https://github.com/MutationDigitale/craft3-translate/issues/1))
 
 ### Fixed
 - Fixed action url in JS to get translations
