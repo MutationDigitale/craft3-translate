@@ -25,6 +25,15 @@ export default {
       this.sourceMessageInputs = sourceMessageInputs;
       this.isModified = sourceMessageInputs !== null && Object.keys(sourceMessageInputs).length > 0;
     });
+
+    window.addEventListener('keydown', (event) => {
+      if ((event.ctrlKey || event.metaKey) && event.key === 's') {
+        if (this.isModified && !this.isSaving) {
+          this.save();
+        }
+        event.preventDefault();
+      }
+    });
   },
   methods: {
     save: function () {

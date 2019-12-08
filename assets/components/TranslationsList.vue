@@ -100,11 +100,12 @@
                             sourceMessage.isModified[language.id] === true}"
                         :width="(96/(languages.length + 1)) + '%'">
                         <div class="mobile-only cell-label">{{ language.displayName }}</div>
-                        <input class="text nicetext fullwidth" type="text"
-                               v-model="sourceMessage.languages[language.id]"
-                               @change="change(sourceMessage, language)"
-                               @keyup="change(sourceMessage, language)"
-                               data-show-chars-left="" autocomplete="off" placeholder="">
+                        <textarea class="text nicetext fullwidth"
+                                  v-model="sourceMessage.languages[language.id]"
+                                  @change="change(sourceMessage, language)"
+                                  @keyup="change(sourceMessage, language)"
+                                  :rows="getNumberOfLines(sourceMessage.languages[language.id])"
+                                  autocomplete="off"></textarea>
                     </td>
                 </tr>
                 </tbody>
@@ -232,7 +233,7 @@ export default {
       this.isLoading = true;
 
       axios
-        .get('/actions/translate/translate/get-translations?category=' + this.category)
+        .get(this.$craft.getActionUrl('translate/translate/get-translations', { category: this.category }))
         .then((response) => {
           this.languages = response.data.languages;
           this.sourceMessages = response.data.sourceMessages;
@@ -446,6 +447,16 @@ export default {
     t (str) {
       return this.$craft.t('translate', str);
     },
+    getNumberOfLines (str) {
+      if (str === null) {
+        return 1;
+      }
+      const nbLines = str.split(/\r\n|\r|\n/).length;
+      if (nbLines > 1) {
+        return nbLines;
+      }
+      return 1;
+    },
     getElementContentWidth (element) {
       const styles = window.getComputedStyle(element);
       const padding = parseFloat(styles.paddingLeft) + parseFloat(styles.paddingRight);
@@ -531,6 +542,11 @@ export default {
 
 .translate-table tr.sel td:not(.checkbox-cell) {
     background: #d5d8dd;
+}
+
+textarea {
+    overflow-x: hidden;
+    min-height: 32px;
 }
 
 .btn .checkbox + span {

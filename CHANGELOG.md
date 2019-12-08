@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.5.1 - 2019-12-08
+
+### Added
+- Save on ctrl/meta + s key
+
+### Changed
+- Changed input texts to textarea to allow multiline strings
+
+### Fixed
+- Fixed action url in JS to get translations
+
 ## 1.5.0 - 2019-12-04
 
 ### Added
