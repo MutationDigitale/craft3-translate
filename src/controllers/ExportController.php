@@ -3,6 +3,7 @@
 namespace mutation\translate\controllers;
 
 use Craft;
+use craft\helpers\UrlHelper;
 use craft\web\Controller;
 use mutation\translate\Translate;
 
@@ -10,7 +11,9 @@ class ExportController extends Controller
 {
     public function actionIndex()
     {
-        $categories = Translate::getInstance()->settings->categories;
+        $this->requirePermission(Translate::EXPORT_TRANSLATIONS_PERMISSION);
+
+        $categories = Translate::getInstance()->settings->getCategories();
         $categoriesSelect = [];
         foreach ($categories as $category) {
             $categoriesSelect[] = [
@@ -19,7 +22,25 @@ class ExportController extends Controller
             ];
         }
 
+        $settings = Translate::getInstance()->settings;
+
+        $pluginName = $settings->pluginName;
+        $templateTitle = Craft::t('translations-admin', 'Export');
+
         $variables = [];
+        $variables['fullPageForm'] = true;
+        $variables['title'] = $templateTitle;
+        $variables['crumbs'] = [
+            [
+                'label' => $pluginName,
+                'url' => UrlHelper::cpUrl('translations-admin'),
+            ],
+            [
+                'label' => $templateTitle,
+                'url' => UrlHelper::cpUrl('translations-admin/export-messages'),
+            ],
+        ];
+        $variables['docTitle'] = "{$pluginName} - {$templateTitle}";
         $variables['selectedSubnavItem'] = 'export';
         $variables['categories'] = $categoriesSelect;
 

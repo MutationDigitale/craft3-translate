@@ -20,10 +20,6 @@
     "Empty",
 ]) %}
 
-{% if title is not defined %}
-    {% set title = "Translate messages" | t('translations-admin') %}
-{% endif %}
-
 {% block actionButton %}
     <save-translations></save-translations>
 {% endblock %}
@@ -31,7 +27,7 @@
 {% set sidebar = categories|length > 1 %}
 
 {% block main %}
-    <translations-menu :categories="{{ categories | json_encode }}"></translations-menu>
+    <translations-menu :categories="{{ categories | json_encode }}" category="{{ category }}"></translations-menu>
 
     <translations-list></translations-list>
 {% endblock %}

@@ -24,22 +24,29 @@ import { EventBus } from './../EventBus.js';
 
 export default {
   props: {
-    categories: Array
+    categories: Array,
+    category: String
   },
-  data () {
-    return {
-      category: null
-    };
+  created () {
+    window.addEventListener('popstate', () => {
+      const pathSplit = document.location.pathname.split('/');
+      if (pathSplit.length >= 3 && pathSplit[2] === 'translations-admin') {
+        this.changeCategory(pathSplit.length >= 4 ? pathSplit[3] : this.categories[0], false);
+      }
+    });
   },
   mounted () {
-    this.changeCategory(this.categories[0]);
+    EventBus.$emit('category-changed', this.category);
   },
   methods: {
-    changeCategory (cat) {
+    changeCategory (cat, pushState = true) {
       this.category = cat;
       EventBus.$emit('category-changed', cat);
+      if (pushState) {
+        window.history.pushState({}, '', '/admin/translations-admin/' + cat);
+      }
     },
-    toggleSidebar() {
+    toggleSidebar () {
       document.body.classList.toggle('showing-sidebar');
     }
   }

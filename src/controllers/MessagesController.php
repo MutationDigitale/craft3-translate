@@ -10,17 +10,27 @@ use mutation\translate\Translate;
 use mutation\translate\TranslateBundle;
 use yii\web\NotFoundHttpException;
 
-class TranslateController extends Controller
+class MessagesController extends Controller
 {
-    public function actionIndex()
+    public function actionIndex($category = null)
     {
         $this->requirePermission(Translate::UPDATE_TRANSLATIONS_PERMISSION);
 
         $this->view->registerAssetBundle(TranslateBundle::class);
 
+        $settings = Translate::getInstance()->settings;
+
+        $pluginName = $settings->pluginName;
+        $templateTitle = Craft::t('translations-admin', 'Messages');
+
+        $categories = Translate::getInstance()->settings->getCategories();
+
         $variables = [];
+        $variables['title'] = $templateTitle;
+        $variables['docTitle'] = "{$pluginName} - {$templateTitle}";
         $variables['selectedSubnavItem'] = 'translations';
-        $variables['categories'] = Translate::getInstance()->settings->categories;
+        $variables['categories'] = $categories;
+        $variables['category'] = $category ?? $categories[0];
 
         $this->renderTemplate('translations-admin/index', $variables);
     }

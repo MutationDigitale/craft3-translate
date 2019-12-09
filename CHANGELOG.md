@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.6.1 - 2019-12-09
+
+### Added
+- New setting page
+- Allow to change plugin name in settings page
+
+### Changed
+- Persist navigation between categories
+- Refactoring / cleanup
+
 ## 1.6.0 - 2019-12-09
 
 > {warning} You'll need to uninstall and re-install the plugin because of the new handle.

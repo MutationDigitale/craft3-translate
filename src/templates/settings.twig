@@ -1,0 +1,64 @@
+{% extends "_layouts/cp" %}
+
+{% import "_includes/forms" as forms %}
+
+{% block content %}
+
+    <input type="hidden" name="action" value="translations-admin/settings/save">
+    <input type="hidden" name="pluginHandle" value="translations-admin">
+
+    {{ redirectInput("translations-admin/plugin-settings") }}
+
+    {% namespace "settings" %}
+
+        {{ forms.textField({
+            first: true,
+            label: "Plugin Name" | t('translations-admin'),
+            instructions: "How the plugin should be named in the CP" | t('translations-admin'),
+            id: 'pluginName',
+            name: 'pluginName',
+            value: settings.pluginName,
+            required: true
+        }) }}
+
+        {{ forms.editableTableField({
+            label: "Categories" | t("translations-admin"),
+            instructions: "Choose the source message categories you want to have in your database and control panel" | t("translations-admin"),
+            id: 'categories',
+            name: 'categories',
+            required: false,
+            defaultValues: {
+                pattern: "",
+            },
+            cols: {
+                category: {
+                    heading: "Category" | t("translations-admin"),
+                    type: "singleline",
+                    width: "100%",
+                    code: true,
+                },
+            },
+            rows: settings.categories,
+            errors: settings.getErrors("categories"),
+        }) }}
+
+        {{ forms.lightswitchField({
+            label: "Add missing translations" | t("translations-admin"),
+            instructions: "Controls whether missing translations are automatically added to the database when a page is visited." | t("translations-admin"),
+            id: "addMissingTranslations",
+            name: "addMissingTranslations",
+            on: settings.addMissingTranslations,
+            errors: settings.getErrors("addMissingTranslations"),
+        }) }}
+
+        {{ forms.lightswitchField({
+            label: "Add missing translations for site request only" | t("translations-admin"),
+            instructions: "Controls whether missing translations are only added when the request is from the site." | t("translations-admin"),
+            id: "addMissingSiteRequestOnly",
+            name: "addMissingSiteRequestOnly",
+            on: settings.addMissingSiteRequestOnly,
+            errors: settings.getErrors("addMissingSiteRequestOnly"),
+        }) }}
+
+    {% endnamespace %}
+{% endblock %}

@@ -6,10 +6,10 @@ use Craft;
 use craft\base\Plugin;
 use craft\events\RegisterUrlRulesEvent;
 use craft\events\RegisterUserPermissionsEvent;
+use craft\helpers\UrlHelper;
 use craft\i18n\I18N;
 use craft\services\UserPermissions;
 use craft\web\UrlManager;
-use mutation\translate\controllers\TranslateController;
 use mutation\translate\models\Settings;
 use mutation\translate\models\SourceMessage;
 use yii\base\Event;
@@ -20,10 +20,13 @@ class Translate extends Plugin
 {
     const UPDATE_TRANSLATIONS_PERMISSION = 'updateTranslations';
     const EXPORT_TRANSLATIONS_PERMISSION = 'exportTranslations';
+    const CHANGE_TRANSLATIONS_SETTINGS_PERMISSION = 'changeTranslationsSettings';
 
     public function init()
     {
-        $this->name = Craft::t('translations-admin', 'Translations admin ');
+        parent::init();
+
+        $this->name = $this->settings->pluginName;
 
         $this->setComponents(
             [
@@ -38,10 +41,13 @@ class Translate extends Plugin
     public function getCpNavItem()
     {
         $item = parent::getCpNavItem();
-        $item['subnav'] = [
-            'translations' => ['label' => 'Messages', 'url' => 'translations-admin'],
-            'export' => ['label' => 'Export', 'url' => 'translations-admin/export'],
-        ];
+        $item['subnav']['translations'] = ['label' => 'Messages', 'url' => 'translations-admin'];
+        if (Craft::$app->getUser()->checkPermission(self::EXPORT_TRANSLATIONS_PERMISSION)) {
+            $item['subnav']['export'] = ['label' => 'Export', 'url' => 'translations-admin/export-messages'];
+        }
+        if (Craft::$app->getUser()->checkPermission(self::CHANGE_TRANSLATIONS_SETTINGS_PERMISSION)) {
+            $item['subnav']['settings'] = ['label' => 'Settings', 'url' => 'translations-admin/plugin-settings'];
+        }
         return $item;
     }
 
@@ -50,12 +56,17 @@ class Translate extends Plugin
         return new Settings();
     }
 
+    public function getSettingsResponse()
+    {
+        Craft::$app->getResponse()->redirect(UrlHelper::cpUrl('translations-admin/plugin-settings'));
+    }
+
     private function initDbMessages()
     {
         /** @var I18N $i18n */
         $i18n = Craft::$app->getComponents(false)['i18n'];
 
-        foreach ($this->getSettings()->categories as $category) {
+        foreach ($this->settings->getCategories() as $category) {
             $i18n->translations[$category] = [
                 'class' => DbMessageSource::class,
                 'sourceLanguage' => 'en-US',
@@ -82,6 +93,9 @@ class Translate extends Plugin
                     ],
                     self::EXPORT_TRANSLATIONS_PERMISSION => [
                         'label' => 'Export translations',
+                    ],
+                    self::CHANGE_TRANSLATIONS_SETTINGS_PERMISSION => [
+                        'label' => 'Change translations settings',
                     ]
                 ];
             }
@@ -91,8 +105,12 @@ class Translate extends Plugin
             UrlManager::class,
             UrlManager::EVENT_REGISTER_CP_URL_RULES,
             function (RegisterUrlRulesEvent $event) {
-                $event->rules['translations-admin'] = 'translations-admin/translate/index';
-                $event->rules['translations-admin/export'] = 'translations-admin/export/index';
+                $event->rules['translations-admin'] = 'translations-admin/messages/index';
+                foreach ($this->settings->getCategories() as $category) {
+                    $event->rules["translations-admin/<category:$category>"] = 'translations-admin/messages/index';
+                }
+                $event->rules['translations-admin/export-messages'] = 'translations-admin/export/index';
+                $event->rules['translations-admin/plugin-settings'] = 'translations-admin/settings/index';
             }
         );
 
@@ -100,11 +118,11 @@ class Translate extends Plugin
             MessageSource::class,
             MessageSource::EVENT_MISSING_TRANSLATION,
             function (MissingTranslationEvent $event) {
-                if (!$this->getSettings()->addMissingTranslations) {
+                if (!$this->settings->addMissingTranslations) {
                     return;
                 }
 
-                if (!Craft::$app->request->isSiteRequest && $this->getSettings()->addMissingSiteRequestOnly) {
+                if (!Craft::$app->request->isSiteRequest && $this->settings->addMissingSiteRequestOnly) {
                     return;
                 }
 
@@ -112,7 +130,7 @@ class Translate extends Plugin
                     return;
                 }
 
-                if (!in_array($event->category, $this->getSettings()->categories, true)) {
+                if (!in_array($event->category, $this->settings->getCategories(), true)) {
                     return;
                 }
 

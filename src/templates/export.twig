@@ -2,23 +2,22 @@
 
 {% import "_includes/forms" as forms %}
 
-{% if title is not defined %}
-    {% set title = "Export translations" | t('translations-admin') %}
-{% endif %}
+{% block actionButton %}
+    {% if fullPageForm %}
+        <input type="submit" class="btn submit" value="{{ 'Export' | t('translations-admin') }}">
+    {% endif %}
+{% endblock %}
 
 {% block content %}
-    <form method="post" accept-charset="UTF-8">
-        {{ actionInput('translations-admin/export/export') }}
-        {{ csrfInput() }}
+    {{ actionInput('translations-admin/export/export') }}
 
-        {{ forms.selectField({
-            label: "Category" | t('translations-admin'),
-            id: 'category',
-            name: 'category',
-            value: '',
-            options: categories
-        }) }}
-
-        <button class="btn submit" type="submit">{{ "Export" | t('translations-admin') }}</button>
-    </form>
+    {{ forms.selectField({
+        first: true,
+        label: "Category" | t('translations-admin'),
+        instructions: "Choose which category to export your translations" | t('translations-admin'),
+        id: 'category',
+        name: 'category',
+        value: '',
+        options: categories
+    }) }}
 {% endblock %}

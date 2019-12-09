@@ -37,20 +37,22 @@ You have special permissions for the Translations admin plugin:
 
 ## Settings
 
-To configure the source message categories you want to have in your database and control panel, add values to the `categories` setting.
+You can either go the **settings page** or create a file `translations-admin.php` in your `config` directory.
 
-Missing translations will be added automatically to the database. If you want to disable this behavior, change `addMissingTranslations` to `false`
+- **Plugin Name**: How the plugin should be named in the CP
+- **Categories**: Choose the source message categories you want to have in your database and control panel.
+- **Add missing translations**: Controls whether missing translations are automatically added to the database when a page is visited.
+- **Add missing translations for site request only**: Controls whether missing translations are only added when the request is from the site.
 
-By default, missing translations are only added for site requests. To add missing translations from the control panel, change the setting `addMissingSiteRequestOnly` to `false`
-
-Create a file `translations-admin.php` in your `config` directory and change the settings you want, for example:
+Config file example:
 ```
 <?php
 
 return [
+    'pluginName' => 'Translations',
     'categories' => [
-        'site',
-        'app'
+        ['category' => 'site']
+        ['category' => 'app']
     ],
     'addMissingTranslations' => false,
     'addMissingSiteRequestOnly' => false
