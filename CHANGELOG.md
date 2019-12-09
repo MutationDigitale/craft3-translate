@@ -1,8 +1,13 @@
 # Changelog
 
-## 1.5.5 - 2019-12-09
+## 1.6.0 - 2019-12-09
 
 > {warning} You'll need to uninstall and re-install the plugin because of the new handle.
+
+### Changed
+- Version update for the warning for the new plugin handle
+
+## 1.5.5 - 2019-12-09
 
 ### Fixed
 - Moved everything to the new plugin handle `translations-admin`.
