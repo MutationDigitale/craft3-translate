@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.5.4 - 2019-12-09
+
+### Fixed
+- Fixed translations sources to be the new plugin handle
+
 ## 1.5.3 - 2019-12-09
 
 ### Fixed

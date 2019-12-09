@@ -445,7 +445,7 @@ export default {
       return JSON.parse(JSON.stringify(obj));
     },
     t (str) {
-      return this.$craft.t('translate', str);
+      return this.$craft.t('translations-admin', str);
     },
     getNumberOfLines (str) {
       if (str === null) {

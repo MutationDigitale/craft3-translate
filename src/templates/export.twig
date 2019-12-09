@@ -3,7 +3,7 @@
 {% import "_includes/forms" as forms %}
 
 {% if title is not defined %}
-    {% set title = "Export translations" | t('translate') %}
+    {% set title = "Export translations" | t('translations-admin') %}
 {% endif %}
 
 {% block content %}
@@ -19,6 +19,6 @@
             options: categories
         }) }}
 
-        <button class="btn submit" type="submit">{{ "Export" | t('translate') }}</button>
+        <button class="btn submit" type="submit">{{ "Export" | t('translations-admin') }}</button>
     </form>
 {% endblock %}

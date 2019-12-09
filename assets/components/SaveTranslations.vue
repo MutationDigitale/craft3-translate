@@ -69,7 +69,7 @@ export default {
         });
     },
     t: function (str) {
-      return this.$craft.t('translate', str);
+      return this.$craft.t('translations-admin', str);
     }
   }
 };

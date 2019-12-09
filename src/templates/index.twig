@@ -1,6 +1,6 @@
 {% extends "_layouts/cp" %}
 
-{% do view.registerTranslations('translate', [
+{% do view.registerTranslations('translations-admin', [
     "Saving",
     "Save",
     "translations",
@@ -21,7 +21,7 @@
 ]) %}
 
 {% if title is not defined %}
-    {% set title = "Translate messages" | t('translate') %}
+    {% set title = "Translate messages" | t('translations-admin') %}
 {% endif %}
 
 {% block actionButton %}
