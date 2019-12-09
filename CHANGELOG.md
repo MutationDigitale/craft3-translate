@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.5.3 - 2019-12-09
+
+### Fixed
+- Updated plugin name and handle to be the same as the plugin store
+
 ## 1.5.2 - 2019-12-08
 
 ### Added

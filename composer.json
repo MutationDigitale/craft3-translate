@@ -22,8 +22,8 @@
     }
   },
   "extra": {
-    "name": "Translate",
-    "handle": "translate",
+    "name": "Translations admin",
+    "handle": "translations-admin",
     "hasCpSettings": false,
     "hasCpSection": true,
     "schemaVersion": "1.1.0",
