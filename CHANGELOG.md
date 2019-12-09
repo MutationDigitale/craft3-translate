@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.5.2 - 2019-12-08
+
+### Added
+- Option to disable adding missing translations
+
 ## 1.5.1 - 2019-12-08
 
 ### Added

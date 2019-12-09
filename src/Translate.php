@@ -104,19 +104,31 @@ class Translate extends Plugin
             MessageSource::class,
             MessageSource::EVENT_MISSING_TRANSLATION,
             function (MissingTranslationEvent $event) {
-                if ((Craft::$app->request->isSiteRequest || !$this->getSettings()->addMissingSiteRequestOnly) &&
-                    $event->message &&
-                    in_array($event->category, $this->getSettings()->categories, true)) {
-                    $sourceMessage = SourceMessage::find()
-                        ->where(array('message' => $event->message, 'category' => $event->category))
-                        ->one();
+                if (!$this->getSettings()->addMissingTranslations) {
+                    return;
+                }
 
-                    if (!$sourceMessage) {
-                        $sourceMessage = new SourceMessage();
-                        $sourceMessage->category = $event->category;
-                        $sourceMessage->message = $event->message;
-                        $sourceMessage->save();
-                    }
+                if (!Craft::$app->request->isSiteRequest && $this->getSettings()->addMissingSiteRequestOnly) {
+                    return;
+                }
+
+                if (!$event->message) {
+                    return;
+                }
+
+                if (!in_array($event->category, $this->getSettings()->categories, true)) {
+                    return;
+                }
+
+                $sourceMessage = SourceMessage::find()
+                    ->where(array('message' => $event->message, 'category' => $event->category))
+                    ->one();
+
+                if (!$sourceMessage) {
+                    $sourceMessage = new SourceMessage();
+                    $sourceMessage->category = $event->category;
+                    $sourceMessage->message = $event->message;
+                    $sourceMessage->save();
                 }
             }
         );

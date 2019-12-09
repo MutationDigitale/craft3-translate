@@ -39,6 +39,8 @@ You have special permissions for the Translate plugin:
 
 To configure the source message categories you want to have in your database and control panel, add values to the `categories` setting.
 
+Missing translations will be added automatically to the database. If you want to disable this behavior, change `addMissingTranslations` to `false`
+
 By default, missing translations are only added for site requests. To add missing translations from the control panel, change the setting `addMissingSiteRequestOnly` to `false`
 
 Create a file `translate.php` in your `config` directory and change the settings you want, for example:
@@ -50,6 +52,7 @@ return [
         'site',
         'app'
     ],
+    'addMissingTranslations' => false,
     'addMissingSiteRequestOnly' => false
 ];
 ```
