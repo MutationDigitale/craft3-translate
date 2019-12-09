@@ -1,4 +1,4 @@
-# Translate plugin for Craft CMS
+# Translations admin plugin for Craft CMS
 
 This plugins adds a control panel interface to edit your static translations in the database. 
 
@@ -24,14 +24,14 @@ This plugin requires Craft CMS 3.1.0 or later.
 Install the plugin via the **Plugin Store** or by command line:
 ```
 composer require mutation/translate
-php craft install/plugin translate
+php craft install/plugin translations-admin
 ```
 
-You can now edit your translations in the control panel `/admin/translate`.
+You can now edit your translations in the control panel `/admin/translations-admin`.
 
 ## Permissions
 
-You have special permissions for the Translate plugin:
+You have special permissions for the Translations admin plugin:
 - Update translations
 - Export translations
 
@@ -43,7 +43,7 @@ Missing translations will be added automatically to the database. If you want to
 
 By default, missing translations are only added for site requests. To add missing translations from the control panel, change the setting `addMissingSiteRequestOnly` to `false`
 
-Create a file `translate.php` in your `config` directory and change the settings you want, for example:
+Create a file `translations-admin.php` in your `config` directory and change the settings you want, for example:
 ```
 <?php
 

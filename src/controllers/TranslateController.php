@@ -22,7 +22,7 @@ class TranslateController extends Controller
         $variables['selectedSubnavItem'] = 'translations';
         $variables['categories'] = Translate::getInstance()->settings->categories;
 
-        $this->renderTemplate('translate/index', $variables);
+        $this->renderTemplate('translations-admin/index', $variables);
     }
 
     public function actionGetTranslations()

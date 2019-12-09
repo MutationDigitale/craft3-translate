@@ -42,7 +42,7 @@ export default {
       const formData = new FormData();
 
       formData.append(this.$csrfTokenName, this.$csrfTokenValue);
-      formData.append('action', 'translate/translate/save');
+      formData.append('action', 'translations-admin/translate/save');
 
       for (const languageId in this.sourceMessageInputs) {
         for (const sourceMessageId in this.sourceMessageInputs[languageId]) {

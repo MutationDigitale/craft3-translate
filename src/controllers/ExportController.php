@@ -23,7 +23,7 @@ class ExportController extends Controller
         $variables['selectedSubnavItem'] = 'export';
         $variables['categories'] = $categoriesSelect;
 
-        $this->renderTemplate('translate/export', $variables);
+        $this->renderTemplate('translations-admin/export', $variables);
     }
 
     public function actionExport()

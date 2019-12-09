@@ -8,11 +8,11 @@
 
 {% block content %}
     <form method="post" accept-charset="UTF-8">
-        {{ actionInput('translate/export/export') }}
+        {{ actionInput('translations-admin/export/export') }}
         {{ csrfInput() }}
 
         {{ forms.selectField({
-            label: "Category"|t('translate'),
+            label: "Category" | t('translations-admin'),
             id: 'category',
             name: 'category',
             value: '',

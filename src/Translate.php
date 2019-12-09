@@ -18,16 +18,12 @@ use yii\i18n\MissingTranslationEvent;
 
 class Translate extends Plugin
 {
-    public $controllerMap = [
-        'translate' => TranslateController::class,
-    ];
-
     const UPDATE_TRANSLATIONS_PERMISSION = 'updateTranslations';
     const EXPORT_TRANSLATIONS_PERMISSION = 'exportTranslations';
 
     public function init()
     {
-        $this->name = Craft::t('translations-admin', 'Translate');
+        $this->name = Craft::t('translations-admin', 'Translations admin ');
 
         $this->setComponents(
             [
@@ -43,8 +39,8 @@ class Translate extends Plugin
     {
         $item = parent::getCpNavItem();
         $item['subnav'] = [
-            'translations' => ['label' => 'Messages', 'url' => 'translate'],
-            'export' => ['label' => 'Export', 'url' => 'translate/export'],
+            'translations' => ['label' => 'Messages', 'url' => 'translations-admin'],
+            'export' => ['label' => 'Export', 'url' => 'translations-admin/export'],
         ];
         return $item;
     }
@@ -80,7 +76,7 @@ class Translate extends Plugin
             UserPermissions::class,
             UserPermissions::EVENT_REGISTER_PERMISSIONS,
             function (RegisterUserPermissionsEvent $event) {
-                $event->permissions['Translate'] = [
+                $event->permissions['translations-admin'] = [
                     self::UPDATE_TRANSLATIONS_PERMISSION => [
                         'label' => 'Update translations',
                     ],
@@ -95,8 +91,8 @@ class Translate extends Plugin
             UrlManager::class,
             UrlManager::EVENT_REGISTER_CP_URL_RULES,
             function (RegisterUrlRulesEvent $event) {
-                $event->rules['translate'] = 'translate/translate/index';
-                $event->rules['translate/export'] = 'translate/export/index';
+                $event->rules['translations-admin'] = 'translations-admin/translate/index';
+                $event->rules['translations-admin/export'] = 'translations-admin/export/index';
             }
         );
 

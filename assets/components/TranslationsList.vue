@@ -233,7 +233,7 @@ export default {
       this.isLoading = true;
 
       axios
-        .get(this.$craft.getActionUrl('translate/translate/get-translations', { category: this.category }))
+        .get(this.$craft.getActionUrl('translations-admin/translate/get-translations', { category: this.category }))
         .then((response) => {
           this.languages = response.data.languages;
           this.sourceMessages = response.data.sourceMessages;
@@ -258,7 +258,7 @@ export default {
       const formData = new FormData();
 
       formData.append(this.$csrfTokenName, this.$csrfTokenValue);
-      formData.append('action', 'translate/translate/add');
+      formData.append('action', 'translations-admin/translate/add');
       formData.append('message', this.messageToAdd);
       formData.append('category', this.category);
 
@@ -288,7 +288,7 @@ export default {
       const formData = new FormData();
 
       formData.append(this.$csrfTokenName, this.$csrfTokenValue);
-      formData.append('action', 'translate/translate/delete');
+      formData.append('action', 'translations-admin/translate/delete');
 
       for (const sourceMessageId of this.checkedSourceMessages) {
         formData.append('sourceMessageId[]', sourceMessageId);
