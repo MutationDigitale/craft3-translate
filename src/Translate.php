@@ -110,6 +110,7 @@ class Translate extends Plugin
                     $event->rules["translations-admin/<category:$category>"] = 'translations-admin/messages/index';
                 }
                 $event->rules['translations-admin/export-messages'] = 'translations-admin/export/index';
+                $event->rules['translations-admin/missing-translations'] = 'translations-admin/missing/index';
                 $event->rules['translations-admin/plugin-settings'] = 'translations-admin/settings/index';
             }
         );
