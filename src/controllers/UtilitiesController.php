@@ -3,20 +3,64 @@
 namespace mutation\translate\controllers;
 
 use Craft;
+use craft\helpers\UrlHelper;
 use craft\web\Controller;
 use Exception;
+use mutation\translate\models\SourceMessage;
+use mutation\translate\Translate;
 use Twig\Node\Expression\ConstantExpression;
 use Twig\Node\Expression\FilterExpression;
 use Twig\Node\Expression\TempNameExpression;
 use Twig\Node\SetNode;
 use Twig\Source;
 
-class MissingController extends Controller
+class UtilitiesController extends Controller
 {
     private $setNodes = [];
 
     public function actionIndex()
     {
+        $this->requirePermission(Translate::TRANSLATIONS_UTILITIES_PERMISSION);
+
+        $settings = Translate::getInstance()->settings;
+
+        $pluginName = $settings->pluginName;
+        $templateTitle = Craft::t('translations-admin', 'Utilities');
+
+        $variables = [];
+        $variables['fullPageForm'] = false;
+        $variables['title'] = $templateTitle;
+        $variables['crumbs'] = [
+            [
+                'label' => $pluginName,
+                'url' => UrlHelper::cpUrl('translations-admin'),
+            ],
+            [
+                'label' => $templateTitle,
+                'url' => UrlHelper::cpUrl('translations-admin/export-messages'),
+            ],
+        ];
+        $variables['docTitle'] = "{$pluginName} - {$templateTitle}";
+        $variables['selectedSubnavItem'] = 'utilities';
+
+        $this->renderTemplate('translations-admin/utilities', $variables);
+    }
+
+    public function actionDelete()
+    {
+        SourceMessage::deleteAll();
+
+        Craft::$app->getSession()->setNotice(
+            Craft::t('translations-admin', 'All translations deleted.')
+        );
+        return $this->redirectToPostedUrl();
+    }
+
+    public function actionMissing()
+    {
+        $this->requirePermission(Translate::TRANSLATIONS_UTILITIES_PERMISSION);
+        $this->requirePostRequest();
+
         $view = $this->getView();
 
         $view->setTemplateMode('site');
@@ -30,10 +74,6 @@ class MissingController extends Controller
         $messages = array();
 
         foreach ($template_files as $file) {
-            if (basename($file) !== 'index.twig') {
-                continue;
-            }
-
             $template_str = file_get_contents($file);
 
             $tree = @$twig->parse($twig->tokenize(new Source($template_str, basename($file))));
@@ -41,9 +81,27 @@ class MissingController extends Controller
             $this->listFunctionCalls($tree, $tree, $messages);
         }
 
-        var_dump($messages);
+        foreach ($messages as $message) {
+            $sourceMessage = SourceMessage::find()
+                ->where(array('message' => $message['value'], 'category' => $message['category']))
+                ->one();
 
-        die();
+            if (!$sourceMessage) {
+                $sourceMessage = new SourceMessage();
+                $sourceMessage->category = $message['category'];
+                $sourceMessage->message = $message['value'];
+                $sourceMessage->save();
+            }
+        }
+
+        Craft::$app->getSession()->setNotice(
+            Craft::t(
+                'translations-admin',
+                '{count} translations imported.',
+                ['count' => count($messages)]
+            )
+        );
+        return $this->redirectToPostedUrl();
     }
 
     private function listFunctionCalls($tree, $node, array &$list)

@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.7.0 - 2019-12-10
+
+### Added
+- Utility to parse all site templates to add missing translations
+- Utility to delete all translations
+
 ## 1.6.2 - 2019-12-10
 
 ### Fixed

@@ -7,13 +7,25 @@ This plugins adds a control panel interface to edit your static translations in 
 ## Features
 
 - Edit your translations for each language side by side.
+
 - Filter missing translations and search by keywords.
+
 - Configure which translations categories you'll be able to edit.
+
 - Translations will be kept inside your database instead of PHP files.
+
 - When a page is visited on the site, missing translations will automatically be added.
+
 - Add or delete translations in the control panel.
+
 - On installation, your existing PHP site translations will be migrated to your database.
+
 - Export your translations in a CSV file.
+
+- Utilities:
+
+    - Parse all site templates to add missing translations
+    - Delete all translations
 
 ## Requirements
 
