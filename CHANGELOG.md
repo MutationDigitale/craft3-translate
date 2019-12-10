@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.6.2 - 2019-12-10
+
+### Fixed
+- Fixed multiline strings issues in CP
+
 ## 1.6.1 - 2019-12-09
 
 ### Added

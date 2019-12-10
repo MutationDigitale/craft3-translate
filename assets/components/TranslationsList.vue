@@ -58,7 +58,8 @@
                                 <div class="clear hidden" title="Clear"></div>
                             </div>
                             <div v-show="checkedSourceMessages.length === 0">
-                                <input class="text" type="text" v-model="messageToAdd" :placeholder="t('Message')">
+                                <textarea class="text" rows="1"
+                                          v-model="messageToAdd" :placeholder="t('Message')"></textarea>
                                 <button class="btn" type="button" @click="addMessage()"
                                         :disabled="messageToAdd === null || messageToAdd.trim() === ''">
                                     {{ t('Add') }}
@@ -91,7 +92,7 @@
 
                     <td :width="(96/(languages.length + 1)) + '%'">
                         <div class="mobile-only cell-label">{{ t('Key') }}</div>
-                        <span>{{ sourceMessage.message }}</span>
+                        <pre>{{ sourceMessage.message }}</pre>
                     </td>
 
                     <td v-for="language in languages" v-bind:key="language.id"
@@ -542,6 +543,11 @@ export default {
 
 .translate-table tr.sel td:not(.checkbox-cell) {
     background: #d5d8dd;
+}
+
+.translate-table pre {
+    white-space: pre-wrap;
+    word-wrap: break-word;
 }
 
 textarea {
