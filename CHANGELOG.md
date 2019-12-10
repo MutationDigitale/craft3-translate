@@ -6,6 +6,9 @@
 - Utility to parse all site templates to add missing translations
 - Utility to delete all translations
 
+### Fixed
+- Small css alignment fix
+
 ## 1.6.2 - 2019-12-10
 
 ### Fixed

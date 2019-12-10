@@ -74,4 +74,3 @@ return [
 ## Roadmap
 
 - Import translations with a CSV file
-- Add a way to add all missing translations at once 

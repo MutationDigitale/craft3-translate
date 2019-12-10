@@ -60,8 +60,11 @@
                             <div v-show="checkedSourceMessages.length === 0">
                                 <textarea class="text" rows="1"
                                           v-model="messageToAdd" :placeholder="t('Message')"></textarea>
+
+                            </div>
+                            <div v-show="checkedSourceMessages.length === 0">
                                 <button class="btn" type="button" @click="addMessage()"
-                                        :disabled="messageToAdd === null || messageToAdd.trim() === ''">
+                                         :disabled="messageToAdd === null || messageToAdd.trim() === ''">
                                     {{ t('Add') }}
                                 </button>
                             </div>
