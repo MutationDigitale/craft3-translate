@@ -46,6 +46,8 @@ You can now edit your translations in the control panel `/admin/translations-adm
 You have special permissions for the Translations admin plugin:
 - Update translations
 - Export translations
+- Use utilities
+- Change settings
 
 ## Settings
 
