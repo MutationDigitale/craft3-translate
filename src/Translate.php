@@ -41,15 +41,18 @@ class Translate extends Plugin
 
     public function getCpNavItem()
     {
+        $currentUser = Craft::$app->getUser()->getIdentity();
+        $general = Craft::$app->getConfig()->getGeneral();
+
         $item = parent::getCpNavItem();
         $item['subnav']['translations'] = ['label' => 'Messages', 'url' => 'translations-admin'];
-        if (Craft::$app->getUser()->checkPermission(self::EXPORT_TRANSLATIONS_PERMISSION)) {
+        if ($currentUser->can(self::EXPORT_TRANSLATIONS_PERMISSION)) {
             $item['subnav']['export'] = ['label' => 'Export', 'url' => 'translations-admin/export-messages'];
         }
-        if (Craft::$app->getUser()->checkPermission(self::TRANSLATIONS_UTILITIES_PERMISSION)) {
+        if ($currentUser->can(self::TRANSLATIONS_UTILITIES_PERMISSION)) {
             $item['subnav']['utilities'] = ['label' => 'Utilities', 'url' => 'translations-admin/translations-utilities'];
         }
-        if (Craft::$app->getUser()->checkPermission(self::CHANGE_TRANSLATIONS_SETTINGS_PERMISSION)) {
+        if ($currentUser->can(self::CHANGE_TRANSLATIONS_SETTINGS_PERMISSION) && $general->allowAdminChanges) {
             $item['subnav']['settings'] = ['label' => 'Settings', 'url' => 'translations-admin/plugin-settings'];
         }
         return $item;
