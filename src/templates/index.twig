@@ -24,12 +24,18 @@
     <save-translations></save-translations>
 {% endblock %}
 
-{% set sidebar = categories|length > 1 %}
+{% block sidebar %}
+    {% if categories|length > 1 %}
+        <translations-menu :categories="{{ categories | json_encode }}" category="{{ category }}"></translations-menu>
+    {% endif %}
+{% endblock %}
 
-{% block main %}
-    <translations-menu :categories="{{ categories | json_encode }}" category="{{ category }}"></translations-menu>
+{% block content %}
+    <translations-list current-category="{{ category }}"></translations-list>
+{% endblock %}
 
-    <translations-list></translations-list>
+{% block footer %}
+    <translations-footer></translations-footer>
 {% endblock %}
 
 {% block foot %}

@@ -1,4 +1,3 @@
-#main-container #crumbs.empty + #main #header {
-    padding-top: 20px;
-    padding-bottom: 20px;
+#main-container #main #main-content #content-container #content {
+    padding-top: 17px;
 }

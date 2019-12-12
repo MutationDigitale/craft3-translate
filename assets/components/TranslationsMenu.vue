@@ -1,21 +1,15 @@
 <template>
-    <div v-if="categories.length > 1">
-        <a id="sidebar-toggle" @click="toggleSidebar()">
-            <span id="selected-sidebar-item-label">{{ category }}</span>&nbsp;
-            <span data-icon="downangle"></span>
-        </a>
-        <div id="sidebar" class="sidebar">
-            <nav>
-                <ul>
-                    <li v-for="cat in categories" v-bind:key="cat">
-                        <a href="" :class="{'sel': cat === category}"
-                           @click.prevent="changeCategory(cat)">
-                            {{ cat }}
-                        </a>
-                    </li>
-                </ul>
-            </nav>
-        </div>
+    <div>
+        <nav>
+            <ul>
+                <li v-for="cat in categories" v-bind:key="cat">
+                    <a href="" :class="{'sel': cat === category}"
+                       @click.prevent="changeCategory(cat)">
+                        {{ cat }}
+                    </a>
+                </li>
+            </ul>
+        </nav>
     </div>
 </template>
 
@@ -36,7 +30,7 @@ export default {
     });
   },
   mounted () {
-    EventBus.$emit('category-changed', this.category);
+    EventBus.$emit('initial-category', this.category);
   },
   methods: {
     changeCategory (cat, pushState = true) {
@@ -45,17 +39,8 @@ export default {
       if (pushState) {
         window.history.pushState({}, '', '/admin/translations-admin/' + cat);
       }
-    },
-    toggleSidebar () {
-      document.body.classList.toggle('showing-sidebar');
     }
   }
 };
 </script>
-
-<style scoped>
-#sidebar {
-    height: 100%;
-}
-</style>
 

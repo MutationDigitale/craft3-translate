@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.7.1 - 2019-12-12
+
+### Fixed
+- Hide settings when adminAllowChanges is false
+- Fix interface glitches
+
 ## 1.7.0 - 2019-12-10
 
 ### Added
