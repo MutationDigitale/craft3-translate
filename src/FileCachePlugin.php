@@ -80,12 +80,6 @@ class FileCachePlugin extends Plugin
 			}
 		);
 
-		Event::on(Utilities::class, Utilities::EVENT_REGISTER_UTILITY_TYPES,
-			function (RegisterComponentTypesEvent $event) {
-				$event->types[] = CacheUtility::class;
-			}
-		);
-
 		Event::on(
 			ClearCaches::class,
 			ClearCaches::EVENT_REGISTER_CACHE_OPTIONS,

@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.2.1 - 2019-12-20
+
+### Fixed
+- Removed no longer working File Cache utility
+
 ## 2.2.0 - 2019-12-20
 
 ### Changed
