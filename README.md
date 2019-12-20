@@ -1,19 +1,13 @@
-No longer maintained. Use the Blitz plugin instead (https://github.com/putyourlightson/craft-blitz).
-
 # File Cache plugin for Craft CMS
 
 Cache pages to HTML files.
 
 ## Installation
 
-- Install the plugin
-
-- Add this url rewrite to the htaccess:
-
+Install the plugin via the **Plugin Store** or by command line:
 ```
-RewriteCond %{REQUEST_METHOD} GET
-RewriteCond %{DOCUMENT_ROOT}/filecache/%{HTTP_HOST}/%{REQUEST_URI}/index.html -f
-RewriteRule .* /filecache/%{HTTP_HOST}/%{REQUEST_URI}/index.html [L,E=nocache:1]]
+composer require mutation/filecache
+php craft install/plugin filecache
 ```
 
 ## Configuration
@@ -28,33 +22,23 @@ return [
 		'excludedEntrySections' => [],
 		'excludedEntryTypes' => [],
 		'excludedSites' => [],
-		'excludedEntrySectionsFromWarming' => [],
-		'excludedEntryTypesFromWarming' => [],
-		'excludedSitesFromWarming' => [],
-		'cacheFolderPath' => 'web/filecache',
-		'automaticallyWarmCache' => true,
-		'concurrency' => 5,
+		'cacheFolderPath' => 'filecache'
 	]
 ];
 
 ```
 
-Exclude entries from cache by section `excludedEntrySections` or type `excludedEntryTypes` by adding the section/type handles to their respective arrays.
-
-Exclude entries from warming by section `excludedEntrySections` or type `excludedEntryTypes` by adding the section/type handles to their respective arrays.
+Exclude entries from cache by section `excludedEntrySections`, type `excludedEntryTypes` or site `excludedSites` by adding the section/type handles to their respective arrays.
 
 ## How to use
 
-The html file cache is created automatically when you visit a page. Also, the cached is warmed each time the templates caches are cleared (when an element is saved or deleted for exemple). 
+The html file cache is created automatically when you visit a page. Also, the cached is warmed each time the templates caches are cleared (when an element is saved or deleted for exemple).
 
 You can visit this url to clear the cache manually: `/admin/utilities/clear-caches`.
-
-You can visit this url to warm the cache manually: `/admin/utilities/filecache`.
 
 You can also use these 2 console commands (`@web` alias must be set to an absolute url):
 ```
 php craft clear-caches/file-caches
-php craft filecache/cache/warm
 ```
 
 ## Dynamic content

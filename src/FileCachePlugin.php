@@ -3,9 +3,7 @@
 namespace mutation\filecache;
 
 use Craft;
-use craft\base\ElementInterface;
 use craft\base\Plugin;
-use craft\console\Application as ConsoleApplication;
 use craft\events\BatchElementActionEvent;
 use craft\events\DeleteElementEvent;
 use craft\events\ElementEvent;
@@ -18,7 +16,6 @@ use craft\utilities\ClearCaches;
 use craft\web\Application;
 use craft\web\Response;
 use craft\web\twig\variables\CraftVariable;
-use craft\web\View;
 use mutation\filecache\models\SettingsModel;
 use mutation\filecache\services\FileCacheService;
 use mutation\filecache\utilities\CacheUtility;
@@ -40,15 +37,17 @@ class FileCachePlugin extends Plugin
 
 		self::$plugin = $this;
 
-		if (Craft::$app instanceof ConsoleApplication) {
-			$this->controllerNamespace = 'mutation\filecache\console\controllers';
+		if ($this->isInstalled && !Craft::$app->request->getIsConsoleRequest()) {
+			$this->setComponents(
+				[
+					'fileCache' => FileCacheService::class,
+				]
+			);
+
+			$this->fileCacheService()->serveCache();
+
+			$this->initEvents();
 		}
-
-		$this->setComponents([
-			'fileCache' => FileCacheService::class,
-		]);
-
-		$this->initEvents();
 	}
 
 	public function fileCacheService(): FileCacheService
@@ -102,10 +101,7 @@ class FileCachePlugin extends Plugin
 
 	public function handleAfterRequest()
 	{
-		if ($this->fileCacheService()->isCacheableRequest()) {
-			$cacheFilePath = $this->fileCacheService()->getCacheFilePath();
-			$this->fileCacheService()->writeCache($cacheFilePath, Craft::$app->response->data);
-		}
+		$this->fileCacheService()->writeCache(Craft::$app->response->data);
 	}
 
 	public function handleElementChange(Event $event)
@@ -143,10 +139,6 @@ class FileCachePlugin extends Plugin
 
 		if ($this->_deleteCaches) {
 			$this->fileCacheService()->deleteAllFileCaches();
-
-			if ($settings->automaticallyWarmCache) {
-				$this->fileCacheService()->warmAllCache(true);
-			}
 
 			$this->_deleteCaches = false;
 		}

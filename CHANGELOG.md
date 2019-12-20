@@ -1,5 +1,15 @@
 # Changelog
 
+## 2.2.0 - 2019-12-20
+
+### Changed
+- Store caching in `storage/runtime`
+- Server static cache files from PHP instead of htaccess
+- Use `FileHelper` class
+
+### Removed
+- Warming
+
 ## 2.1.7 - 2019-10-30
 
 ### Changed

@@ -15,17 +15,7 @@ class SettingsModel extends Model
 	/**
 	 * @var string
 	 */
-	public $cacheFolderPath = 'web/filecache';
-
-	/**
-	 * @var bool
-	 */
-	public $automaticallyWarmCache = false;
-
-	/**
-	 * @var int
-	 */
-	public $concurrency = 5;
+	public $cacheFolderPath = 'filecache';
 
 	/**
 	 * @var array
@@ -41,19 +31,4 @@ class SettingsModel extends Model
 	 * @var array
 	 */
 	public $excludedSites = [];
-
-	/**
-	 * @var array
-	 */
-	public $excludedEntrySectionsFromWarming = [];
-
-	/**
-	 * @var array
-	 */
-	public $excludedEntryTypesFromWarming = [];
-
-	/**
-	 * @var array
-	 */
-	public $excludedSitesFromWarming = [];
 }
