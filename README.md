@@ -1,6 +1,6 @@
 # File Cache plugin for Craft CMS
 
-Cache pages to HTML files.
+The html file cache is created automatically when you visit a page and then served when the page is visited after. The cache automatically is cleared when an element is saved, modified or deleted.
 
 ## Installation
 
@@ -31,8 +31,6 @@ return [
 Exclude entries from cache by section `excludedEntrySections`, type `excludedEntryTypes` or site `excludedSites` by adding the section/type handles to their respective arrays.
 
 ## How to use
-
-The html file cache is created automatically when you visit a page. Also, the cached is warmed each time the templates caches are cleared (when an element is saved or deleted for exemple).
 
 You can visit this url to clear the cache manually: `/admin/utilities/clear-caches`.
 
