@@ -2,7 +2,6 @@
 
 namespace mutation\filecache\models;
 
-use Craft;
 use craft\base\Model;
 
 class SettingsModel extends Model
@@ -31,4 +30,14 @@ class SettingsModel extends Model
 	 * @var array
 	 */
 	public $excludedSites = [];
+
+	/**
+	 * @var string
+	 */
+	public $csrfInputKey = '{$CSRF_INPUT}';
+
+	/**
+	 * @var string
+	 */
+	public $csrfJsTokenKey = '{$CSRF_JS_TOKEN}';
 }

@@ -7,17 +7,19 @@ use craft\base\Component;
 use craft\elements\Entry;
 use craft\elements\User;
 use craft\helpers\FileHelper;
+use craft\helpers\Html;
 use craft\helpers\StringHelper;
 use mutation\filecache\FileCachePlugin;
 use mutation\filecache\models\SettingsModel;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
+
 use function in_array;
 
 class FileCacheService extends Component
 {
-    public function writeCache($html)
-    {
+	public function writeCache()
+	{
 		if (!$this->isCacheableRequest()) {
 			return;
 		}
@@ -28,8 +30,8 @@ class FileCacheService extends Component
 
 		$filePath = $this->getCacheFilePath();
 
-        FileHelper::writeToFile($filePath, trim($html));
-    }
+		FileHelper::writeToFile($filePath, trim(Craft::$app->response->data));
+	}
 
 	public function serveCache()
 	{
@@ -44,27 +46,36 @@ class FileCacheService extends Component
 		}
 
 		Craft::$app->response->data = file_get_contents($filePath);
+
+		$this->replaceVariables();
+
 		Craft::$app->end();
 	}
 
-    public function deleteAllFileCaches()
-    {
-        $dir = $this->_normalizePath($this->getFileCacheDirectory());
+	public function replaceVariables()
+	{
+		$this->replaceCsrfInput();
+		$this->replaceJsCrsfToken();
+	}
 
-        if (!is_dir($dir)) {
-            return;
-        }
+	public function deleteAllFileCaches()
+	{
+		$dir = $this->_normalizePath($this->getFileCacheDirectory());
 
-        $files = new RecursiveIteratorIterator(
-            new RecursiveDirectoryIterator($dir, RecursiveDirectoryIterator::SKIP_DOTS),
-            RecursiveIteratorIterator::CHILD_FIRST
-        );
+		if (!is_dir($dir)) {
+			return;
+		}
 
-        foreach ($files as $fileInfo) {
-            $todo = ($fileInfo->isDir() ? 'rmdir' : 'unlink');
-            $todo($fileInfo->getRealPath());
-        }
-    }
+		$files = new RecursiveIteratorIterator(
+			new RecursiveDirectoryIterator($dir, RecursiveDirectoryIterator::SKIP_DOTS),
+			RecursiveIteratorIterator::CHILD_FIRST
+		);
+
+		foreach ($files as $fileInfo) {
+			$todo = ($fileInfo->isDir() ? 'rmdir' : 'unlink');
+			$todo($fileInfo->getRealPath());
+		}
+	}
 
 	private function isCacheableRequest(): bool
 	{
@@ -141,21 +152,58 @@ class FileCacheService extends Component
 		return true;
 	}
 
+	private function replaceCsrfInput()
+	{
+		/** @var SettingsModel $settings */
+		$settings = FileCachePlugin::$plugin->getSettings();
+
+		$request = Craft::$app->getRequest();
+
+		Craft::$app->response->data = str_replace(
+			$settings->csrfInputKey,
+			Html::hiddenInput($request->csrfParam, $request->getCsrfToken()),
+			Craft::$app->response->data
+		);
+	}
+
+	private function replaceJsCrsfToken()
+	{
+		/** @var SettingsModel $settings */
+		$settings = FileCachePlugin::$plugin->getSettings();
+
+		$request = Craft::$app->getRequest();
+
+		$csrfParam = $request->csrfParam;
+		$csrfToken = $request->getCsrfToken();
+
+		$script = <<<HTML
+<script>
+	window.$csrfParam = "$csrfToken";
+</script>
+HTML;
+
+		Craft::$app->response->data = str_replace(
+			$settings->csrfJsTokenKey,
+			$script,
+			Craft::$app->response->data
+		);
+	}
+
 	private function getCacheFilePath(): string
-    {
-        $site = Craft::parseEnv(Craft::$app->sites->getCurrentSite()->baseUrl);
-        $path = Craft::$app->request->getPathInfo();
+	{
+		$site = Craft::parseEnv(Craft::$app->sites->getCurrentSite()->baseUrl);
+		$path = Craft::$app->request->getPathInfo();
 
-        $pathSegments = [
-            $this->getFileCacheDirectory(),
-            $site,
-            $path
-        ];
+		$pathSegments = [
+			$this->getFileCacheDirectory(),
+			$site,
+			$path
+		];
 
-        $targetPath = $this->_normalizePath(implode('/', $pathSegments));
+		$targetPath = $this->_normalizePath(implode('/', $pathSegments));
 
-        return $targetPath . DIRECTORY_SEPARATOR . 'index.html';
-    }
+		return $targetPath . DIRECTORY_SEPARATOR . 'index.html';
+	}
 
 	private function getFileCacheDirectory(): string
 	{
@@ -165,9 +213,9 @@ class FileCacheService extends Component
 		return Craft::$app->getPath()->getRuntimePath() . '/' . $settings->cacheFolderPath;
 	}
 
-    private function _normalizePath($path): string
-    {
-        $path = preg_replace('#https?://#', '', $path);
-        return FileHelper::normalizePath($path);
-    }
+	private function _normalizePath($path): string
+	{
+		$path = preg_replace('#https?://#', '', $path);
+		return FileHelper::normalizePath($path);
+	}
 }

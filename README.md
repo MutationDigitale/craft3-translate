@@ -54,9 +54,3 @@ Use this template code to inject the csrf token as global Javascript variables:
 ```
 {{ craft.filecache.injectJsCsrfToken() }}
 ```
-
-Use this template code to inject any url as html:
-
-```
-{{ craft.filecache.injectUrl('URL') }}
-```

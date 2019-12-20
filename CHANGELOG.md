@@ -1,5 +1,13 @@
 # Changelog
 
+## 2.3.0 - 2019-12-20
+
+### Changed
+- Changed how the CSRF token variables are generated. They are replaced server side instead of client side.
+
+### Removed
+- Removed `craft.filecache.injectUrl('URL')`
+
 ## 2.2.1 - 2019-12-20
 
 ### Fixed

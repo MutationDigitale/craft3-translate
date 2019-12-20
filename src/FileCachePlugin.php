@@ -8,17 +8,14 @@ use craft\events\BatchElementActionEvent;
 use craft\events\DeleteElementEvent;
 use craft\events\ElementEvent;
 use craft\events\RegisterCacheOptionsEvent;
-use craft\events\RegisterComponentTypesEvent;
 use craft\helpers\ElementHelper;
 use craft\services\Elements;
-use craft\services\Utilities;
 use craft\utilities\ClearCaches;
 use craft\web\Application;
 use craft\web\Response;
 use craft\web\twig\variables\CraftVariable;
 use mutation\filecache\models\SettingsModel;
 use mutation\filecache\services\FileCacheService;
-use mutation\filecache\utilities\CacheUtility;
 use mutation\filecache\variables\FileCacheVariable;
 use yii\base\Event;
 
@@ -95,7 +92,9 @@ class FileCachePlugin extends Plugin
 
 	public function handleAfterRequest()
 	{
-		$this->fileCacheService()->writeCache(Craft::$app->response->data);
+		$this->fileCacheService()->writeCache();
+
+		$this->fileCacheService()->replaceVariables();
 	}
 
 	public function handleElementChange(Event $event)
