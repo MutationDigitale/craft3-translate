@@ -26,12 +26,18 @@
 
 {% block sidebar %}
     {% if categories|length > 1 %}
-        <translations-menu :categories="{{ categories | json_encode }}" category="{{ category }}"></translations-menu>
+        <translations-menu :categories="{{ categories | json_encode }}" current-category="{{ category }}"></translations-menu>
     {% endif %}
 {% endblock %}
 
+{% block toolbar %}
+    <translations-toolbar></translations-toolbar>
+{% endblock %}
+
 {% block content %}
-    <translations-list current-category="{{ category }}"></translations-list>
+    <div class="main">
+        <translations-list></translations-list>
+    </div>
 {% endblock %}
 
 {% block footer %}

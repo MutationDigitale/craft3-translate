@@ -1,7 +1,14 @@
+import 'es6-promise/auto';
+
 import Vue from 'vue';
+
 import { EventBus } from './EventBus.js';
+
+import TranslationsStore from './store/TranslationsStore';
+
 import SaveTranslations from './components/SaveTranslations.vue';
 import TranslationsList from './components/TranslationsList.vue';
+import TranslationsToolbar from './components/TranslationsToolbar.vue';
 import TranslationsMenu from './components/TranslationsMenu.vue';
 import TranslationsFooter from './components/TranslationsFooter.vue';
 
@@ -11,9 +18,11 @@ Vue.prototype.$craft = window.Craft;
 
 new Vue({
   el: '#main',
+  store: TranslationsStore,
   components: {
     SaveTranslations,
     TranslationsList,
+    TranslationsToolbar,
     TranslationsMenu,
     TranslationsFooter
   },

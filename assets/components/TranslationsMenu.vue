@@ -15,13 +15,20 @@
 
 <script>
 import { EventBus } from './../EventBus.js';
+import { mapMutations, mapState } from 'vuex';
 
 export default {
   props: {
     categories: Array,
-    category: String
+    currentCategory: String
+  },
+  computed: {
+    ...mapState({
+      category: state => state.category,
+    })
   },
   created () {
+    this.setCategory(this.currentCategory);
     window.addEventListener('popstate', () => {
       const pathSplit = document.location.pathname.split('/');
       if (pathSplit.length >= 3 && pathSplit[2] === 'translations-admin') {
@@ -34,12 +41,15 @@ export default {
   },
   methods: {
     changeCategory (cat, pushState = true) {
-      this.category = cat;
+      this.setCategory(cat);
       EventBus.$emit('category-changed', cat);
       if (pushState) {
         window.history.pushState({}, '', '/admin/translations-admin/' + cat);
       }
-    }
+    },
+    ...mapMutations({
+      setCategory: 'setCategory',
+    })
   }
 };
 </script>

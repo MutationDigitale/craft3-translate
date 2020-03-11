@@ -75,4 +75,5 @@ return [
 
 ## Roadmap
 
+- Styling for Craft 3.4
 - Import translations with a CSV file

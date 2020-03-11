@@ -1,81 +1,22 @@
 <template>
-    <div>
-        <div class="content-header-wrapper">
-            <div class="content-header">
-                <div class="toolbar">
-                    <div class="flex">
-                        <div class="selectallcontainer">
-                            <div class="btn" role="checkbox" tabindex="0" :aria-checked="ariaChecked"
-                                 @click="toggleCheckedSourceMessages()">
-                                <div class="checkbox"
-                                     :class="{
+    <div class="elements" :class="{'busy': isLoading || isAdding || isDeleting}">
+        <table class="translate-table">
+            <thead>
+            <tr>
+                <th class="checkbox-cell" style="width: 4%">
+                    <div class="selectallcontainer">
+                        <div class="btn" role="checkbox" tabindex="0" :aria-checked="ariaChecked"
+                             @click="toggleCheckedSourceMessages()">
+                            <div class="checkbox"
+                                 :class="{
                                         'checked': checkedSourceMessages.length > 0 &&
                                             checkedSourceMessages.length === displayedSourceMessages.length,
                                         'indeterminate': checkedSourceMessages.length > 0 &&
                                             checkedSourceMessages.length !== displayedSourceMessages.length
                                      }"></div>
-                            </div>
                         </div>
-                        <div v-show="checkedSourceMessages.length > 0">
-                            <div class="btn menubtn" data-icon="settings" :title="t('Actions')"></div>
-                            <div class="menu">
-                                <ul>
-                                    <li>
-                                        <a class="error" @click="deleteMessages()">
-                                            {{ t('Delete') }}
-                                        </a>
-                                    </li>
-                                </ul>
-                            </div>
-                        </div>
-                        <div v-show="checkedSourceMessages.length === 0">
-                            <div class="btn menubtn statusmenubtn"><span class="status"
-                                                                         :class="{'pending': emptyMessages}"></span>{{
-                                !emptyMessages ? t('All') : t('Empty') }}
-                            </div>
-                            <div class="menu">
-                                <ul class="padded">
-                                    <li>
-                                        <a :class="{'sel': !emptyMessages}"
-                                           @click="emptyMessages = false">
-                                            <span class="status"></span>{{ t('All') }}
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a :class="{'sel': emptyMessages}"
-                                           @click="emptyMessages = true">
-                                            <span class="status pending"></span>{{ t('Empty') }}
-                                        </a>
-                                    </li>
-                                </ul>
-                            </div>
-                        </div>
-                        <div v-show="checkedSourceMessages.length === 0"
-                             class="flex-grow texticon search icon clearable">
-                            <input class="text fullwidth" type="text" autocomplete="off" placeholder="Search"
-                                   v-model="search">
-                            <div class="clear hidden" title="Clear"></div>
-                        </div>
-                        <div v-show="checkedSourceMessages.length === 0">
-                                <textarea class="text" rows="1"
-                                          v-model="messageToAdd" :placeholder="t('Message')"></textarea>
-
-                        </div>
-                        <div v-show="checkedSourceMessages.length === 0">
-                            <button class="btn" type="button" @click="addMessage()"
-                                    :disabled="messageToAdd === null || messageToAdd.trim() === ''">
-                                {{ t('Add') }}
-                            </button>
-                        </div>
-                        <div class="spinner" :class="{'invisible': !(isLoading || isAdding || isDeleting)}"></div>
                     </div>
-                </div>
-            </div>
-        </div>
-        <table class="translate-table">
-            <thead>
-            <tr>
-                <th class="checkbox-cell" style="width: 4%"></th>
+                </th>
                 <th :style="'width: ' + (96/(languages.length + 1)) + '%'">{{ t('Key') }}</th>
                 <th v-for="language in languages" v-bind:key="language.id"
                     :style="'width: ' + (96/(languages.length + 1)) + '%'">
@@ -123,57 +64,16 @@
 <script>
 import axios from 'axios';
 import { EventBus } from '../EventBus';
+import { mapActions, mapMutations, mapState } from 'vuex';
 
 export default {
-  props: {
-    currentCategory: String
-  },
   data () {
     return {
-      isLoading: false,
-      isAdding: false,
-      isDeleting: false,
-      search: '',
-      emptyMessages: false,
-      languages: [],
-      originalSourceMessages: [],
-      sourceMessages: [],
-      filteredSourceMessages: [],
-      displayedSourceMessages: [],
-      checkedSourceMessages: [],
-      modifiedMessages: {},
-      messageToAdd: ''
+      modifiedMessages: {}
     };
   },
-  created () {
-    this.changeCategory(this.currentCategory);
-
-    EventBus.$on('translations-paginated', (translations) => {
-      this.displayedSourceMessages = translations;
-    });
-
-    EventBus.$on('set-page', () => {
-      document.getElementById('content').scrollTop = 0;
-    });
-
-    EventBus.$on('category-changed', (cat) => {
-      this.changeCategory(cat);
-    });
-
-    EventBus.$on('translations-saved', () => {
-      this.originalSourceMessages = this.copyObj(this.sourceMessages);
-      this.modifiedMessages = {};
-      for (const sourceMessage of this.sourceMessages) {
-        this.$set(sourceMessage, 'isModified', null);
-      }
-      EventBus.$emit('translations-modified', this.modifiedMessages);
-    });
-  },
-  mounted () {
-    this.stickyElements();
-  },
   computed: {
-    ariaChecked () {
+    ariaChecked: function () {
       if (this.checkedSourceMessages.length === 0) {
         return 'false';
       } else {
@@ -183,7 +83,51 @@ export default {
           return 'mixed';
         }
       }
-    }
+    },
+    checkedSourceMessages: {
+      get () {
+        return this.$store.state.checkedSourceMessages;
+      },
+      set (value) {
+        this.setCheckedSourceMessages(value);
+      }
+    },
+    ...mapState({
+      isLoading: state => state.isLoading,
+      isAdding: state => state.isAdding,
+      isDeleting: state => state.isDeleting,
+      category: state => state.category,
+      languages: state => state.languages,
+      originalSourceMessages: state => state.originalSourceMessages,
+      sourceMessages: state => state.sourceMessages,
+      filteredSourceMessages: state => state.filteredSourceMessages,
+      displayedSourceMessages: state => state.displayedSourceMessages,
+      emptyMessages: state => state.emptyMessages,
+      search: state => state.search,
+    })
+  },
+  created () {
+    this.changeCategory();
+
+    EventBus.$on('translations-paginated', (translations) => {
+      this.setDisplayedSourceMessages(translations);
+    });
+
+    EventBus.$on('set-page', () => {
+      document.getElementById('content').scrollTop = 0;
+    });
+
+    EventBus.$on('translations-saved', () => {
+      this.setOriginalSourceMessages(this.copyObj(this.sourceMessages));
+      this.modifiedMessages = {};
+      for (const sourceMessage of this.sourceMessages) {
+        this.$set(sourceMessage, 'isModified', null);
+      }
+      EventBus.$emit('translations-modified', this.modifiedMessages);
+    });
+  },
+  mounted () {
+    //this.stickyElements();
   },
   watch: {
     search () {
@@ -194,105 +138,36 @@ export default {
     },
     filteredSourceMessages () {
       EventBus.$emit('translations-filtered', this.filteredSourceMessages);
+    },
+    category () {
+      this.changeCategory();
     }
   },
   methods: {
-    changeCategory (cat) {
-      this.category = cat;
-      this.languages = [];
-      this.sourceMessages = [];
-      this.filteredSourceMessages = [];
-      this.emptyMessages = false;
-      this.checkedSourceMessages = [];
+    changeCategory () {
+      this.setLanguages([]);
+      this.setSourceMessages([]);
+      this.setFilteredSourceMessages([]);
+      this.setEmptyMessages(false);
+      this.setCheckedSourceMessages([]);
       this.modifiedMessages = {};
       EventBus.$emit('translations-modified', this.modifiedMessages);
       this.loadSourceMessages();
     },
     loadSourceMessages () {
-      this.isLoading = true;
+      this.setIsLoading(true);
 
       axios
         .get(this.$craft.getActionUrl('translations-admin/messages/get-translations', { category: this.category }))
         .then((response) => {
-          this.languages = response.data.languages;
-          this.sourceMessages = response.data.sourceMessages;
-          this.filteredSourceMessages = this.sourceMessages;
-          this.originalSourceMessages = this.copyObj(this.sourceMessages);
+          this.setLanguages(response.data.languages);
+          this.updateSourceMessages(response.data.sourceMessages);
         })
         .catch((error) => {
           console.log(error);
         })
         .finally(() => {
-          this.isLoading = false;
-        });
-    },
-    updateSourceMessages (newSourceMessages) {
-      this.sourceMessages = newSourceMessages;
-      this.filteredSourceMessages = this.sourceMessages;
-      this.originalSourceMessages = this.copyObj(this.sourceMessages);
-    },
-    addMessage () {
-      this.isAdding = true;
-
-      const formData = new FormData();
-
-      formData.append(this.$csrfTokenName, this.$csrfTokenValue);
-      formData.append('action', 'translations-admin/messages/add');
-      formData.append('message', this.messageToAdd);
-      formData.append('category', this.category);
-
-      axios
-        .post('', formData)
-        .then((response) => {
-          if (response.data.success) {
-            EventBus.$emit('translation-added');
-            this.sourceMessages.push(response.data.sourceMessage);
-            this.updateSourceMessages(this.sourceMessages);
-          } else {
-            EventBus.$emit('translation-added-error');
-          }
-        })
-        .catch((error) => {
-          EventBus.$emit('translation-added-error');
-          console.log(error);
-        })
-        .finally(() => {
-          this.isAdding = false;
-          this.messageToAdd = '';
-        });
-    },
-    deleteMessages () {
-      this.isDeleting = true;
-
-      const formData = new FormData();
-
-      formData.append(this.$csrfTokenName, this.$csrfTokenValue);
-      formData.append('action', 'translations-admin/messages/delete');
-
-      for (const sourceMessageId of this.checkedSourceMessages) {
-        formData.append('sourceMessageId[]', sourceMessageId);
-      }
-
-      axios
-        .post('', formData)
-        .then((response) => {
-          if (response.data.success) {
-            EventBus.$emit('translation-deleted');
-            const sourceMessages = this.sourceMessages.filter((sourceMessage) => {
-              return this.checkedSourceMessages.indexOf(sourceMessage.id) === -1;
-            });
-            this.updateSourceMessages(sourceMessages);
-            this.checkedSourceMessages = [];
-          } else {
-            EventBus.$emit('translation-deleted-error');
-          }
-        })
-        .catch((error) => {
-          EventBus.$emit('translation-deleted-error');
-          console.log(error);
-        })
-        .finally(() => {
-          this.isDeleting = false;
+          this.setIsLoading(false);
         });
     },
     filterSourceMessages () {
@@ -320,7 +195,7 @@ export default {
           return false;
         });
       }
-      this.filteredSourceMessages = sourceMessages;
+      this.setFilteredSourceMessages(sourceMessages);
     },
     change (sourceMessage, language) {
       if (typeof sourceMessage.isModified === 'undefined' || sourceMessage.isModified === null) {
@@ -365,14 +240,13 @@ export default {
       return originalValue !== newValue;
     },
     toggleCheckedSourceMessages () {
-      if (this.checkedSourceMessages.length > 0) {
-        this.checkedSourceMessages = [];
-      } else {
-        this.checkedSourceMessages = [];
+      const checkedSourceMessages = [];
+      if (this.checkedSourceMessages.length === 0) {
         for (const sourceMessage of this.displayedSourceMessages) {
-          this.checkedSourceMessages.push(sourceMessage.id);
+          checkedSourceMessages.push(sourceMessage.id);
         }
       }
+      this.setCheckedSourceMessages(checkedSourceMessages);
     },
     stickyElements () {
       const content = document.querySelector('#content');
@@ -420,12 +294,27 @@ export default {
       const padding = parseFloat(styles.paddingLeft) + parseFloat(styles.paddingRight);
 
       return element.clientWidth - padding;
-    }
+    },
+    ...mapMutations({
+      setIsLoading: 'setIsLoading',
+      setLanguages: 'setLanguages',
+      setSourceMessages: 'setSourceMessages',
+      setFilteredSourceMessages: 'setFilteredSourceMessages',
+      setDisplayedSourceMessages: 'setDisplayedSourceMessages',
+      setEmptyMessages: 'setEmptyMessages',
+      setCheckedSourceMessages: 'setCheckedSourceMessages',
+      setOriginalSourceMessages: 'setOriginalSourceMessages',
+    }),
+    ...mapActions({
+      updateSourceMessages: 'updateSourceMessages'
+    })
   }
 };
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
+@import "~craftcms-sass/mixins";
+
 .content-header {
     background: #fff;
     margin: 0 -10px;
