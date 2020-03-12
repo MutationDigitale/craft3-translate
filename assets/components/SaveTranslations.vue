@@ -11,21 +11,28 @@
 <script>
 import axios from 'axios';
 import { EventBus } from './../EventBus.js';
+import { mapState } from 'vuex';
 
 export default {
   data () {
     return {
       isSaving: false,
       isModified: false,
-      sourceMessageInputs: null,
     };
   },
+  computed: {
+    ...mapState({
+      modifiedMessages: state => state.modifiedMessages,
+      modifiedMessagesKeys: state => state.modifiedMessagesKeys,
+    })
+  },
+  watch: {
+    modifiedMessagesKeys () {
+      console.log(this.modifiedMessagesKeys);
+      this.isModified = this.modifiedMessagesKeys.length > 0;
+    }
+  },
   mounted () {
-    EventBus.$on('translations-modified', (sourceMessageInputs) => {
-      this.sourceMessageInputs = sourceMessageInputs;
-      this.isModified = sourceMessageInputs !== null && Object.keys(sourceMessageInputs).length > 0;
-    });
-
     window.addEventListener('keydown', (event) => {
       if ((event.ctrlKey || event.metaKey) && event.key === 's') {
         if (this.isModified && !this.isSaving) {
@@ -44,9 +51,9 @@ export default {
       formData.append(this.$csrfTokenName, this.$csrfTokenValue);
       formData.append('action', 'translations-admin/messages/save');
 
-      for (const languageId in this.sourceMessageInputs) {
-        for (const sourceMessageId in this.sourceMessageInputs[languageId]) {
-          const message = this.sourceMessageInputs[languageId][sourceMessageId];
+      for (const languageId in this.modifiedMessages) {
+        for (const sourceMessageId in this.modifiedMessages[languageId]) {
+          const message = this.modifiedMessages[languageId][sourceMessageId];
           formData.append('translations[' + languageId + '][' + sourceMessageId + ']', message);
         }
       }

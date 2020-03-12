@@ -36,13 +36,9 @@ export default {
       }
     });
   },
-  mounted () {
-    EventBus.$emit('initial-category', this.category);
-  },
   methods: {
     changeCategory (cat, pushState = true) {
       this.setCategory(cat);
-      EventBus.$emit('category-changed', cat);
       if (pushState) {
         window.history.pushState({}, '', '/admin/translations-admin/' + cat);
       }

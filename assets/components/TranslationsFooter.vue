@@ -34,33 +34,27 @@
 </template>
 
 <script>
-import { EventBus } from '../EventBus';
+import { mapState, mapGetters, mapMutations } from 'vuex';
 
 export default {
   data () {
     return {
-      filteredSourceMessages: [],
-      page: 1,
-      perPage: 40,
       pages: [],
     };
   },
-  created () {
-    EventBus.$on('translations-filtered', (translations) => {
-      this.filteredSourceMessages = translations;
-    });
-  },
   computed: {
-    displayedSourceMessages () {
-      return this.paginate(this.filteredSourceMessages);
-    }
+    ...mapState({
+      page: state => state.page,
+      perPage: state => state.perPage,
+      filteredSourceMessages: state => state.filteredSourceMessages
+    }),
+    ...mapGetters({
+      displayedSourceMessages: 'displayedSourceMessages'
+    })
   },
   watch: {
     filteredSourceMessages () {
       this.setPages();
-    },
-    displayedSourceMessages () {
-      EventBus.$emit('translations-paginated', this.displayedSourceMessages);
     }
   },
   methods: {
@@ -74,20 +68,15 @@ export default {
         this.page = this.pages.length;
       }
     },
-    paginate (sourceMessages) {
-      let page = this.page;
-      let perPage = this.perPage;
-      let from = (page * perPage) - perPage;
-      let to = (page * perPage);
-      return sourceMessages.slice(from, to);
-    },
     setPage (nb) {
-      this.page = nb;
-      EventBus.$emit('set-page', this.page);
+      this.setPage(nb);
     },
     t (str) {
       return this.$craft.t('translations-admin', str);
     },
+    ...mapMutations({
+      setPage: 'setPage',
+    }),
   }
 };
 </script>

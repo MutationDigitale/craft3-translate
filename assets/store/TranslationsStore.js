@@ -13,10 +13,23 @@ export default new Vuex.Store({
     originalSourceMessages: [],
     sourceMessages: [],
     filteredSourceMessages: [],
+    page: 1,
+    perPage: 40,
     displayedSourceMessages: [],
     checkedSourceMessages: [],
+    modifiedMessages: {},
+    modifiedMessagesKeys: [],
     search: '',
     emptyMessages: false,
+  },
+  getters: {
+    displayedSourceMessages: state => {
+      let page = state.page;
+      let perPage = state.perPage;
+      let from = (page * perPage) - perPage;
+      let to = (page * perPage);
+      return state.filteredSourceMessages.slice(from, to);
+    }
   },
   mutations: {
     setIsLoading (state, value) {
@@ -43,11 +56,20 @@ export default new Vuex.Store({
     setFilteredSourceMessages (state, value) {
       state.filteredSourceMessages = value;
     },
-    setDisplayedSourceMessages (state, value) {
-      state.displayedSourceMessages = value;
+    setPage (state, value) {
+      state.page = value;
+    },
+    setPerPage (state, value) {
+      state.perPage = value;
     },
     setCheckedSourceMessages (state, value) {
       state.checkedSourceMessages = value;
+    },
+    setModifiedMessages (state, value) {
+      state.modifiedMessages = value;
+    },
+    modifiedMessagesKeys (state, value) {
+      state.modifiedMessagesKeys = value;
     },
     setSearch (state, value) {
       state.search = value;
@@ -61,6 +83,10 @@ export default new Vuex.Store({
       commit('setSourceMessages', newSourceMessages);
       commit('setFilteredSourceMessages', newSourceMessages);
       commit('setOriginalSourceMessages', JSON.parse(JSON.stringify(newSourceMessages)));
+    },
+    updateModifiedMessages ({ commit }, newModifiedMessages) {
+      commit('modifiedMessages', newModifiedMessages);
+      commit('modifiedMessagesKeys', Object.keys(newModifiedMessages));
     },
   },
 });

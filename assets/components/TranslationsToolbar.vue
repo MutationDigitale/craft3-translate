@@ -1,5 +1,5 @@
 <template>
-    <div class="flex">
+    <div class="flex flex-grow flex-nowrap">
         <div v-show="checkedSourceMessages.length > 0">
             <div class="btn menubtn" data-icon="settings" :title="t('Actions')"></div>
             <div class="menu">
@@ -14,8 +14,7 @@
         </div>
         <div v-show="checkedSourceMessages.length === 0">
             <div class="btn menubtn statusmenubtn"><span class="status" :class="{'pending': emptyMessages}"></span>{{
-                !emptyMessages ? t('All') : t('Empty') }}
-            </div>
+                !emptyMessages ? t('All') : t('Empty') }}</div>
             <div class="menu">
                 <ul class="padded">
                     <li>
@@ -166,4 +165,8 @@ export default {
 <style lang="scss" scoped>
 @import "~craftcms-sass/mixins";
 
+textarea {
+    overflow-x: hidden;
+    min-height: 32px;
+}
 </style>
