@@ -18,8 +18,7 @@ import { mapMutations, mapState } from 'vuex';
 
 export default {
   props: {
-    categories: Array,
-    currentCategory: String
+    categories: Array
   },
   computed: {
     ...mapState({
@@ -27,7 +26,6 @@ export default {
     })
   },
   created () {
-    this.setCategory(this.currentCategory);
     window.addEventListener('popstate', () => {
       const pathSplit = document.location.pathname.split('/');
       if (pathSplit.length >= 3 && pathSplit[2] === 'translations-admin') {

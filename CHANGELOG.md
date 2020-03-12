@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.0.1 - 2020-03-12
+
+### Fixed
+- Fixed an error when there is just one category
+
 ## 2.0.0 - 2020-03-11
 
 ### Added

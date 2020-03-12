@@ -70,8 +70,10 @@ new Vue({
   },
   watch: {
     category () {
-      document.body.classList.remove('showing-sidebar');
-      document.querySelector('#selected-sidebar-item-label').innerHTML = this.category;
+      if (document.querySelector('#selected-sidebar-item-label')) {
+        document.body.classList.remove('showing-sidebar');
+        document.querySelector('#selected-sidebar-item-label').innerHTML = this.category;
+      }
     }
   },
 });

@@ -26,7 +26,7 @@
 
 {% block sidebar %}
     {% if categories|length > 1 %}
-        <translations-menu :categories="{{ categories | json_encode }}" current-category="{{ category }}"></translations-menu>
+        <translations-menu :categories="{{ categories | json_encode }}"></translations-menu>
     {% endif %}
 {% endblock %}
 
@@ -36,7 +36,7 @@
 
 {% block content %}
     <div class="main">
-        <translations-list></translations-list>
+        <translations-list current-category="{{ category }}"></translations-list>
     </div>
 {% endblock %}
 

@@ -4,7 +4,7 @@
             <table class="data fullwidth translate-table">
                 <thead>
                 <tr>
-                    <th class="checkbox-cell selectallcontainer orderable"  role="checkbox" tabindex="0"
+                    <th class="checkbox-cell selectallcontainer orderable" role="checkbox" tabindex="0"
                         :aria-checked="ariaChecked" style="width: 4%" @click="toggleCheckedSourceMessages()">
                         <div class="checkbox"
                              :class="{
@@ -65,6 +65,9 @@ import { EventBus } from '../EventBus';
 import { mapActions, mapGetters, mapMutations, mapState } from 'vuex';
 
 export default {
+  props: {
+    currentCategory: String
+  },
   computed: {
     ariaChecked: function () {
       if (this.checkedSourceMessages.length === 0) {
@@ -105,6 +108,7 @@ export default {
     })
   },
   created () {
+    this.setCategory(this.currentCategory);
     this.changeCategory();
 
     EventBus.$on('translations-saved', () => {
@@ -260,6 +264,7 @@ export default {
     },
     ...mapMutations({
       setIsLoading: 'setIsLoading',
+      setCategory: 'setCategory',
       setLanguages: 'setLanguages',
       setSourceMessages: 'setSourceMessages',
       setFilteredSourceMessages: 'setFilteredSourceMessages',
@@ -313,8 +318,8 @@ table.data.translate-table tr td.modified {
     position: absolute;
     top: 1px;
     right: 1px;
-    background: #f7f7f7;
-    color: #555e69;
+    background: $grey050;
+    color: $grey800;
     border-radius: 2px;
     padding: 2px 5px 3px;
     pointer-events: none;
