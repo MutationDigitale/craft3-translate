@@ -1,5 +1,5 @@
 <template>
-    <div class="flex flex-grow flex-nowrap">
+    <div id="translations-toolbar" class="flex flex-grow">
         <div v-show="checkedSourceMessages.length > 0">
             <div class="btn menubtn" data-icon="settings" :title="t('Actions')"></div>
             <div class="menu">
@@ -166,6 +166,10 @@ export default {
 <style lang="scss" scoped>
 @import "~craftcms-sass/mixins";
 
+#translations-toolbar {
+    flex-wrap: wrap;
+}
+
 .search-container {
     flex: 2;
 }
@@ -176,6 +180,7 @@ export default {
 }
 
 textarea {
+    min-width: 160px;
     overflow-x: hidden;
     min-height: 34px;
     height: 34px;

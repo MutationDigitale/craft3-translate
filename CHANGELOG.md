@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.0.2 - 2020-03-12
+
+### Fixed
+- Mobile CSS improvements
+
 ## 2.0.1 - 2020-03-12
 
 ### Fixed

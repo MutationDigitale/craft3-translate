@@ -292,7 +292,7 @@ export default {
 }
 
 table.data.translate-table tr td.modified {
-    background-color: #fcfbe2;
+    background-color: $yellow050;
 }
 
 .translate-table pre {
@@ -363,6 +363,13 @@ table.data.translate-table tr td.modified {
     .translate-table tr,
     .translate-table td {
         width: 100%;
+        border: 0;
+    }
+
+    table.data.translate-table td.checkbox-cell {
+        width: 100% !important;
+        box-sizing: border-box;
+        padding: 18px 12px;
     }
 }
 </style>
