@@ -18,7 +18,7 @@ This plugins adds a control panel interface to edit your static translations in 
 
 - Add or delete translations in the control panel.
 
-- On installation, your existing PHP site translations will be migrated to your database.
+- Migrate your existing PHP site translations to your database.
 
 - Export your translations in a CSV file.
 
