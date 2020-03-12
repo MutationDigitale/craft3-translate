@@ -5,6 +5,9 @@
 ### Added
 - Support for Craft 3.4
 
+### Changed
+- Moved the PHP translations migration to Utilities page instead of on install
+
 ## 1.7.1 - 2019-12-12
 
 ### Fixed

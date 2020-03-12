@@ -56,6 +56,59 @@ class UtilitiesController extends Controller
         return $this->redirectToPostedUrl();
     }
 
+    public function actionMigrate()
+    {
+        try {
+            $sites = Craft::$app->sites->getAllSites();
+            $translations = array();
+            foreach ($sites as $site) {
+                $path = Craft::$app->path->getSiteTranslationsPath()
+                    . DIRECTORY_SEPARATOR . $site->language . DIRECTORY_SEPARATOR . 'site.php';
+                $siteTranslations = array();
+                if (file_exists($path)) {
+                    $siteTranslations = include($path);
+                }
+                foreach ($siteTranslations as $key => $translation) {
+                    $translations[$key][$site->language] = $translation;
+                }
+            }
+
+            foreach ($translations as $message => $sites) {
+                $languages = array();
+                foreach ($sites as $site => $translation) {
+                    $languages[$site] = $translation;
+                }
+
+                $sourceMessage = SourceMessage::find()
+                    ->where(array('message' => $message, 'category' => 'site'))
+                    ->one();
+
+                if (!$sourceMessage) {
+                    $sourceMessage = new SourceMessage();
+                    $sourceMessage->category = 'site';
+                    $sourceMessage->message = $message;
+                    $sourceMessage->languages = $languages;
+                    $sourceMessage->save();
+                }
+            }
+
+            Craft::$app->getSession()->setNotice(
+                Craft::t(
+                    'translations-admin',
+                    '{count} translations migrated.',
+                    ['count' => count($translations)]
+                )
+            );
+        } catch (Exception $exception) {
+            Craft::$app->getSession()->setError(
+                Craft::t(
+                    'translations-admin',
+                    'Translations couldn’t be migrated.'
+                )
+            );
+        }
+    }
+
     public function actionMissing()
     {
         $this->requirePermission(Translate::TRANSLATIONS_UTILITIES_PERMISSION);

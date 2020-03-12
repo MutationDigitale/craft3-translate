@@ -63,47 +63,6 @@ class Install extends Migration
         );
         $this->createIndex('idx_source_message_category', '{{%source_message}}', 'category');
         $this->createIndex('idx_message_language', '{{%message}}', 'language');
-
-        $this->migratePhpMessagesToDb();
-    }
-
-    private function migratePhpMessagesToDb()
-    {
-        try {
-            $sites = Craft::$app->sites->getAllSites();
-            $translations = array();
-            foreach ($sites as $site) {
-                $path = Craft::$app->path->getSiteTranslationsPath()
-                    . DIRECTORY_SEPARATOR . $site->language . DIRECTORY_SEPARATOR . 'site.php';
-                $siteTranslations = array();
-                if (file_exists($path)) {
-                    $siteTranslations = include($path);
-                }
-                foreach ($siteTranslations as $key => $translation) {
-                    $translations[$key][$site->language] = $translation;
-                }
-            }
-
-            foreach ($translations as $message => $sites) {
-                $languages = array();
-                foreach ($sites as $site => $translation) {
-                    $languages[$site] = $translation;
-                }
-
-                $sourceMessage = SourceMessage::find()
-                    ->where(array('message' => $message, 'category' => 'site'))
-                    ->one();
-
-                if (!$sourceMessage) {
-                    $sourceMessage = new SourceMessage();
-                    $sourceMessage->category = 'site';
-                    $sourceMessage->message = $message;
-                    $sourceMessage->languages = $languages;
-                    $sourceMessage->save();
-                }
-            }
-        } catch (Exception $exception) {
-        }
     }
 
     /**
