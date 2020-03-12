@@ -68,7 +68,7 @@ export default new Vuex.Store({
     setModifiedMessages (state, value) {
       state.modifiedMessages = value;
     },
-    modifiedMessagesKeys (state, value) {
+    setModifiedMessagesKeys (state, value) {
       state.modifiedMessagesKeys = value;
     },
     setSearch (state, value) {
@@ -85,8 +85,8 @@ export default new Vuex.Store({
       commit('setOriginalSourceMessages', JSON.parse(JSON.stringify(newSourceMessages)));
     },
     updateModifiedMessages ({ commit }, newModifiedMessages) {
-      commit('modifiedMessages', newModifiedMessages);
-      commit('modifiedMessagesKeys', Object.keys(newModifiedMessages));
+      commit('setModifiedMessages', newModifiedMessages);
+      commit('setModifiedMessagesKeys', Object.keys(newModifiedMessages));
     },
   },
 });

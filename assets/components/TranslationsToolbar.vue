@@ -19,13 +19,13 @@
                 <ul class="padded">
                     <li>
                         <a :class="{'sel': !emptyMessages}"
-                           @click="emptyMessages = false">
+                           @click="setEmptyMessages(false)">
                             <span class="status"></span>{{ t('All') }}
                         </a>
                     </li>
                     <li>
                         <a :class="{'sel': emptyMessages}"
-                           @click="emptyMessages = true">
+                           @click="setEmptyMessages(true)">
                             <span class="status pending"></span>{{ t('Empty') }}
                         </a>
                     </li>
@@ -33,12 +33,12 @@
             </div>
         </div>
         <div v-show="checkedSourceMessages.length === 0"
-             class="flex-grow texticon search icon clearable">
+             class="flex-grow texticon search icon clearable search-container">
             <input class="text fullwidth" type="text" autocomplete="off" placeholder="Search"
                    v-model="search">
             <div class="clear hidden" title="Clear"></div>
         </div>
-        <div v-show="checkedSourceMessages.length === 0">
+        <div v-show="checkedSourceMessages.length === 0" class="textarea-container">
             <textarea class="text" rows="1"
                       v-model="messageToAdd" :placeholder="t('Message')"></textarea>
         </div>
@@ -153,7 +153,8 @@ export default {
       setIsAdding: 'setIsAdding',
       setIsDeleting: 'setIsDeleting',
       setCheckedSourceMessages: 'setCheckedSourceMessages',
-      setSearch: 'setSearch'
+      setSearch: 'setSearch',
+      setEmptyMessages: 'setEmptyMessages'
     }),
     ...mapActions({
       updateSourceMessages: 'updateSourceMessages'
@@ -165,8 +166,19 @@ export default {
 <style lang="scss" scoped>
 @import "~craftcms-sass/mixins";
 
+.search-container {
+    flex: 2;
+}
+
+.textarea-container {
+    height: 34px;
+    flex: 1;
+}
+
 textarea {
     overflow-x: hidden;
-    min-height: 32px;
+    min-height: 34px;
+    height: 34px;
+    width: 100%;
 }
 </style>

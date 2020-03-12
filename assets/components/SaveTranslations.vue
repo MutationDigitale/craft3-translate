@@ -28,7 +28,6 @@ export default {
   },
   watch: {
     modifiedMessagesKeys () {
-      console.log(this.modifiedMessagesKeys);
       this.isModified = this.modifiedMessagesKeys.length > 0;
     }
   },

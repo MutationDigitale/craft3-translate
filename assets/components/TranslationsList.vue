@@ -301,7 +301,7 @@ table.data.translate-table tr td.modified {
 
 .message-text textarea {
     overflow-x: hidden;
-    min-height: 32px;
+    min-height: 34px;
     padding-right: 40px;
 }
 

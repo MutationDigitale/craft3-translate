@@ -14,7 +14,6 @@
 </template>
 
 <script>
-import { EventBus } from './../EventBus.js';
 import { mapMutations, mapState } from 'vuex';
 
 export default {
