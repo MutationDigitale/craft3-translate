@@ -1,40 +1,38 @@
 <template>
-    <div class="translate-pagination">
-        <div class="light page-info">
-            {{(page-1)*perPage}}-{{((page-1)*perPage)+displayedSourceMessages.length}} {{t('translations')}} /
-            {{filteredSourceMessages.length}}
-        </div>
+    <div id="count-container" class="light flex-grow">
+        <div class="flex pagination">
+            <div class="page-link page-first" :class="{'disabled': page === 1}"
+                 @click="setPage(1)">«
+            </div>
+            <div class="page-link" data-icon="leftangle" :title="t('Previous Page')"
+                 :class="{'disabled': page === 1}" @click="page > 1 ? setPage(page-1) : null"></div>
 
-        <div v-show="pages.length > 1">
-            <button class="btn page-link" type="button"
-                    :disabled="page === 1"
-                    @click="setPage(1)">«
-            </button>
-            <button class="btn page-link" type="button" data-icon="leftangle"
-                    :disabled="page === 1"
-                    @click="setPage(page-1)"></button>
-
-            <button class="btn page-link" type="button"
+            <div class="page-link page-number"
                     :class="{'active': pageNumber === page}"
                     v-for="pageNumber in pages.slice(page < 3 ? 0 : page - 3, page + 3)"
                     v-bind:key="pageNumber"
                     @click="setPage(pageNumber)">
                 {{pageNumber}}
-            </button>
+            </div>
 
-            <button class="btn page-link" type="button" data-icon="rightangle"
-                    :disabled="page === pages.length"
-                    @click="setPage(page+1)"></button>
-            <button class="btn page-link" type="button"
-                    :disabled="page === pages.length"
-                    @click="setPage(pages.length)">»
-            </button>
+            <div class="page-link" data-icon="rightangle" :title="t('Next Page')"
+                 :class="{'disabled': page === pages.length}"
+                 @click="page < pages.length ? setPage(page+1) : null"></div>
+
+            <div class="page-link page-last" :class="{'disabled': page === pages.length}"
+                 @click="setPage(pages.length)">»
+            </div>
+
+            <div class="page-info">
+                {{(page-1)*perPage}}-{{((page-1)*perPage)+displayedSourceMessages.length}} {{t('of')}}
+                {{filteredSourceMessages.length}} {{t('translations')}}
+            </div>
         </div>
     </div>
 </template>
 
 <script>
-import { mapState, mapGetters, mapMutations } from 'vuex';
+import { mapGetters, mapMutations, mapState } from 'vuex';
 
 export default {
   data () {
@@ -65,7 +63,7 @@ export default {
         this.pages.push(index);
       }
       if (this.page > this.pages.length && this.pages.length > 0) {
-        this.page = this.pages.length;
+        this.setPage(this.pages.length);
       }
     },
     setPage (nb) {
@@ -81,29 +79,21 @@ export default {
 };
 </script>
 
-<style scoped>
-.translate-pagination {
-    width: 100%;
-    display: flex;
-    align-items: center;
+<style lang="scss" scoped>
+@import "~craftcms-sass/mixins";
+
+.page-first,
+.page-last {
+    font-size: 1.4em;
 }
 
-.translate-pagination .page-info {
-    margin-right: auto;
-    padding: 6px 0;
+.page-number {
+    padding-top: 6px;
+    padding-bottom: 6px;
 }
 
-.translate-pagination .page-link {
-    margin-left: 12px;
-}
-
-.translate-pagination .page-link.active {
+.page-number.active {
     pointer-events: none;
-    background: rgba(0, 0, 20, 0.1);
-}
-
-.translate-pagination .page-link:disabled {
-    pointer-events: none;
-    opacity: 0.5;
+    background: $grey200;
 }
 </style>

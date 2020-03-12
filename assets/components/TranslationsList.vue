@@ -4,19 +4,15 @@
             <table class="data fullwidth translate-table">
                 <thead>
                 <tr>
-                    <th class="checkbox-cell" style="width: 4%">
-                        <div class="selectallcontainer">
-                            <div class="btn" role="checkbox" tabindex="0" :aria-checked="ariaChecked"
-                                 @click="toggleCheckedSourceMessages()">
-                                <div class="checkbox"
-                                     :class="{
-                                        'checked': checkedSourceMessages.length > 0 &&
-                                            checkedSourceMessages.length === displayedSourceMessages.length,
-                                        'indeterminate': checkedSourceMessages.length > 0 &&
-                                            checkedSourceMessages.length !== displayedSourceMessages.length
-                                     }"></div>
-                            </div>
-                        </div>
+                    <th class="checkbox-cell selectallcontainer orderable"  role="checkbox" tabindex="0"
+                        :aria-checked="ariaChecked" style="width: 4%" @click="toggleCheckedSourceMessages()">
+                        <div class="checkbox"
+                             :class="{
+                                'checked': checkedSourceMessages.length > 0 &&
+                                    checkedSourceMessages.length === displayedSourceMessages.length,
+                                'indeterminate': checkedSourceMessages.length > 0 &&
+                                    checkedSourceMessages.length !== displayedSourceMessages.length
+                             }"></div>
                     </th>
                     <th :style="'width: ' + (96/(languages.length + 1)) + '%'">{{ t('Key') }}</th>
                     <th v-for="language in languages" v-bind:key="language.id"
@@ -283,51 +279,15 @@ export default {
 @import "~craftcms-sass/mixins";
 
 .translate-table {
-    width: calc(100% + 20px);
-    margin: 18px -10px 10px -10px;
     table-layout: fixed;
-}
-
-.translate-table th {
-    font-weight: bold;
-    color: rgba(0, 0, 0, 0.5);
-    border-bottom: 1px solid #e3e5e8;
-    padding: 7px 10px;
-}
-
-.translate-table th,
-.translate-table td {
-    background-color: #fff;
-    box-sizing: border-box;
-}
-
-.translate-table td {
-    padding: 5px 10px;
-}
-
-.translate-table td.checkbox-cell {
-    position: relative;
-    padding-bottom: 0;
-}
-
-.translate-table tr td:first-child {
-    line-height: 1.2em;
 }
 
 .translate-table tr:nth-child(2n) td {
     background-color: #f8f9fa;
 }
 
-.translate-table tr:hover td {
-    background-color: #f3f4f5;
-}
-
-.translate-table tr td.modified {
+table.data.translate-table tr td.modified {
     background-color: #fcfbe2;
-}
-
-.translate-table tr.sel td {
-    background: #d5d8dd;
 }
 
 .translate-table pre {
@@ -358,24 +318,6 @@ export default {
     border-radius: 2px;
     padding: 2px 5px 3px;
     pointer-events: none;
-}
-
-.btn .checkbox + span {
-    vertical-align: top;
-    display: inline-block;
-    margin-left: 5px;
-}
-
-.btn:disabled {
-    pointer-events: none;
-    opacity: 0.5;
-}
-
-#footer {
-    z-index: 1;
-    box-shadow: 0 -1px 0 rgba(0, 0, 20, 0.1);
-    padding: 10px 24px;
-    background: #fff;
 }
 
 .cell-label {
