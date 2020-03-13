@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.0.3 - 2020-03-13
+
+### Fixed
+- Couple of issues when using Parse Templates utility #3
+
 ## 2.0.2 - 2020-03-12
 
 ### Fixed

@@ -107,6 +107,8 @@ class UtilitiesController extends Controller
                 )
             );
         }
+
+        return $this->redirectToPostedUrl();
     }
 
     public function actionMissing()
@@ -154,6 +156,7 @@ class UtilitiesController extends Controller
                 ['count' => count($messages)]
             )
         );
+
         return $this->redirectToPostedUrl();
     }
 
