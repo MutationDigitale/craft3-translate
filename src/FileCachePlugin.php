@@ -34,13 +34,15 @@ class FileCachePlugin extends Plugin
 
 		self::$plugin = $this;
 
-		if ($this->isInstalled && !Craft::$app->request->getIsConsoleRequest()) {
-			$this->setComponents(
-				[
-					'fileCache' => FileCacheService::class,
-				]
-			);
+		$this->setComponents(
+			[
+				'fileCache' => FileCacheService::class,
+			]
+		);
 
+		$this->registerCache();
+
+		if ($this->isInstalled && !Craft::$app->request->getIsConsoleRequest()) {
 			$this->fileCacheService()->serveCache();
 
 			$this->initEvents();
@@ -55,6 +57,21 @@ class FileCachePlugin extends Plugin
 	protected function createSettingsModel(): SettingsModel
 	{
 		return new SettingsModel();
+	}
+
+	private function registerCache()
+	{
+		Event::on(
+			ClearCaches::class,
+			ClearCaches::EVENT_REGISTER_CACHE_OPTIONS,
+			function (RegisterCacheOptionsEvent $event) {
+				$event->options[] = array(
+					'key' => 'file-caches',
+					'label' => Craft::t('filecache', 'File caches'),
+					'action' => [FileCachePlugin::$plugin->fileCacheService(), 'deleteAllFileCaches']
+				);
+			}
+		);
 	}
 
 	private function initEvents()
@@ -74,18 +91,6 @@ class FileCachePlugin extends Plugin
 				/** @var CraftVariable $variable */
 				$variable = $event->sender;
 				$variable->set('filecache', FileCacheVariable::class);
-			}
-		);
-
-		Event::on(
-			ClearCaches::class,
-			ClearCaches::EVENT_REGISTER_CACHE_OPTIONS,
-			function (RegisterCacheOptionsEvent $event) {
-				$event->options[] = array(
-					'key' => 'file-caches',
-					'label' => Craft::t('filecache', 'File caches'),
-					'action' => [FileCachePlugin::$plugin->fileCacheService(), 'deleteAllFileCaches']
-				);
 			}
 		);
 	}

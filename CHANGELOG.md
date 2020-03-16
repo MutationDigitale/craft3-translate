@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.3.1 - 2020-03-16
+
+### Fixed
+- Be able to clear cache in console
+
 ## 2.3.0 - 2019-12-20
 
 ### Changed
