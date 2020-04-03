@@ -24,10 +24,6 @@ class FileCacheService extends Component
 			return;
 		}
 
-		if (!$this->isCacheableElement()) {
-			return;
-		}
-
 		$filePath = $this->getCacheFilePath();
 
 		FileHelper::writeToFile($filePath, trim(Craft::$app->response->data));
@@ -118,6 +114,11 @@ class FileCacheService extends Component
 			return false;
 		}
 
+		// Check if an element is matched or if a matched entry is in excluded sections, entry types and sites
+		if (!$this->isCacheableElement()) {
+			return false;
+		}
+
 		return true;
 	}
 
@@ -158,11 +159,16 @@ class FileCacheService extends Component
 		$settings = FileCachePlugin::$plugin->getSettings();
 
 		$request = Craft::$app->getRequest();
+		$response = Craft::$app->getResponse();
 
-		Craft::$app->response->data = str_replace(
+		if (strpos($response->data, $settings->csrfInputKey) === false) {
+			return;
+		}
+
+		$response->data = str_replace(
 			$settings->csrfInputKey,
 			Html::hiddenInput($request->csrfParam, $request->getCsrfToken()),
-			Craft::$app->response->data
+			$response->data
 		);
 	}
 
@@ -172,6 +178,11 @@ class FileCacheService extends Component
 		$settings = FileCachePlugin::$plugin->getSettings();
 
 		$request = Craft::$app->getRequest();
+		$response = Craft::$app->getResponse();
+
+		if (strpos($response->data, $settings->csrfJsTokenKey) === false) {
+			return;
+		}
 
 		$csrfParam = $request->csrfParam;
 		$csrfToken = $request->getCsrfToken();
@@ -182,10 +193,10 @@ class FileCacheService extends Component
 </script>
 HTML;
 
-		Craft::$app->response->data = str_replace(
+		$response->data = str_replace(
 			$settings->csrfJsTokenKey,
 			$script,
-			Craft::$app->response->data
+			$response->data
 		);
 	}
 

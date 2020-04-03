@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.3.2 - 2020-04-03
+
+### Fixed
+- Don't serve cache if no element matched
+- Don't replace csrf tokens if not in response data
+
 ## 2.3.1 - 2020-03-16
 
 ### Fixed
