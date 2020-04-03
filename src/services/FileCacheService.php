@@ -161,7 +161,8 @@ class FileCacheService extends Component
 		$request = Craft::$app->getRequest();
 		$response = Craft::$app->getResponse();
 
-		if (strpos($response->data, $settings->csrfInputKey) === false) {
+		if (!is_string($response->data) ||
+			strpos($response->data, $settings->csrfInputKey) === false) {
 			return;
 		}
 
@@ -180,7 +181,8 @@ class FileCacheService extends Component
 		$request = Craft::$app->getRequest();
 		$response = Craft::$app->getResponse();
 
-		if (strpos($response->data, $settings->csrfJsTokenKey) === false) {
+		if (!is_string($response->data) ||
+			strpos($response->data, $settings->csrfJsTokenKey) === false) {
 			return;
 		}
 

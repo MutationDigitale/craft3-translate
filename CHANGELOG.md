@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.3.3 - 2020-04-03
+
+### Fixed
+- Check if response data is a string before replacing csrf tokens
+
 ## 2.3.2 - 2020-04-03
 
 ### Fixed
