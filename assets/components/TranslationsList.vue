@@ -247,7 +247,7 @@ export default {
       return this.$craft.t('translations-admin', str);
     },
     getNumberOfLines (str) {
-      if (str === null) {
+      if (typeof str === 'undefined' || str === null) {
         return 1;
       }
       const nbLines = str.split(/\r\n|\r|\n/).length;
