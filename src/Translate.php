@@ -20,6 +20,7 @@ class Translate extends Plugin
 {
     const UPDATE_TRANSLATIONS_PERMISSION = 'updateTranslations';
     const EXPORT_TRANSLATIONS_PERMISSION = 'exportTranslations';
+    const IMPORT_TRANSLATIONS_PERMISSION = 'importTranslations';
     const TRANSLATIONS_UTILITIES_PERMISSION = 'translationsUtilities';
     const CHANGE_TRANSLATIONS_SETTINGS_PERMISSION = 'changeTranslationsSettings';
 
@@ -48,6 +49,9 @@ class Translate extends Plugin
         $item['subnav']['translations'] = ['label' => 'Messages', 'url' => 'translations-admin'];
         if ($currentUser->can(self::EXPORT_TRANSLATIONS_PERMISSION)) {
             $item['subnav']['export'] = ['label' => 'Export', 'url' => 'translations-admin/export-messages'];
+        }
+        if ($currentUser->can(self::IMPORT_TRANSLATIONS_PERMISSION)) {
+            $item['subnav']['import'] = ['label' => 'Import', 'url' => 'translations-admin/import-messages'];
         }
         if ($currentUser->can(self::TRANSLATIONS_UTILITIES_PERMISSION)) {
             $item['subnav']['utilities'] = ['label' => 'Utilities', 'url' => 'translations-admin/translations-utilities'];
@@ -101,6 +105,9 @@ class Translate extends Plugin
                     self::EXPORT_TRANSLATIONS_PERMISSION => [
                         'label' => 'Export translations',
                     ],
+                    self::IMPORT_TRANSLATIONS_PERMISSION => [
+                        'label' => 'Import translations',
+                    ],
                     self::TRANSLATIONS_UTILITIES_PERMISSION => [
                         'label' => 'Use translations utilities',
                     ],
@@ -120,6 +127,7 @@ class Translate extends Plugin
                     $event->rules["translations-admin/<category:$category>"] = 'translations-admin/messages/index';
                 }
                 $event->rules['translations-admin/export-messages'] = 'translations-admin/export/index';
+                $event->rules['translations-admin/import-messages'] = 'translations-admin/import/index';
                 $event->rules['translations-admin/translations-utilities'] = 'translations-admin/utilities/index';
                 $event->rules['translations-admin/plugin-settings'] = 'translations-admin/settings/index';
             }

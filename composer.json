@@ -14,7 +14,8 @@
     }
   ],
   "require": {
-    "craftcms/cms": "^3.4.0"
+    "craftcms/cms": "^3.4.0",
+    "phpoffice/phpspreadsheet": "^1.12"
   },
   "autoload": {
     "psr-4": {

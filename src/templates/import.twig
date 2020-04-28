@@ -1,0 +1,34 @@
+{% set mainFormAttributes = {enctype: "multipart/form-data"} %}
+
+{% extends "_layouts/cp" %}
+
+{% import "_includes/forms" as forms %}
+
+{% macro uploadFile(name) %}
+    <input type="file" name="{{ name }}" accept="text/csv">
+{% endmacro %}
+
+{% block actionButton %}
+    {% if fullPageForm %}
+        <input type="submit" class="btn submit" value="{{ 'Import' | t('translations-admin') }}">
+    {% endif %}
+{% endblock %}
+
+{% block content %}
+    {{ actionInput('translations-admin/import/import') }}
+
+    {{ forms.selectField({
+        first: true,
+        label: "Category" | t('translations-admin'),
+        instructions: "Choose which category to import your translations" | t('translations-admin'),
+        id: 'category',
+        name: 'category',
+        value: '',
+        options: categories
+    }) }}
+
+    {{ forms.field({
+        label: "Upload your CSV file" | t('translations-admin'),
+        instructions: "One column for the key and one column for each site is needed"
+    }, _self.uploadFile('file')) }}
+{% endblock %}
