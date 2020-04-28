@@ -7,6 +7,7 @@ use craft\helpers\UrlHelper;
 use craft\web\Controller;
 use craft\web\UploadedFile;
 use mutation\translate\Translate;
+use PhpOffice\PhpSpreadsheet\Reader\Csv;
 
 class ImportController extends Controller
 {
@@ -60,7 +61,8 @@ class ImportController extends Controller
 
         if ($csvFile) {
             $tempPath = $csvFile->saveAsTempFile();
-            $csvContent = file_get_contents($tempPath);
+            $reader = new Csv();
+            $spreadsheet = $reader->load($tempPath);
         }
 
         $siteLocales = Craft::$app->i18n->getSiteLocales();
