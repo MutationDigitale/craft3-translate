@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.0.4 - 2020-04-28
+
+### Fixed
+- Fixed a javascript error ([#7](https://github.com/MutationDigitale/craft3-translate/issues/7))
+
 ## 2.0.3 - 2020-03-13
 
 ### Fixed
