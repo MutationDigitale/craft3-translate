@@ -61,8 +61,18 @@ class ImportController extends Controller
 
         if ($csvFile) {
             $tempPath = $csvFile->saveAsTempFile();
+
             $reader = new Csv();
+            $reader->setReadDataOnly(true);
+
             $spreadsheet = $reader->load($tempPath);
+            $rows = $spreadsheet->getActiveSheet()->toArray();
+            $headers = $rows[0];
+            array_shift($rows);
+
+            foreach($rows as $row) {
+
+            }
         }
 
         $siteLocales = Craft::$app->i18n->getSiteLocales();
