@@ -94,6 +94,11 @@ class FileCacheService extends Component
 			return false;
 		}
 
+		// Don't cache JSON requests
+		if (is_array($response->data)) {
+			return false;
+		}
+
 		/** @var User|null $user */
 		$user = Craft::$app->getUser()->getIdentity();
 		if ($user !== null) {
