@@ -3,7 +3,7 @@
 ## 2.1.0 - 2020-05-01
 
 ### Added
-- Basic CSV import (must be the same format as the export)
+- Basic CSV import (must be the same format as the export) ([#6](https://github.com/MutationDigitale/craft3-translate/issues/6))
 
 ## 2.0.4 - 2020-04-28
 
