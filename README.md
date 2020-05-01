@@ -6,7 +6,7 @@ This plugins adds a control panel interface to edit your static translations in 
 
 ## Features
 
-- Edit your translations for each language side by side.
+- Add, edit or delete translations in the Control Panel with each language side by side.
 
 - Filter missing translations and search by keywords.
 
@@ -16,15 +16,15 @@ This plugins adds a control panel interface to edit your static translations in 
 
 - When a page is visited on the site, missing translations will automatically be added.
 
-- Add or delete translations in the control panel.
-
 - Migrate your existing PHP site translations to your database.
 
-- Export your translations in a CSV file.
+- Export your translations to a CSV file and import it back after handing it to your translation team.
 
 - Utilities:
 
     - Parse all site templates to add missing translations
+    - Migrate all your PHP translations files to your database
+    - Export all your database translations to PHP files
     - Delete all translations
 
 ## Requirements
@@ -46,6 +46,7 @@ You can now edit your translations in the control panel `/admin/translations-adm
 You have special permissions for the Translations admin plugin:
 - Update translations
 - Export translations
+- Import translations
 - Use utilities
 - Change settings
 
@@ -75,5 +76,6 @@ return [
 
 ## Roadmap
 
-- Styling for Craft 3.4
-- Import translations with a CSV file
+- Add mapping for the import and support more format (Excel)
+- Refresh/sync option for the translations overview
+- Query the translations from GraphQL
