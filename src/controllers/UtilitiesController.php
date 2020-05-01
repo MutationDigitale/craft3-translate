@@ -111,6 +111,87 @@ class UtilitiesController extends Controller
         return $this->redirectToPostedUrl();
     }
 
+    public function actionExportPhp()
+    {
+        try {
+            $sourceMessages = Translate::getInstance()->sourceMessage->getSourceMessagesArrayByCategory($category);
+
+            foreach ($translations as $message => $sites) {
+                $languages = array();
+                foreach ($sites as $site => $translation) {
+                    $languages[$site] = $translation;
+                }
+
+                $sourceMessage = SourceMessage::find()
+                    ->where(array('message' => $message, 'category' => 'site'))
+                    ->one();
+
+                if (!$sourceMessage) {
+                    $sourceMessage = new SourceMessage();
+                    $sourceMessage->category = 'site';
+                    $sourceMessage->message = $message;
+                    $sourceMessage->languages = $languages;
+                    $sourceMessage->save();
+                }
+            }
+
+            $sites = Craft::$app->sites->getAllSites();
+            $translations = array();
+            foreach ($sites as $site) {
+                $path = Craft::$app->path->getSiteTranslationsPath()
+                    . DIRECTORY_SEPARATOR . $site->language . DIRECTORY_SEPARATOR . 'site.php';
+                $siteTranslations = array();
+                if (file_exists($path)) {
+                    $siteTranslations = include($path);
+                }
+                foreach ($siteTranslations as $key => $translation) {
+                    $translations[$key][$site->language] = $translation;
+                }
+            }
+
+            Craft::$app->getSession()->setNotice(
+                Craft::t(
+                    'translations-admin',
+                    '{count} translations migrated.',
+                    ['count' => count($translations)]
+                )
+            );
+        } catch (Exception $exception) {
+            Craft::$app->getSession()->setError(
+                Craft::t(
+                    'translations-admin',
+                    'Translations couldn’t be migrated.'
+                )
+            );
+        }
+
+        return $this->redirectToPostedUrl();
+    }
+
+    private function saveTranslationToFile($key, $language)
+    {
+        $path = \Craft::$app->path->getSiteTranslationsPath() . DIRECTORY_SEPARATOR . $language . DIRECTORY_SEPARATOR . 'site.php';
+
+        if (!file_exists($path)) {
+            if (!file_exists(dirname($path))) {
+                mkdir(dirname($path), 0775, true);
+            }
+            $file = fopen($path, 'wb');
+            fclose($file);
+            $oldTranslations = array();
+        }
+        else {
+            $oldTranslations = include($path);
+        }
+
+        $newTranslations = array_merge($oldTranslations, array($key => $key));
+        ksort($newTranslations);
+
+        $string = "<?php \n\nreturn " . var_export($newTranslations, true) . ';';
+
+        file_put_contents($path, $string);
+    }
+
     public function actionMissing()
     {
         $this->requirePermission(Translate::TRANSLATIONS_UTILITIES_PERMISSION);
