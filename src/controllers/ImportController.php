@@ -95,6 +95,7 @@ class ImportController extends Controller
                 $i = 1;
                 foreach ($siteLocales as $siteLocale) {
                     $translation = $row[$i];
+                    $translation = trim($translation) !== '' ? $translation : null;
                     $i++;
 
                     $message = Message::find()
@@ -105,13 +106,22 @@ class ImportController extends Controller
                         $message = new Message();
                         $message->id = $sourceMessage->id;
                         $message->language = $siteLocale->id;
-                        $added++;
-                    } else {
-                        $updated++;
+                        $message->translation = null;
                     }
 
-                    $message->translation = trim($translation) !== '' ? $translation : null;
-                    $success = $message->save();
+                    if ($message->translation === null) {
+                        $message->translation = $translation;
+                        $success = $message->save();
+                        if ($success) {
+                            $added++;
+                        }
+                    } else if ($message->translation !== $translation) {
+                        $message->translation = $translation;
+                        $success = $message->save();
+                        if ($success) {
+                            $updated++;
+                        }
+                    }
                 }
             }
 
