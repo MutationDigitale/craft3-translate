@@ -2,7 +2,7 @@
 
 This plugins adds a control panel interface to edit your static translations in the database. 
 
-![Screenshot](./img/translate-plugin-screenhot.png)
+![Screenshot](./img/translate-plugin-screenhot.jpg)
 
 ## Features
 
