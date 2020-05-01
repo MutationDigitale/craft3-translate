@@ -61,7 +61,6 @@ class ExportController extends Controller
         $fp = fopen('php://memory', 'w+');
 
         $columnHeader = array(
-            'ID',
             'Key',
         );
 
@@ -76,7 +75,6 @@ class ExportController extends Controller
         // output each row of the data
         foreach ($sourceMessages as $sourceMessage) {
             $row = [
-                $sourceMessage['id'],
                 $sourceMessage['message']
             ];
             foreach ($sourceMessage['languages'] as $language) {
