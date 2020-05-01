@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.1.0 - 2020-05-01
+
+### Added
+- Basic CSV import (must be the same format as the export)
+
 ## 2.0.4 - 2020-04-28
 
 ### Fixed
