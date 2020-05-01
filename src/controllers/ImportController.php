@@ -109,17 +109,16 @@ class ImportController extends Controller
                         $message->translation = null;
                     }
 
-                    if ($message->translation === null) {
+                    $oldTranslation = $message->translation;
+
+                    if ($message->translation !== $translation) {
                         $message->translation = $translation;
-                        $success = $message->save();
-                        if ($success) {
-                            $added++;
-                        }
-                    } else if ($message->translation !== $translation) {
-                        $message->translation = $translation;
-                        $success = $message->save();
-                        if ($success) {
-                            $updated++;
+                        if ($message->save()) {
+                            if ($oldTranslation === null) {
+                                $added++;
+                            } else {
+                                $updated++;
+                            }
                         }
                     }
                 }
