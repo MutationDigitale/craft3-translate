@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.2.0 - 2020-05-01
+
+### Added
+- Utility to export your database translations to PHP files ([#4](https://github.com/MutationDigitale/craft3-translate/issues/4))
+
 ## 2.1.0 - 2020-05-01
 
 ### Added
