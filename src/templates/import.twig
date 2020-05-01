@@ -15,6 +15,8 @@
 {% endblock %}
 
 {% block content %}
+    <p class="warning">{{ "The first column must be the key followed by a column for each language in order. It should follow the same format as the exported CSV from the export section." | t('translations-admin')  }}</p>
+
     {{ actionInput('translations-admin/import/import') }}
 
     {{ forms.selectField({

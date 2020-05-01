@@ -27,7 +27,7 @@
     <hr>
 
     <h2>{{ "Delete all translations" | t('translations-admin') }}</h2>
-    <p class="warning">{{ "Warning! This action is irreversible!" }}</p>
+    <p class="warning">{{ "Warning! This action is irreversible!" | t('translations-admin')  }}</p>
     <form method="post" accept-charset="UTF-8">
         {{ actionInput('translations-admin/utilities/delete') }}
         {{ csrfInput() }}
