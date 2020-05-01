@@ -114,53 +114,26 @@ class UtilitiesController extends Controller
     public function actionExportPhp()
     {
         try {
-            $sourceMessages = Translate::getInstance()->sourceMessage->getSourceMessagesArrayByCategory($category);
-
-            foreach ($translations as $message => $sites) {
-                $languages = array();
-                foreach ($sites as $site => $translation) {
-                    $languages[$site] = $translation;
-                }
-
-                $sourceMessage = SourceMessage::find()
-                    ->where(array('message' => $message, 'category' => 'site'))
-                    ->one();
-
-                if (!$sourceMessage) {
-                    $sourceMessage = new SourceMessage();
-                    $sourceMessage->category = 'site';
-                    $sourceMessage->message = $message;
-                    $sourceMessage->languages = $languages;
-                    $sourceMessage->save();
+            $sourceMessages = Translate::getInstance()->sourceMessage->getAllSourceMessages();
+            $count = 0;
+            foreach ($sourceMessages as $language => $categories) {
+                foreach ($categories as $category => $messages) {
+                    $this->saveMessagesToFile($language, $category, $messages);
+                    $count += count($messages);
                 }
             }
-
-            $sites = Craft::$app->sites->getAllSites();
-            $translations = array();
-            foreach ($sites as $site) {
-                $path = Craft::$app->path->getSiteTranslationsPath()
-                    . DIRECTORY_SEPARATOR . $site->language . DIRECTORY_SEPARATOR . 'site.php';
-                $siteTranslations = array();
-                if (file_exists($path)) {
-                    $siteTranslations = include($path);
-                }
-                foreach ($siteTranslations as $key => $translation) {
-                    $translations[$key][$site->language] = $translation;
-                }
-            }
-
             Craft::$app->getSession()->setNotice(
                 Craft::t(
                     'translations-admin',
-                    '{count} translations migrated.',
-                    ['count' => count($translations)]
+                    '{count} translations export to PHP files.',
+                    ['count' => $count]
                 )
             );
         } catch (Exception $exception) {
             Craft::$app->getSession()->setError(
                 Craft::t(
                     'translations-admin',
-                    'Translations couldn’t be migrated.'
+                    'Translations couldn’t be exported to PHP files.'
                 )
             );
         }
@@ -168,9 +141,10 @@ class UtilitiesController extends Controller
         return $this->redirectToPostedUrl();
     }
 
-    private function saveTranslationToFile($key, $language)
+    private function saveMessagesToFile($language, $category, $messages)
     {
-        $path = \Craft::$app->path->getSiteTranslationsPath() . DIRECTORY_SEPARATOR . $language . DIRECTORY_SEPARATOR . 'site.php';
+        $path = Craft::$app->path->getSiteTranslationsPath() . DIRECTORY_SEPARATOR .
+            $language . DIRECTORY_SEPARATOR . $category . '.php';
 
         if (!file_exists($path)) {
             if (!file_exists(dirname($path))) {
@@ -178,18 +152,13 @@ class UtilitiesController extends Controller
             }
             $file = fopen($path, 'wb');
             fclose($file);
-            $oldTranslations = array();
-        }
-        else {
-            $oldTranslations = include($path);
         }
 
-        $newTranslations = array_merge($oldTranslations, array($key => $key));
-        ksort($newTranslations);
+        ksort($messages);
 
-        $string = "<?php \n\nreturn " . var_export($newTranslations, true) . ';';
+        $string = "<?php \n\nreturn " . var_export($messages, true) . ';';
 
-        file_put_contents($path, $string);
+        file_put_contents($path, $string, LOCK_EX);
     }
 
     public function actionMissing()

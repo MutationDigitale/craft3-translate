@@ -56,7 +56,6 @@ class SourceMessage extends Component
         $rows = (new Query())
             ->from('{{%source_message}} AS s')
             ->innerJoin('{{%message}} AS m', 'm.id = s.id')
-            ->where(['s.category' => $category])
             ->limit(null)
             ->all();
 
@@ -78,11 +77,9 @@ class SourceMessage extends Component
                     }
                 }
             }
-            $sourceMessages[] = [
-                'id' => $group[0]['id'],
-                'message' => $group[0]['message'],
-                'languages' => $languages
-            ];
+            foreach ($languages as $key => $language) {
+                $sourceMessages[$key][$group[0]['category']][$group[0]['message']] = $language === null ? '' : $language;
+            }
         }
 
         return $sourceMessages;
