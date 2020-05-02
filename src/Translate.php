@@ -4,25 +4,35 @@ namespace mutation\translate;
 
 use Craft;
 use craft\base\Plugin;
+use craft\events\RegisterGqlQueriesEvent;
 use craft\events\RegisterUrlRulesEvent;
 use craft\events\RegisterUserPermissionsEvent;
 use craft\helpers\UrlHelper;
 use craft\i18n\I18N;
+use craft\services\Gql;
 use craft\services\UserPermissions;
 use craft\web\UrlManager;
+use GraphQL\Type\Definition\ObjectType;
+use GraphQL\Type\Definition\Type;
 use mutation\translate\models\Settings;
 use mutation\translate\models\SourceMessage;
 use yii\base\Event;
 use yii\i18n\MessageSource;
 use yii\i18n\MissingTranslationEvent;
 
+/**
+ * Class Translate
+ * @package mutation\translate
+ * @property \mutation\translate\services\SourceMessage $sourceMessage
+ * @property Settings $settings
+ */
 class Translate extends Plugin
 {
-    const UPDATE_TRANSLATIONS_PERMISSION = 'updateTranslations';
-    const EXPORT_TRANSLATIONS_PERMISSION = 'exportTranslations';
-    const IMPORT_TRANSLATIONS_PERMISSION = 'importTranslations';
-    const TRANSLATIONS_UTILITIES_PERMISSION = 'translationsUtilities';
-    const CHANGE_TRANSLATIONS_SETTINGS_PERMISSION = 'changeTranslationsSettings';
+    public const UPDATE_TRANSLATIONS_PERMISSION = 'updateTranslations';
+    public const EXPORT_TRANSLATIONS_PERMISSION = 'exportTranslations';
+    public const IMPORT_TRANSLATIONS_PERMISSION = 'importTranslations';
+    public const TRANSLATIONS_UTILITIES_PERMISSION = 'translationsUtilities';
+    public const CHANGE_TRANSLATIONS_SETTINGS_PERMISSION = 'changeTranslationsSettings';
 
     public function init()
     {
@@ -54,7 +64,10 @@ class Translate extends Plugin
             $item['subnav']['import'] = ['label' => 'Import', 'url' => 'translations-admin/import-messages'];
         }
         if ($currentUser->can(self::TRANSLATIONS_UTILITIES_PERMISSION)) {
-            $item['subnav']['utilities'] = ['label' => 'Utilities', 'url' => 'translations-admin/translations-utilities'];
+            $item['subnav']['utilities'] = [
+                'label' => 'Utilities',
+                'url' => 'translations-admin/translations-utilities'
+            ];
         }
         if ($currentUser->can(self::CHANGE_TRANSLATIONS_SETTINGS_PERMISSION) && $general->allowAdminChanges) {
             $item['subnav']['settings'] = ['label' => 'Settings', 'url' => 'translations-admin/plugin-settings'];
@@ -163,6 +176,48 @@ class Translate extends Plugin
                     $sourceMessage->message = $event->message;
                     $sourceMessage->save();
                 }
+            }
+        );
+
+        Event::on(
+            Gql::class,
+            Gql::EVENT_REGISTER_GQL_QUERIES,
+            function (RegisterGqlQueriesEvent $event) {
+
+                // Add my GraphQL queries
+                $event->queries['staticMessages'] =
+                    [
+                        'type' => Type::listOf(
+                            new ObjectType(
+                                [
+                                    'name' => 'StaticMessagesType',
+                                    'fields' => [
+                                        'key' => Type::string(),
+                                        'message' => Type::string(),
+                                        'language' => Type::string(),
+                                        'category' => Type::string(),
+                                    ]
+                                ]
+                            )
+                        ),
+                        'args' => [
+                            'language' => [
+                                'name' => 'language',
+                                'type' => Type::listOf(Type::string()),
+                                'description' => 'Determines which language(s) the static messages should be queried in. Defaults to the current (requested) language.'
+                            ],
+                            'category' => [
+                                'name' => 'category',
+                                'type' => Type::listOf(Type::string()),
+                                'description' => 'Determines which category(ies) the static messages should be queried in. Defaults to the site category.'
+                            ],
+                        ],
+                        'resolve' => function ($root, $args) {
+                            $categories = $args['category'];
+                            $languages = $args['language'];
+                            return Translate::getInstance()->sourceMessage->getSourceMessagesByLanguagesAndCategories($languages, $categories);
+                        },
+                    ];
             }
         );
     }

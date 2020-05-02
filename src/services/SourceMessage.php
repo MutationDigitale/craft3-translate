@@ -84,4 +84,27 @@ class SourceMessage extends Component
 
         return $sourceMessages;
     }
+
+    public function getSourceMessagesByLanguagesAndCategories($languages, $categories)
+    {
+        $rows = (new Query())
+            ->from('{{%source_message}} AS s')
+            ->innerJoin('{{%message}} AS m', 'm.id = s.id')
+            ->where(['s.category' => $categories])
+            ->where(['m.language' => $languages])
+            ->limit(null)
+            ->all();
+
+        $sourceMessages = [];
+        foreach ($rows as $row) {
+            $sourceMessages[] = [
+                "key" => $row["message"],
+                "message" => $row["translation"],
+                'language' => $row['language'],
+                'category' => $row['category'],
+            ];
+        }
+
+        return $sourceMessages;
+    }
 }
