@@ -47,7 +47,10 @@ class Translate extends Plugin
         );
 
         $this->initDbMessages();
-        $this->initEvents();
+        $this->initPermissions();
+        $this->initCpUrls();
+        $this->initAddMissingTranslations();
+        $this->initGraphqlSupport();
     }
 
     public function getCpNavItem()
@@ -105,7 +108,7 @@ class Translate extends Plugin
         );
     }
 
-    private function initEvents()
+    private function initPermissions()
     {
         Event::on(
             UserPermissions::class,
@@ -130,7 +133,10 @@ class Translate extends Plugin
                 ];
             }
         );
+    }
 
+    private function initCpUrls()
+    {
         Event::on(
             UrlManager::class,
             UrlManager::EVENT_REGISTER_CP_URL_RULES,
@@ -145,7 +151,10 @@ class Translate extends Plugin
                 $event->rules['translations-admin/plugin-settings'] = 'translations-admin/settings/index';
             }
         );
+    }
 
+    private function initAddMissingTranslations()
+    {
         Event::on(
             MessageSource::class,
             MessageSource::EVENT_MISSING_TRANSLATION,
@@ -178,7 +187,10 @@ class Translate extends Plugin
                 }
             }
         );
+    }
 
+    private function initGraphqlSupport()
+    {
         Event::on(
             Gql::class,
             Gql::EVENT_REGISTER_GQL_QUERIES,
@@ -213,8 +225,8 @@ class Translate extends Plugin
                             ],
                         ],
                         'resolve' => function ($root, $args) {
-                            $categories = $args['category'];
-                            $languages = $args['language'];
+                            $categories = $args['category'] ?? 'site';
+                            $languages = $args['language'] ?? Craft::$app->language;
                             return Translate::getInstance()->sourceMessage->getSourceMessagesByLanguagesAndCategories($languages, $categories);
                         },
                     ];

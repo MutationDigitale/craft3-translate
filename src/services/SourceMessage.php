@@ -90,8 +90,7 @@ class SourceMessage extends Component
         $rows = (new Query())
             ->from('{{%source_message}} AS s')
             ->innerJoin('{{%message}} AS m', 'm.id = s.id')
-            ->where(['s.category' => $categories])
-            ->where(['m.language' => $languages])
+            ->where(['s.category' => $categories, 'm.language' => $languages])
             ->limit(null)
             ->all();
 
