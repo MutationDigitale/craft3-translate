@@ -20,6 +20,8 @@ This plugins adds a control panel interface to edit your static translations in 
 
 - Export your translations to a CSV file and import it back after handing it to your translation team.
 
+- GraphQL support to query static messages
+
 - Utilities:
 
     - Parse all site templates to add missing translations
@@ -74,8 +76,21 @@ return [
 ];
 ```
 
+## GraphQL
+
+Query static messages this way:
+```
+{
+  staticMessages(language:["en-CA", "fr-CA"], category: ["site", "app"]) {
+    key
+    message
+    language
+    category
+  }
+}
+```
+
 ## Roadmap
 
 - Add mapping for the import and support more format (Excel)
 - Refresh/sync option for the translations overview
-- Query the translations from GraphQL

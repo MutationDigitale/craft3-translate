@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.3.0 - 2020-05-04
+
+### Added
+- GraphQL support
+
 ## 2.2.0 - 2020-05-01
 
 ### Added
