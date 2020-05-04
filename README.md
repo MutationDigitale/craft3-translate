@@ -16,8 +16,6 @@ This plugins adds a control panel interface to edit your static translations in 
 
 - When a page is visited on the site, missing translations will automatically be added.
 
-- Migrate your existing PHP site translations to your database.
-
 - Export your translations to a CSV file and import it back after handing it to your translation team.
 
 - GraphQL support to query static messages
@@ -25,7 +23,7 @@ This plugins adds a control panel interface to edit your static translations in 
 - Utilities:
 
     - Parse all site templates to add missing translations
-    - Migrate all your PHP translations files to your database
+    - Migrate your existing PHP site translations to your database
     - Export all your database translations to PHP files
     - Delete all translations
 
