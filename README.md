@@ -23,7 +23,7 @@ This plugins adds a control panel interface to edit your static translations in 
 - Utilities:
 
     - Parse all site templates to add missing translations
-    - Migrate your existing PHP site translations to your database
+    - Migrate your existing PHP translations to your database
     - Export all your database translations to PHP files
     - Delete all translations
 
