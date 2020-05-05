@@ -92,3 +92,4 @@ Query static messages this way:
 
 - Add mapping for the import and support more format (Excel)
 - Refresh/sync option for the translations overview
+- Allow to override translations when importing from PHP files
