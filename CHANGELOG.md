@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.3.1 - 2020-05-29
+
+### Fixed
+- Fix GraphQL type
+
 ## 2.3.0 - 2020-05-04
 
 ### Added

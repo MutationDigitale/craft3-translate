@@ -7,6 +7,7 @@ use craft\base\Plugin;
 use craft\events\RegisterGqlQueriesEvent;
 use craft\events\RegisterUrlRulesEvent;
 use craft\events\RegisterUserPermissionsEvent;
+use craft\gql\TypeLoader;
 use craft\helpers\UrlHelper;
 use craft\i18n\I18N;
 use craft\services\Gql;
@@ -195,40 +196,57 @@ class Translate extends Plugin
             Gql::class,
             Gql::EVENT_REGISTER_GQL_QUERIES,
             function (RegisterGqlQueriesEvent $event) {
+                $typeName = 'StaticMessagesType';
+
+                $staticMessageType = Type::listOf(
+                    new ObjectType(
+                        [
+                            'name' => 'StaticMessagesType',
+                            'fields' => [
+                                'key' => Type::string(),
+                                'message' => Type::string(),
+                                'language' => Type::string(),
+                                'category' => Type::string(),
+                            ]
+                        ]
+                    )
+                );
+
+                TypeLoader::registerType(
+                    $typeName,
+                    static function () use ($staticMessageType) {
+                        return $staticMessageType;
+                    }
+                );
+
+                $args = [
+                    'language' => [
+                        'name' => 'language',
+                        'type' => Type::listOf(Type::string()),
+                        'description' => 'Determines which language(s) the static messages should be queried in. Defaults to the current (requested) language.'
+                    ],
+                    'category' => [
+                        'name' => 'category',
+                        'type' => Type::listOf(Type::string()),
+                        'description' => 'Determines which category(ies) the static messages should be queried in. Defaults to the site category.'
+                    ],
+                ];
+
+                $resolve = function ($root, $args) {
+                    $categories = $args['category'] ?? 'site';
+                    $languages = $args['language'] ?? Craft::$app->language;
+                    return Translate::getInstance()->sourceMessage->getSourceMessagesByLanguagesAndCategories(
+                        $languages,
+                        $categories
+                    );
+                };
 
                 // Add my GraphQL queries
                 $event->queries['staticMessages'] =
                     [
-                        'type' => Type::listOf(
-                            new ObjectType(
-                                [
-                                    'name' => 'StaticMessagesType',
-                                    'fields' => [
-                                        'key' => Type::string(),
-                                        'message' => Type::string(),
-                                        'language' => Type::string(),
-                                        'category' => Type::string(),
-                                    ]
-                                ]
-                            )
-                        ),
-                        'args' => [
-                            'language' => [
-                                'name' => 'language',
-                                'type' => Type::listOf(Type::string()),
-                                'description' => 'Determines which language(s) the static messages should be queried in. Defaults to the current (requested) language.'
-                            ],
-                            'category' => [
-                                'name' => 'category',
-                                'type' => Type::listOf(Type::string()),
-                                'description' => 'Determines which category(ies) the static messages should be queried in. Defaults to the site category.'
-                            ],
-                        ],
-                        'resolve' => function ($root, $args) {
-                            $categories = $args['category'] ?? 'site';
-                            $languages = $args['language'] ?? Craft::$app->language;
-                            return Translate::getInstance()->sourceMessage->getSourceMessagesByLanguagesAndCategories($languages, $categories);
-                        },
+                        'type' => $staticMessageType,
+                        'args' => $args,
+                        'resolve' => $resolve,
                     ];
             }
         );
