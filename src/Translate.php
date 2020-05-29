@@ -5,18 +5,20 @@ namespace mutation\translate;
 use Craft;
 use craft\base\Plugin;
 use craft\events\RegisterGqlQueriesEvent;
+use craft\events\RegisterGqlTypesEvent;
 use craft\events\RegisterUrlRulesEvent;
 use craft\events\RegisterUserPermissionsEvent;
-use craft\gql\TypeLoader;
 use craft\helpers\UrlHelper;
 use craft\i18n\I18N;
 use craft\services\Gql;
 use craft\services\UserPermissions;
 use craft\web\UrlManager;
-use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\Type;
+use mutation\translate\arguments\StaticMessageArguments;
 use mutation\translate\models\Settings;
 use mutation\translate\models\SourceMessage;
+use mutation\translate\interfaces\StaticMessageInterface;
+use mutation\translate\resolvers\StaticMessageResolver;
 use yii\base\Event;
 use yii\i18n\MessageSource;
 use yii\i18n\MissingTranslationEvent;
@@ -194,59 +196,21 @@ class Translate extends Plugin
     {
         Event::on(
             Gql::class,
+            Gql::EVENT_REGISTER_GQL_TYPES,
+            function (RegisterGqlTypesEvent $event) {
+                $event->types[] = StaticMessageInterface::class;
+            }
+        );
+
+        Event::on(
+            Gql::class,
             Gql::EVENT_REGISTER_GQL_QUERIES,
             function (RegisterGqlQueriesEvent $event) {
-                $typeName = 'StaticMessagesType';
-
-                $staticMessageType = Type::listOf(
-                    new ObjectType(
-                        [
-                            'name' => 'StaticMessagesType',
-                            'fields' => [
-                                'key' => Type::string(),
-                                'message' => Type::string(),
-                                'language' => Type::string(),
-                                'category' => Type::string(),
-                            ]
-                        ]
-                    )
-                );
-
-                TypeLoader::registerType(
-                    $typeName,
-                    static function () use ($staticMessageType) {
-                        return $staticMessageType;
-                    }
-                );
-
-                $args = [
-                    'language' => [
-                        'name' => 'language',
-                        'type' => Type::listOf(Type::string()),
-                        'description' => 'Determines which language(s) the static messages should be queried in. Defaults to the current (requested) language.'
-                    ],
-                    'category' => [
-                        'name' => 'category',
-                        'type' => Type::listOf(Type::string()),
-                        'description' => 'Determines which category(ies) the static messages should be queried in. Defaults to the site category.'
-                    ],
-                ];
-
-                $resolve = function ($root, $args) {
-                    $categories = $args['category'] ?? 'site';
-                    $languages = $args['language'] ?? Craft::$app->language;
-                    return Translate::getInstance()->sourceMessage->getSourceMessagesByLanguagesAndCategories(
-                        $languages,
-                        $categories
-                    );
-                };
-
-                // Add my GraphQL queries
                 $event->queries['staticMessages'] =
                     [
-                        'type' => $staticMessageType,
-                        'args' => $args,
-                        'resolve' => $resolve,
+                        'type' => Type::listOf(StaticMessageInterface::getType()),
+                        'args' => StaticMessageArguments::getArguments(),
+                        'resolve' => StaticMessageResolver::class . '::resolve',
                     ];
             }
         );
