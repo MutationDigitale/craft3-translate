@@ -31,7 +31,6 @@ use yii\i18n\MissingTranslationEvent;
  */
 class Translate extends Plugin
 {
-    public const UPDATE_TRANSLATIONS_PERMISSION = 'updateTranslations';
     public const EXPORT_TRANSLATIONS_PERMISSION = 'exportTranslations';
     public const IMPORT_TRANSLATIONS_PERMISSION = 'importTranslations';
     public const TRANSLATIONS_UTILITIES_PERMISSION = 'translationsUtilities';
@@ -117,10 +116,8 @@ class Translate extends Plugin
             UserPermissions::class,
             UserPermissions::EVENT_REGISTER_PERMISSIONS,
             function (RegisterUserPermissionsEvent $event) {
-                $event->permissions['translations-admin'] = [
-                    self::UPDATE_TRANSLATIONS_PERMISSION => [
-                        'label' => 'Update translations',
-                    ],
+                $label = Craft::t('translations-admin', 'Translations admin');
+                $event->permissions[$label] = [
                     self::EXPORT_TRANSLATIONS_PERMISSION => [
                         'label' => 'Export translations',
                     ],

@@ -14,8 +14,6 @@ class MessagesController extends Controller
 {
     public function actionIndex($category = null)
     {
-        $this->requirePermission(Translate::UPDATE_TRANSLATIONS_PERMISSION);
-
         $this->view->registerAssetBundle(TranslateBundle::class);
 
         $settings = Translate::getInstance()->settings;
@@ -37,8 +35,6 @@ class MessagesController extends Controller
 
     public function actionGetTranslations()
     {
-        $this->requirePermission(Translate::UPDATE_TRANSLATIONS_PERMISSION);
-
         $category = Craft::$app->request->getParam('category');
 
         $siteLocales = Craft::$app->i18n->getSiteLocales();
@@ -65,7 +61,6 @@ class MessagesController extends Controller
     public function actionAdd()
     {
         $this->requirePostRequest();
-        $this->requirePermission(Translate::UPDATE_TRANSLATIONS_PERMISSION);
 
         $message = Craft::$app->request->getRequiredBodyParam('message');
         $category = Craft::$app->request->getRequiredBodyParam('category');
@@ -107,7 +102,6 @@ class MessagesController extends Controller
     public function actionDelete()
     {
         $this->requirePostRequest();
-        $this->requirePermission(Translate::UPDATE_TRANSLATIONS_PERMISSION);
 
         $sourceMessageIds = Craft::$app->request->getRequiredBodyParam('sourceMessageId');
 
@@ -135,7 +129,6 @@ class MessagesController extends Controller
     public function actionSave()
     {
         $this->requirePostRequest();
-        $this->requirePermission(Translate::UPDATE_TRANSLATIONS_PERMISSION);
 
         $translations = Craft::$app->request->getRequiredBodyParam('translations');
 

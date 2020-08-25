@@ -85,6 +85,6 @@ class ExportController extends Controller
 
         rewind($fp);
 
-        return Craft::$app->response->sendStreamAsFile($fp, 'translations.csv', array('forceDownload' => true));
+        return Craft::$app->response->sendStreamAsFile($fp, "translations-{$category}.csv", array('forceDownload' => true));
     }
 }

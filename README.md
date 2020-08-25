@@ -66,7 +66,7 @@ Config file example:
 return [
     'pluginName' => 'Translations',
     'categories' => [
-        ['category' => 'site']
+        ['category' => 'site'],
         ['category' => 'app']
     ],
     'addMissingTranslations' => false,

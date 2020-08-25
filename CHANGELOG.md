@@ -1,5 +1,16 @@
 # Changelog
 
+## 2.4.0 - 2020-08-25
+
+### Fixed
+- Typo in Config file example ([#11](https://github.com/MutationDigitale/craft3-translate/issues/11))
+
+### Changed
+- Unique name of exported csv files ([#12](https://github.com/MutationDigitale/craft3-translate/issues/12))
+
+### Removed
+- Removed unnecessary "Update translations" permission because of default "Access Translations" permission ([#13](https://github.com/MutationDigitale/craft3-translate/issues/13))
+
 ## 2.3.2 - 2020-05-29
 
 ### Fixed
