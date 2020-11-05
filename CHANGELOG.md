@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.4.1 - 2020-11-05
+
+### Fixed
+- "Parse templates" form action redirects to homepage ([#17](https://github.com/MutationDigitale/craft3-translate/issues/17))
+
 ## 2.4.0 - 2020-08-25
 
 ### Fixed

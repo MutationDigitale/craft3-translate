@@ -5,9 +5,8 @@
 {% block content %}
     <h2>{{ "Parse templates" | t('translations-admin') }}</h2>
     <p>{{ "Parse all site templates to add missing translations" | t('translations-admin') }}</p>
-    <form method="post" accept-charset="UTF-8" action="/">
+    <form method="post" accept-charset="UTF-8">
         {{ actionInput('translations-admin/utilities/missing') }}
-        {{ redirectInput(craft.app.request.url) }}
         {{ csrfInput() }}
 
         <button class="btn submit" type="submit">{{ "Parse" | t('translations-admin') }}</button>
