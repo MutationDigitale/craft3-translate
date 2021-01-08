@@ -167,7 +167,7 @@ export default {
         }
         const search = this.search.toLowerCase().trim();
         for (const language of this.languages) {
-          if (sourceMessage.languages[language.id] !== null &&
+          if (sourceMessage.languages[language.id] &&
             sourceMessage.languages[language.id].toLowerCase().trim().includes(search)) {
             return true;
           }
