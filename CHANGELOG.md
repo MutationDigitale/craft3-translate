@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.4.2 - 2021-01-15
+
+### Fixed
+- Fix a type error in the TranslationsList component (Thanks iloginow [#20](https://github.com/MutationDigitale/craft3-translate/pull/20))
+
 ## 2.4.1 - 2020-11-05
 
 ### Fixed
