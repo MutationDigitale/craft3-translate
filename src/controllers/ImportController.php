@@ -82,7 +82,7 @@ class ImportController extends Controller
                 $key = $row[0];
 
                 $sourceMessage = SourceMessage::find()
-                    ->where(array('message' => $key, 'category' => $category))
+                    ->where(array('BINARY(`message`)' => $key, 'category' => $category))
                     ->one();
 
                 if (!$sourceMessage) {
