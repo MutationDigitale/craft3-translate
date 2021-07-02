@@ -66,7 +66,7 @@ class MessagesController extends Controller
         $category = Craft::$app->request->getRequiredBodyParam('category');
 
         $sourceMessage = SourceMessage::find()
-            ->where(array('message' => $message, 'category' => $category))
+            ->where(array('BINARY(`message`)' => $message, 'category' => $category))
             ->one();
 
         if ($sourceMessage) {
