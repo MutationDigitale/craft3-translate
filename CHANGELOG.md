@@ -1,5 +1,12 @@
 # Changelog
 
+## 2.4.4 - 2021-06-29
+
+### Fixed
+- Wrong translation language when primary site isn't English ([#29](https://github.com/MutationDigitale/craft3-translate/issues/29))
+- Make translations case-sensitive (Thanks JeroenOnstuimig [#28](https://github.com/MutationDigitale/craft3-translate/pull/28))
+
+
 ## 2.4.3 - 2021-01-15
 
 ### Fixed

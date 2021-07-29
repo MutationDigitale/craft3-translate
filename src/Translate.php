@@ -98,7 +98,7 @@ class Translate extends Plugin
         foreach ($this->settings->getCategories() as $category) {
             $i18n->translations[$category] = [
                 'class' => DbMessageSource::class,
-                'sourceLanguage' => 'en-US',
+                'sourceLanguage' => Craft::$app->getSites()->getPrimarySite()->language,
                 'forceTranslation' => true,
             ];
         }
