@@ -6,6 +6,7 @@ use Craft;
 use craft\helpers\UrlHelper;
 use craft\web\Controller;
 use Exception;
+use mutation\translate\helpers\DbHelper;
 use mutation\translate\models\SourceMessage;
 use mutation\translate\Translate;
 use Twig\Node\Expression\ConstantExpression;
@@ -80,7 +81,7 @@ class UtilitiesController extends Controller
                 }
 
                 $sourceMessage = SourceMessage::find()
-                    ->where(array((Craft::$app->db->getIsMysql() ? 'BINARY(`message`)' : 'message') => $message, 'category' => 'site'))
+                    ->where(array(DbHelper::caseSensitiveComparisonString('message') => $message, 'category' => 'site'))
                     ->one();
 
                 if (!$sourceMessage) {
@@ -188,7 +189,7 @@ class UtilitiesController extends Controller
 
         foreach ($messages as $message) {
             $sourceMessage = SourceMessage::find()
-                ->where(array((Craft::$app->db->getIsMysql() ? 'BINARY(`message`)' : 'message') => $message['value'], 'category' => $message['category']))
+                ->where(array(DbHelper::caseSensitiveComparisonString('message') => $message['value'], 'category' => $message['category']))
                 ->one();
 
             if (!$sourceMessage) {

@@ -4,6 +4,7 @@ namespace mutation\translate\controllers;
 
 use Craft;
 use craft\web\Controller;
+use mutation\translate\helpers\DbHelper;
 use mutation\translate\models\Message;
 use mutation\translate\models\SourceMessage;
 use mutation\translate\Translate;
@@ -66,7 +67,7 @@ class MessagesController extends Controller
         $category = Craft::$app->request->getRequiredBodyParam('category');
 
         $sourceMessage = SourceMessage::find()
-            ->where(array((Craft::$app->db->getIsMysql() ? 'BINARY(`message`)' : 'message') => $message, 'category' => $category))
+            ->where(array(DbHelper::caseSensitiveComparisonString('message') => $message, 'category' => $category))
             ->one();
 
         if ($sourceMessage) {

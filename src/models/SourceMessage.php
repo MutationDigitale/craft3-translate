@@ -4,8 +4,8 @@ namespace mutation\translate\models;
 
 use Craft;
 use yii\db\ActiveQuery;
-use yii\db\ActiveRecord;
-use yii\helpers\ArrayHelper;
+use craft\db\ActiveRecord;
+use craft\helpers\ArrayHelper;
 
 /**
  * This is the model class for table "source_message".

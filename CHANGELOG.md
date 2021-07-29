@@ -5,7 +5,7 @@
 ### Fixed
 - Wrong translation language when primary site isn't English ([#29](https://github.com/MutationDigitale/craft3-translate/issues/29))
 - Make translations case-sensitive (Thanks JeroenOnstuimig [#28](https://github.com/MutationDigitale/craft3-translate/pull/28))
-
+- Fix PostgreSQL database error ([#24](https://github.com/MutationDigitale/craft3-translate/issues/24))
 
 ## 2.4.3 - 2021-01-15
 

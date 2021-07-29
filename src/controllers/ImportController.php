@@ -6,6 +6,7 @@ use Craft;
 use craft\helpers\UrlHelper;
 use craft\web\Controller;
 use craft\web\UploadedFile;
+use mutation\translate\helpers\DbHelper;
 use mutation\translate\models\Message;
 use mutation\translate\models\SourceMessage;
 use mutation\translate\Translate;
@@ -82,7 +83,7 @@ class ImportController extends Controller
                 $key = $row[0];
 
                 $sourceMessage = SourceMessage::find()
-                    ->where(array((Craft::$app->db->getIsMysql() ? 'BINARY(`message`)' : 'message') => $key, 'category' => $category))
+                    ->where(array(DbHelper::caseSensitiveComparisonString('message') => $key, 'category' => $category))
                     ->one();
 
                 if (!$sourceMessage) {

@@ -2,7 +2,7 @@
 
 namespace mutation\translate\models;
 
-use yii\db\ActiveRecord;
+use craft\db\ActiveRecord;
 
 /**
  * This is the model class for table "message".

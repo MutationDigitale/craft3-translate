@@ -15,6 +15,7 @@ use craft\services\UserPermissions;
 use craft\web\UrlManager;
 use GraphQL\Type\Definition\Type;
 use mutation\translate\arguments\StaticMessageArguments;
+use mutation\translate\helpers\DbHelper;
 use mutation\translate\models\Settings;
 use mutation\translate\models\SourceMessage;
 use mutation\translate\interfaces\StaticMessageInterface;
@@ -176,7 +177,7 @@ class Translate extends Plugin
                 }
 
                 $sourceMessage = SourceMessage::find()
-                    ->where(array((Craft::$app->db->getIsMysql() ? 'BINARY(`message`)' : 'message') => $event->message, 'category' => $event->category))
+                    ->where(array(DbHelper::caseSensitiveComparisonString('message') => $event->message, 'category' => $event->category))
                     ->one();
 
                 if (!$sourceMessage) {
