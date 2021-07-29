@@ -176,7 +176,7 @@ class Translate extends Plugin
                 }
 
                 $sourceMessage = SourceMessage::find()
-                    ->where(array('message' => $event->message, 'category' => $event->category))
+                    ->where(array('BINARY(`message`)' => $event->message, 'category' => $event->category))
                     ->one();
 
                 if (!$sourceMessage) {
