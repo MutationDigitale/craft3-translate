@@ -80,7 +80,7 @@ class UtilitiesController extends Controller
                 }
 
                 $sourceMessage = SourceMessage::find()
-                    ->where(array('BINARY(`message`)' => $message, 'category' => 'site'))
+                    ->where(array((Craft::$app->db->getIsMysql() ? 'BINARY(`message`)' : 'message') => $message, 'category' => 'site'))
                     ->one();
 
                 if (!$sourceMessage) {
@@ -188,7 +188,7 @@ class UtilitiesController extends Controller
 
         foreach ($messages as $message) {
             $sourceMessage = SourceMessage::find()
-                ->where(array('BINARY(`message`)' => $message['value'], 'category' => $message['category']))
+                ->where(array((Craft::$app->db->getIsMysql() ? 'BINARY(`message`)' : 'message') => $message['value'], 'category' => $message['category']))
                 ->one();
 
             if (!$sourceMessage) {
