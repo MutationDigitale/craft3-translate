@@ -26,7 +26,9 @@ class Install extends Migration
         // Support table creation without primary key when sql_require_primary_key
         // is enabled (like on DigitalOcean Managed Databases)
         // https://docs.digitalocean.com/products/databases/mysql/how-to/create-primary-keys/
-        $this->execute('SET SESSION sql_require_primary_key = 0');
+        if ($this->db->driverName === 'mysql') {
+            $this->execute('SET SESSION sql_require_primary_key = 0');
+        }
 
         $this->createTable(
             '{{%source_message}}',
