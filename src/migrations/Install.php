@@ -23,6 +23,11 @@ class Install extends Migration
             $tableOptions = 'CHARACTER SET utf8 COLLATE utf8_unicode_ci ENGINE=InnoDB';
         }
 
+        // Support table creation without primary key when sql_require_primary_key
+        // is enabled (like on DigitalOcean Managed Databases)
+        // https://docs.digitalocean.com/products/databases/mysql/how-to/create-primary-keys/
+        $this->execute('SET SESSION sql_require_primary_key = 0');
+
         $this->createTable(
             '{{%source_message}}',
             [
