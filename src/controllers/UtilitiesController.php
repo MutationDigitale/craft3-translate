@@ -181,10 +181,14 @@ class UtilitiesController extends Controller
 
         foreach ($template_files as $file) {
             $template_str = file_get_contents($file);
+            $twig_source = new Source($template_str, basename($file));
 
-            $tree = @$twig->parse($twig->tokenize(new Source($template_str, basename($file))));
-
-            $this->listFunctionCalls($tree, $tree, $messages);
+            try {
+                $token_stream = $twig->tokenize($twig_source);
+                $tree = $twig->parse($token_stream);
+                $this->listFunctionCalls($tree, $tree, $messages);
+            } catch (Exception $e) {
+            }
         }
 
         foreach ($messages as $message) {
