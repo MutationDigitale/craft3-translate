@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.4.5 - 2021-09-14
+
+### Fixed
+- Do not throw an error when failing to parse a twig template
+- Support table creation w/o primary key ([#33](https://github.com/MutationDigitale/craft3-translate/pull/33) thanks weotch!)
+
 ## 2.4.4 - 2021-06-29
 
 ### Fixed
