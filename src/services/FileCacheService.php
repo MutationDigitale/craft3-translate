@@ -90,6 +90,7 @@ class FileCacheService extends Component
 			$request->getIsConsoleRequest() ||
 			$request->getIsActionRequest() ||
 			$request->getIsPreview() ||
+			$request->getToken() ||
 			!$response->getIsOk()) {
 			return false;
 		}

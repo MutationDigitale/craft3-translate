@@ -1,6 +1,11 @@
 # Changelog
 
-## 2.3.4 - 2020-0429
+## 2.3.5 - 2021-09-17
+
+### Fixed
+- Don't cache requests with ?token= param
+
+## 2.3.4 - 2020-04-29
 
 ### Fixed
 - Don't cache JSON requests
