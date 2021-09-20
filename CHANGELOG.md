@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.4.6 - 2021-09-20
+
+### Fixed
+- Fix "Parse templates" utilities when twig functions/filters are registered only for Site Requests ([#30](https://github.com/MutationDigitale/craft3-translate/issues/30))
+
 ## 2.4.5 - 2021-09-14
 
 ### Fixed

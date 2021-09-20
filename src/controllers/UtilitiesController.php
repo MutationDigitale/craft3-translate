@@ -204,7 +204,8 @@ class UtilitiesController extends Controller
             }
         }
 
-        Craft::$app->getSession()->setNotice(
+        Craft::$app->getSession()->setFlash(
+            'cp-notice',
             Craft::t(
                 'translations-admin',
                 '{count} translations imported.',

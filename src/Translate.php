@@ -51,6 +51,7 @@ class Translate extends Plugin
 
         $this->initDbMessages();
         $this->initPermissions();
+        $this->initSiteUrls();
         $this->initCpUrls();
         $this->initAddMissingTranslations();
         $this->initGraphqlSupport();
@@ -132,6 +133,17 @@ class Translate extends Plugin
                         'label' => 'Change translations settings',
                     ]
                 ];
+            }
+        );
+    }
+
+    private function initSiteUrls()
+    {
+        Event::on(
+            UrlManager::class,
+            UrlManager::EVENT_REGISTER_SITE_URL_RULES,
+            static function (RegisterUrlRulesEvent $event) {
+                $event->rules['translations-admin/utilities/missing'] = 'translations-admin/utilities/missing';
             }
         );
     }
