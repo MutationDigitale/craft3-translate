@@ -27,7 +27,13 @@ class m191127_192413_sources_messages extends Migration
         // is enabled (like on DigitalOcean Managed Databases)
         // https://docs.digitalocean.com/products/databases/mysql/how-to/create-primary-keys/
         if ($this->db->driverName === 'mysql') {
-            $this->execute('SET SESSION sql_require_primary_key = 0');
+            try {
+                $requirePrimaryKey = $this->db->createCommand('SHOW SESSION VARIABLES LIKE "sql_require_primary_key";')->queryAll();
+                if (isset($requirePrimaryKey[0]['Value']) && $requirePrimaryKey[0]['Value'] === 'ON') {
+                    $this->execute('SET SESSION sql_require_primary_key = 0');
+                }
+            } catch (\yii\db\Exception $e) {
+            }
         }
 
         $this->createTable(

@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.4.7 - 2021-09-21
+
+### Fixed
+- Fix sql error when installing plugin
+
 ## 2.4.6 - 2021-09-20
 
 ### Fixed
