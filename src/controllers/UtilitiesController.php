@@ -234,7 +234,11 @@ class UtilitiesController extends Controller
                     $argumentNode = $node->getNode('arguments');
                     $category = 'site';
                     if ($argumentNode->getIterator()->count() > 0) {
-                        $category = $argumentNode->getIterator()->current()->getAttribute('value');
+                        foreach ($argumentNode->getIterator() as $key => $value) {
+                            if ($key === 'category') {
+                                $category = $value->getAttribute('value');
+                            }
+                        }
                     }
                     if ($valueNode instanceof ConstantExpression) {
                         $value = $valueNode->getAttribute('value');

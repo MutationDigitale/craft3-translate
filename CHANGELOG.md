@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.4.8 - 2021-10-28
+
+### Fixed
+- Fix an error importing translations from templates when another argument than the category is specified ([#35](https://github.com/MutationDigitale/craft3-translate/issues/35))
+
 ## 2.4.7 - 2021-09-21
 
 ### Fixed
