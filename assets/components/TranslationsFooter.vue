@@ -51,8 +51,11 @@ export default {
     })
   },
   watch: {
-    filteredSourceMessages() {
-      this.setPages();
+    filteredSourceMessages: {
+      handler() {
+        this.setPages();
+      },
+      deep: true
     }
   },
   methods: {

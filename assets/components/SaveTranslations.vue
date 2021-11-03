@@ -26,8 +26,11 @@ export default {
     })
   },
   watch: {
-    modifiedMessagesKeys() {
-      this.isModified = this.modifiedMessagesKeys.length > 0;
+    modifiedMessagesKeys: {
+      handler() {
+        this.isModified = this.modifiedMessagesKeys.length > 0;
+      },
+      deep: true
     }
   },
   mounted() {

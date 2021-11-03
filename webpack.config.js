@@ -1,6 +1,7 @@
 // webpack.config.js
 const { VueLoaderPlugin } = require('vue-loader');
 const path = require('path');
+const webpack = require('webpack');
 
 const env = process.env.NODE_ENV;
 
@@ -18,7 +19,7 @@ const config = {
         options: {
           compilerOptions: {
             compatConfig: {
-              MODE: 2
+              MODE: 3
             }
           }
         }
@@ -48,11 +49,14 @@ const config = {
   resolve: {
     alias: {
       vue: '@vue/compat/dist/vue.esm-bundler.js'
-    },
-    extensions: ['*', '.js', '.vue', '.json']
+    }
   },
   plugins: [
     new VueLoaderPlugin(),
+    new webpack.DefinePlugin({
+      __VUE_OPTIONS_API__: true,
+      __VUE_PROD_DEVTOOLS__: false
+    }),
   ],
 };
 
