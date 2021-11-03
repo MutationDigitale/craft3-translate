@@ -1,9 +1,6 @@
-import Vuex from 'vuex';
-import Vue from 'vue';
+import { createStore } from 'vuex';
 
-Vue.use(Vuex);
-
-export default new Vuex.Store({
+export const store = createStore({
   state: {
     isLoading: false,
     isAdding: false,

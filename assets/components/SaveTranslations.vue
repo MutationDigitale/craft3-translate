@@ -1,20 +1,19 @@
 <template>
-    <div>
-        <button type="button" class="btn submit" @click="save()"
-                :disabled="!isModified || isSaving">
-            <span v-if="isSaving">{{ t('Saving') }}...</span>
-            <span v-else>{{ t('Save') }}</span>
-        </button>
-    </div>
+  <div>
+    <button type="button" class="btn submit" @click="save()"
+            :disabled="!isModified || isSaving">
+      <span v-if="isSaving">{{ t('Saving') }}...</span>
+      <span v-else>{{ t('Save') }}</span>
+    </button>
+  </div>
 </template>
 
 <script>
 import axios from 'axios';
-import { EventBus } from './../EventBus.js';
-import { mapState } from 'vuex';
+import {mapState} from 'vuex';
 
 export default {
-  data () {
+  data() {
     return {
       isSaving: false,
       isModified: false,
@@ -27,11 +26,11 @@ export default {
     })
   },
   watch: {
-    modifiedMessagesKeys () {
+    modifiedMessagesKeys() {
       this.isModified = this.modifiedMessagesKeys.length > 0;
     }
   },
-  mounted () {
+  mounted() {
     window.addEventListener('keydown', (event) => {
       if ((event.ctrlKey || event.metaKey) && event.key === 's') {
         if (this.isModified && !this.isSaving) {
@@ -61,13 +60,13 @@ export default {
         .post('', formData)
         .then((response) => {
           if (response.data.success) {
-            EventBus.$emit('translations-saved');
+            this.emitter.emit('translations-saved');
           } else {
-            EventBus.$emit('translations-saved-error');
+            this.emitter.emit('translations-saved-error');
           }
         })
         .catch((error) => {
-          EventBus.$emit('translations-saved-error');
+          this.emitter.emit('translations-saved-error');
           console.log(error);
         })
         .finally(() => {
@@ -83,7 +82,7 @@ export default {
 
 <style scoped>
 .btn:disabled {
-    opacity: 0.5;
-    pointer-events: none;
+  opacity: 0.5;
+  pointer-events: none;
 }
 </style>

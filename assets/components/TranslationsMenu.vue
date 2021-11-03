@@ -1,20 +1,20 @@
 <template>
-    <div>
-        <nav>
-            <ul>
-                <li v-for="cat in categories" v-bind:key="cat">
-                    <a href="" :class="{'sel': cat === category}"
-                       @click.prevent="changeCategory(cat)">
-                        {{ cat }}
-                    </a>
-                </li>
-            </ul>
-        </nav>
-    </div>
+  <div>
+    <nav>
+      <ul>
+        <li v-for="cat in categories" v-bind:key="cat">
+          <a href="" :class="{'sel': cat === category}"
+             @click.prevent="changeCategory(cat)">
+            {{ cat }}
+          </a>
+        </li>
+      </ul>
+    </nav>
+  </div>
 </template>
 
 <script>
-import { mapMutations, mapState } from 'vuex';
+import {mapMutations, mapState} from 'vuex';
 
 export default {
   props: {
@@ -25,7 +25,7 @@ export default {
       category: state => state.category,
     })
   },
-  created () {
+  created() {
     window.addEventListener('popstate', () => {
       const pathSplit = document.location.pathname.split('/');
       if (pathSplit.length >= 3 && pathSplit[2] === 'translations-admin') {
@@ -34,7 +34,7 @@ export default {
     });
   },
   methods: {
-    changeCategory (cat, pushState = true) {
+    changeCategory(cat, pushState = true) {
       this.setCategory(cat);
       if (pushState) {
         window.history.pushState({}, '', '/admin/translations-admin/' + cat);

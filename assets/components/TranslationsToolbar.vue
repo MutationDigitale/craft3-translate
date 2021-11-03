@@ -1,73 +1,74 @@
 <template>
-    <div id="translations-toolbar" class="flex flex-grow">
-        <div v-show="checkedSourceMessages.length > 0">
-            <div class="btn menubtn" data-icon="settings" :title="t('Actions')"></div>
-            <div class="menu">
-                <ul>
-                    <li>
-                        <a class="error" @click="deleteMessages()">
-                            {{ t('Delete') }}
-                        </a>
-                    </li>
-                </ul>
-            </div>
-        </div>
-        <div v-show="checkedSourceMessages.length === 0">
-            <div class="btn menubtn statusmenubtn"><span class="status" :class="{'pending': emptyMessages}"></span>{{
-                !emptyMessages ? t('All') : t('Empty') }}</div>
-            <div class="menu">
-                <ul class="padded">
-                    <li>
-                        <a :class="{'sel': !emptyMessages}"
-                           @click="setEmptyMessages(false)">
-                            <span class="status"></span>{{ t('All') }}
-                        </a>
-                    </li>
-                    <li>
-                        <a :class="{'sel': emptyMessages}"
-                           @click="setEmptyMessages(true)">
-                            <span class="status pending"></span>{{ t('Empty') }}
-                        </a>
-                    </li>
-                </ul>
-            </div>
-        </div>
-        <div v-show="checkedSourceMessages.length === 0"
-             class="flex-grow texticon search icon clearable search-container">
-            <input class="text fullwidth" type="text" autocomplete="off" placeholder="Search"
-                   v-model="search">
-            <div class="clear hidden" title="Clear"></div>
-        </div>
-        <div v-show="checkedSourceMessages.length === 0" class="textarea-container">
+  <div id="translations-toolbar" class="flex flex-grow">
+    <div v-show="checkedSourceMessages.length > 0">
+      <div class="btn menubtn" data-icon="settings" :title="t('Actions')"></div>
+      <div class="menu">
+        <ul>
+          <li>
+            <a class="error" @click="deleteMessages()">
+              {{ t('Delete') }}
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+    <div v-show="checkedSourceMessages.length === 0">
+      <div class="btn menubtn statusmenubtn"><span class="status" :class="{'pending': emptyMessages}"></span>{{
+          !emptyMessages ? t('All') : t('Empty')
+        }}
+      </div>
+      <div class="menu">
+        <ul class="padded">
+          <li>
+            <a :class="{'sel': !emptyMessages}"
+               @click="setEmptyMessages(false)">
+              <span class="status"></span>{{ t('All') }}
+            </a>
+          </li>
+          <li>
+            <a :class="{'sel': emptyMessages}"
+               @click="setEmptyMessages(true)">
+              <span class="status pending"></span>{{ t('Empty') }}
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+    <div v-show="checkedSourceMessages.length === 0"
+         class="flex-grow texticon search icon clearable search-container">
+      <input class="text fullwidth" type="text" autocomplete="off" placeholder="Search"
+             v-model="search">
+      <div class="clear hidden" title="Clear"></div>
+    </div>
+    <div v-show="checkedSourceMessages.length === 0" class="textarea-container">
             <textarea class="text" rows="1"
                       v-model="messageToAdd" :placeholder="t('Message')"></textarea>
-        </div>
-        <div v-show="checkedSourceMessages.length === 0">
-            <button class="btn" type="button" @click="addMessage()"
-                    :disabled="messageToAdd === null || messageToAdd.trim() === ''">
-                {{ t('Add') }}
-            </button>
-        </div>
     </div>
+    <div v-show="checkedSourceMessages.length === 0">
+      <button class="btn" type="button" @click="addMessage()"
+              :disabled="messageToAdd === null || messageToAdd.trim() === ''">
+        {{ t('Add') }}
+      </button>
+    </div>
+  </div>
 </template>
 
 <script>
-import { mapActions, mapMutations, mapState } from 'vuex';
+import {mapActions, mapMutations, mapState} from 'vuex';
 import axios from 'axios';
-import { EventBus } from '../EventBus';
 
 export default {
-  data () {
+  data() {
     return {
       messageToAdd: ''
     };
   },
   computed: {
     search: {
-      get () {
+      get() {
         return this.$store.state.search;
       },
-      set (value) {
+      set(value) {
         this.setSearch(value);
       }
     },
@@ -81,10 +82,10 @@ export default {
     })
   },
   methods: {
-    t (str) {
+    t(str) {
       return this.$craft.t('translations-admin', str);
     },
-    addMessage () {
+    addMessage() {
       this.setIsAdding(true);
 
       const formData = new FormData();
@@ -98,16 +99,16 @@ export default {
         .post('', formData)
         .then((response) => {
           if (response.data.success) {
-            EventBus.$emit('translation-added');
+            this.emitter.emit('translation-added');
             const sourceMessages = this.sourceMessages;
             sourceMessages.push(response.data.sourceMessage);
             this.updateSourceMessages(sourceMessages);
           } else {
-            EventBus.$emit('translation-added-error');
+            this.emitter.emit('translation-added-error');
           }
         })
         .catch((error) => {
-          EventBus.$emit('translation-added-error');
+          this.emitter.emit('translation-added-error');
           console.log(error);
         })
         .finally(() => {
@@ -115,7 +116,7 @@ export default {
           this.messageToAdd = '';
         });
     },
-    deleteMessages () {
+    deleteMessages() {
       this.setIsDeleting(true);
 
       const formData = new FormData();
@@ -131,18 +132,18 @@ export default {
         .post('', formData)
         .then((response) => {
           if (response.data.success) {
-            EventBus.$emit('translation-deleted');
+            this.emitter.emit('translation-deleted');
             const sourceMessages = this.sourceMessages.filter((sourceMessage) => {
               return this.checkedSourceMessages.indexOf(sourceMessage.id) === -1;
             });
             this.updateSourceMessages(sourceMessages);
             this.setCheckedSourceMessages([]);
           } else {
-            EventBus.$emit('translation-deleted-error');
+            this.emitter.emit('translation-deleted-error');
           }
         })
         .catch((error) => {
-          EventBus.$emit('translation-deleted-error');
+          this.emitter.emit('translation-deleted-error');
           console.log(error);
         })
         .finally(() => {
@@ -167,23 +168,23 @@ export default {
 @import "~craftcms-sass/mixins";
 
 #translations-toolbar {
-    flex-wrap: wrap;
+  flex-wrap: wrap;
 }
 
 .search-container {
-    flex: 2;
+  flex: 2;
 }
 
 .textarea-container {
-    height: 34px;
-    flex: 1;
+  height: 34px;
+  flex: 1;
 }
 
 textarea {
-    min-width: 160px;
-    overflow-x: hidden;
-    min-height: 34px;
-    height: 34px;
-    width: 100%;
+  min-width: 160px;
+  overflow-x: hidden;
+  min-height: 34px;
+  height: 34px;
+  width: 100%;
 }
 </style>

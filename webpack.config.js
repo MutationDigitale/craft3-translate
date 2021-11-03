@@ -15,11 +15,18 @@ const config = {
       {
         test: /\.vue$/,
         loader: 'vue-loader',
+        options: {
+          compilerOptions: {
+            compatConfig: {
+              MODE: 2
+            }
+          }
+        }
       },
       {
         test: /\.js$/,
         loader: 'babel-loader',
-        include: [path.join(__dirname, 'src')],
+        include: path.join(__dirname, 'src'),
       },
       {
         test: /\.css$/,
@@ -40,7 +47,7 @@ const config = {
   },
   resolve: {
     alias: {
-      'vue$': 'vue/dist/vue.esm.js'
+      vue: '@vue/compat/dist/vue.esm-bundler.js'
     },
     extensions: ['*', '.js', '.vue', '.json']
   },
