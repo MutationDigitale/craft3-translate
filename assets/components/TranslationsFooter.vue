@@ -1,10 +1,15 @@
 <template>
   <div id="count-container" class="light flex-grow">
     <div class="flex pagination">
-      <div class="page-link page-first" :class="{'disabled': page === 1}"
-           @click="setPage(1)">«
+      <div class="page-link page-first" :title="t('First Page')" :class="{'disabled': page === 1}"
+           @click="setPage(1)">
+        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 16 16">
+          <path fill-rule="evenodd" d="M8.354 1.646a.5.5 0 0 1 0 .708L2.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0z"/>
+          <path fill-rule="evenodd" d="M12.354 1.646a.5.5 0 0 1 0 .708L6.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0z"/>
+        </svg>
       </div>
-      <div class="page-link" data-icon="leftangle" :title="t('Previous Page')"
+
+      <div class="page-link prev-page" :title="t('Previous Page')"
            :class="{'disabled': page === 1}" @click="page > 1 ? setPage(page-1) : null"></div>
 
       <div class="page-link page-number"
@@ -15,12 +20,17 @@
         {{ pageNumber }}
       </div>
 
-      <div class="page-link" data-icon="rightangle" :title="t('Next Page')"
+      <div class="page-link next-page" :title="t('Next Page')"
            :class="{'disabled': page === pages.length}"
            @click="page < pages.length ? setPage(page+1) : null"></div>
 
-      <div class="page-link page-last" :class="{'disabled': page === pages.length}"
-           @click="setPage(pages.length)">»
+      <div class="page-link page-last" :title="t('Last Page')"
+           :class="{'disabled': page === pages.length}"
+           @click="setPage(pages.length)">
+        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 16 16">
+          <path fill-rule="evenodd" d="M3.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L9.293 8 3.646 2.354a.5.5 0 0 1 0-.708z"/>
+          <path fill-rule="evenodd" d="M7.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L13.293 8 7.646 2.354a.5.5 0 0 1 0-.708z"/>
+        </svg>
       </div>
 
       <div class="page-info">
@@ -84,16 +94,6 @@ export default {
 
 <style lang="scss" scoped>
 @import "~craftcms-sass/mixins";
-
-.page-first,
-.page-last {
-  font-size: 1.4em;
-}
-
-.page-number {
-  padding-top: 6px;
-  padding-bottom: 6px;
-}
 
 .page-number.active {
   pointer-events: none;

@@ -15,14 +15,7 @@ const config = {
     rules: [
       {
         test: /\.vue$/,
-        loader: 'vue-loader',
-        options: {
-          compilerOptions: {
-            compatConfig: {
-              MODE: 3
-            }
-          }
-        }
+        loader: 'vue-loader'
       },
       {
         test: /\.js$/,
@@ -48,7 +41,7 @@ const config = {
   },
   resolve: {
     alias: {
-      vue: '@vue/compat/dist/vue.esm-bundler.js'
+      vue: 'vue/dist/vue.esm-bundler.js'
     }
   },
   plugins: [

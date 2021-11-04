@@ -113,8 +113,9 @@ export default {
     this.emitter.on('translations-saved', () => {
       this.setOriginalSourceMessages(this.copyObj(this.sourceMessages));
       this.updateModifiedMessages({});
-      for (const sourceMessage of this.sourceMessages) {
-        this.$set(sourceMessage, 'isModified', null);
+      const sourceMessagesLength = this.sourceMessages.length;
+      for (let i = 0; i < sourceMessagesLength; i++) {
+          this.sourceMessages[i].isModified = null;
       }
     });
   },
@@ -188,13 +189,13 @@ export default {
     },
     change(sourceMessage, language) {
       if (typeof sourceMessage.isModified === 'undefined' || sourceMessage.isModified === null) {
-        this.$set(sourceMessage, 'isModified', {});
+        sourceMessage.isModified = {};
       }
 
       const modifiedMessages = this.modifiedMessages;
 
       if (this.isModified(sourceMessage, language)) {
-        this.$set(sourceMessage.isModified, language.id, true);
+        sourceMessage.isModified[language.id] = true;
         if (!(language.id in modifiedMessages)) {
           modifiedMessages[language.id] = {};
         }
@@ -202,7 +203,7 @@ export default {
           ? sourceMessage.languages[language.id]
           : '';
       } else {
-        this.$set(sourceMessage.isModified, language.id, false);
+        sourceMessage.isModified[language.id] = false;
         if (language.id in modifiedMessages && sourceMessage.id in modifiedMessages[language.id]) {
           delete modifiedMessages[language.id][sourceMessage.id];
 
