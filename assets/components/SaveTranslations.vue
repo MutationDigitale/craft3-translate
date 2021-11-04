@@ -68,9 +68,8 @@ export default {
             this.emitter.emit('translations-saved-error');
           }
         })
-        .catch((error) => {
+        .catch(() => {
           this.emitter.emit('translations-saved-error');
-          console.log(error);
         })
         .finally(() => {
           this.isSaving = false;

@@ -1,4 +1,3 @@
-import 'es6-promise/auto';
 import {createApp} from 'vue';
 import {store} from './store/TranslationsStore';
 import SaveTranslations from './components/SaveTranslations.vue';

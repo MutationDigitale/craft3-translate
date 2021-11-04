@@ -153,8 +153,7 @@ export default {
           this.setLanguages(response.data.languages);
           this.updateSourceMessages(response.data.sourceMessages);
         })
-        .catch((error) => {
-          console.log(error);
+        .catch(() => {
         })
         .finally(() => {
           this.setIsLoading(false);

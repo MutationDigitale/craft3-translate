@@ -107,9 +107,8 @@ export default {
             this.emitter.emit('translation-added-error');
           }
         })
-        .catch((error) => {
+        .catch(() => {
           this.emitter.emit('translation-added-error');
-          console.log(error);
         })
         .finally(() => {
           this.setIsAdding(false);
@@ -142,9 +141,8 @@ export default {
             this.emitter.emit('translation-deleted-error');
           }
         })
-        .catch((error) => {
+        .catch(() => {
           this.emitter.emit('translation-deleted-error');
-          console.log(error);
         })
         .finally(() => {
           this.setIsDeleting(false);

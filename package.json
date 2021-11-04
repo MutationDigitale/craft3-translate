@@ -8,22 +8,19 @@
     "production": "cross-env NODE_ENV=production webpack --progress --config=webpack.config.js"
   },
   "dependencies": {
-    "@vue/compat": "^3.2.21",
     "axios": "^0.24.0",
     "core-js": "^3.19.1",
-    "es6-promise": "^4.2.8",
     "mitt": "^3.0.0",
     "vue": "^3.2.21",
     "vuex": "^4.0.2"
   },
   "devDependencies": {
-    "@babel/eslint-parser": "^7.16.0",
     "@babel/core": "^7.16.0",
     "@babel/preset-env": "^7.16.0",
     "babel-loader": "^8.2.3",
     "craftcms-sass": "^3.5.7",
     "cross-env": "^7.0.3",
-    "css-loader": "^6.5.0",
+    "css-loader": "^6.5.1",
     "eslint": "^8.1.0",
     "eslint-plugin-vue": "^8.0.3",
     "sass": "^1.43.4",
