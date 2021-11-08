@@ -6,7 +6,7 @@ use Craft;
 use craft\db\Query;
 use yii\base\Component;
 
-class SourceMessage extends Component
+class SourceMessageService extends Component
 {
     public function getSourceMessagesArrayByCategory($category)
     {

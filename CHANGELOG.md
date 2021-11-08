@@ -4,9 +4,13 @@
 
 ### Added
 - New dropdown to limit the number of languages that are shown side by side in the overview
+- New command `translations-admin/utilities/import` to import all your PHP translations files to your database
+- New command `translations-admin/utilities/export` to export all your database translations to PHP files
+- New command `translations-admin/utilities/delete` to delete all translations in the database
 
 ### Changed
 - Updated to Vue 3
+- Refactored utilities to services
 
 ### Fixed
 - Small layout fixes

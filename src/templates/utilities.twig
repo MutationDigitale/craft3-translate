@@ -14,13 +14,13 @@
 
     <hr>
 
-    <h2>{{ "Migrate PHP translations" | t('translations-admin') }}</h2>
-    <p>{{ "Migrate all your PHP translations files to your database" | t('translations-admin') }}</p>
+    <h2>{{ "Import PHP translations to DB" | t('translations-admin') }}</h2>
+    <p>{{ "Import all your PHP translations files to your database" | t('translations-admin') }}</p>
     <form method="post" accept-charset="UTF-8">
-        {{ actionInput('translations-admin/utilities/migrate') }}
+        {{ actionInput('translations-admin/utilities/import') }}
         {{ csrfInput() }}
 
-        <button class="btn submit" type="submit">{{ "Migrate" | t('translations-admin') }}</button>
+        <button class="btn submit" type="submit">{{ "Import" | t('translations-admin') }}</button>
     </form>
 
     <hr>
@@ -28,7 +28,7 @@
     <h2>{{ "Export DB translations to PHP" | t('translations-admin') }}</h2>
     <p>{{ "Export all your database translations to PHP files" | t('translations-admin') }}</p>
     <form method="post" accept-charset="UTF-8">
-        {{ actionInput('translations-admin/utilities/export-php') }}
+        {{ actionInput('translations-admin/utilities/export') }}
         {{ csrfInput() }}
 
         <button class="btn submit" type="submit">{{ "Export" | t('translations-admin') }}</button>
@@ -36,7 +36,7 @@
 
     <hr>
 
-    <h2>{{ "Delete all translations" | t('translations-admin') }}</h2>
+    <h2>{{ "Delete all database translations" | t('translations-admin') }}</h2>
     <p class="warning">{{ "Warning! This action is irreversible!" | t('translations-admin')  }}</p>
     <form method="post" accept-charset="UTF-8">
         {{ actionInput('translations-admin/utilities/delete') }}

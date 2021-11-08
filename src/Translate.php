@@ -20,6 +20,10 @@ use mutation\translate\models\Settings;
 use mutation\translate\models\SourceMessage;
 use mutation\translate\interfaces\StaticMessageInterface;
 use mutation\translate\resolvers\StaticMessageResolver;
+use mutation\translate\services\ExportService;
+use mutation\translate\services\ImportService;
+use mutation\translate\services\SourceMessageService;
+use mutation\translate\services\TemplateService;
 use yii\base\Event;
 use yii\i18n\MessageSource;
 use yii\i18n\MissingTranslationEvent;
@@ -27,7 +31,10 @@ use yii\i18n\MissingTranslationEvent;
 /**
  * Class Translate
  * @package mutation\translate
- * @property \mutation\translate\services\SourceMessage $sourceMessage
+ * @property SourceMessageService $sourceMessage
+ * @property TemplateService $template
+ * @property ImportService $import
+ * @property ExportService $export
  * @property Settings $settings
  */
 class Translate extends Plugin
@@ -43,11 +50,16 @@ class Translate extends Plugin
 
         $this->name = $this->settings->pluginName;
 
-        $this->setComponents(
-            [
-                'sourceMessage' => services\SourceMessage::class,
-            ]
-        );
+        if (Craft::$app->getRequest()->getIsConsoleRequest()) {
+            $this->controllerNamespace = 'mutation\translate\console\controllers';
+        }
+
+        $this->setComponents([
+            'sourceMessage' => SourceMessageService::class,
+            'template' => TemplateService::class,
+            'import' => ImportService::class,
+            'export' => ExportService::class,
+        ]);
 
         $this->initDbMessages();
         $this->initPermissions();
