@@ -76,6 +76,14 @@ export const store = createStore({
     },
   },
   actions: {
+    updateLanguages ({ commit }, newLanguages) {
+      const languages = newLanguages;
+      newLanguages.forEach(lang => {
+        languages[lang.id] = lang;
+        languages[lang.id].checked = true;
+      });
+      commit('setLanguages', languages);
+    },
     updateSourceMessages ({ commit }, newSourceMessages) {
       commit('setSourceMessages', newSourceMessages);
       commit('setFilteredSourceMessages', newSourceMessages);

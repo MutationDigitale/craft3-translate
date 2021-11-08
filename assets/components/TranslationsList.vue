@@ -8,15 +8,15 @@
               :aria-checked="ariaChecked" style="width: 4%" @click="toggleCheckedSourceMessages()">
             <div class="checkbox"
                  :class="{
-                                'checked': checkedSourceMessages.length > 0 &&
-                                    checkedSourceMessages.length === displayedSourceMessages.length,
-                                'indeterminate': checkedSourceMessages.length > 0 &&
-                                    checkedSourceMessages.length !== displayedSourceMessages.length
-                             }"></div>
+                    'checked': checkedSourceMessages.length > 0 &&
+                        checkedSourceMessages.length === displayedSourceMessages.length,
+                    'indeterminate': checkedSourceMessages.length > 0 &&
+                        checkedSourceMessages.length !== displayedSourceMessages.length
+                 }"></div>
           </th>
-          <th :style="'width: ' + (96/(languages.length + 1)) + '%'">{{ t('Key') }}</th>
-          <th v-for="language in languages" v-bind:key="language.id"
-              :style="'width: ' + (96/(languages.length + 1)) + '%'">
+          <th :style="'width: ' + (96/(checkedLanguages.length + 1)) + '%'">{{ t('Key') }}</th>
+          <th v-for="language in checkedLanguages" v-bind:key="language.id"
+              :style="'width: ' + (96/(checkedLanguages.length + 1)) + '%'">
             {{ language.displayName }}
           </th>
         </tr>
@@ -37,18 +37,18 @@
             <pre>{{ sourceMessage.message }}</pre>
           </td>
 
-          <td v-for="language in languages" v-bind:key="language.id"
+          <td v-for="language in checkedLanguages" v-bind:key="language.id"
               :class="{'modified': typeof sourceMessage.isModified !== 'undefined' &&
                             sourceMessage.isModified !== null &&
                             sourceMessage.isModified[language.id] === true}">
             <div class="mobile-only cell-label">{{ language.displayName }}</div>
             <div class="message-text">
-                        <textarea class="text nicetext fullwidth"
-                                  v-model="sourceMessage.languages[language.id]"
-                                  @change="change(sourceMessage, language)"
-                                  @keyup="change(sourceMessage, language)"
-                                  :rows="getNumberOfLines(sourceMessage.languages[language.id])"
-                                  autocomplete="off"></textarea>
+              <textarea class="text nicetext fullwidth"
+                        v-model="sourceMessage.languages[language.id]"
+                        @change="change(sourceMessage, language)"
+                        @keyup="change(sourceMessage, language)"
+                        :rows="getNumberOfLines(sourceMessage.languages[language.id])"
+                        autocomplete="off"></textarea>
               <div class="language-label">{{ language.id }}</div>
             </div>
           </td>
@@ -87,6 +87,9 @@ export default {
         this.setCheckedSourceMessages(value);
       }
     },
+    checkedLanguages: function () {
+      return this.languages.filter(lang => lang.checked === true);
+    },
     ...mapState({
       isLoading: state => state.isLoading,
       isAdding: state => state.isAdding,
@@ -108,7 +111,6 @@ export default {
   },
   created() {
     this.setCategory(this.currentCategory);
-    this.changeCategory();
 
     this.emitter.on('translations-saved', () => {
       this.setOriginalSourceMessages(this.copyObj(this.sourceMessages));
@@ -150,7 +152,7 @@ export default {
       axios
         .get(this.$craft.getActionUrl('translations-admin/messages/get-translations', {category: this.category}))
         .then((response) => {
-          this.setLanguages(response.data.languages);
+          this.updateLanguages(response.data.languages);
           this.updateSourceMessages(response.data.sourceMessages);
         })
         .catch(() => {
@@ -165,7 +167,7 @@ export default {
           return true;
         }
         const search = this.search.toLowerCase().trim();
-        for (const language of this.languages) {
+        for (const language of this.checkedLanguages) {
           if (sourceMessage.languages[language.id] &&
             sourceMessage.languages[language.id].toLowerCase().trim().includes(search)) {
             return true;
@@ -175,7 +177,7 @@ export default {
       });
       if (this.emptyMessages) {
         sourceMessages = sourceMessages.filter((sourceMessage) => {
-          for (const language of this.languages) {
+          for (const language of this.checkedLanguages) {
             if (sourceMessage.languages[language.id] === null ||
               sourceMessage.languages[language.id].trim() === '') {
               return true;
@@ -272,6 +274,7 @@ export default {
       setOriginalSourceMessages: 'setOriginalSourceMessages'
     }),
     ...mapActions({
+      updateLanguages: 'updateLanguages',
       updateSourceMessages: 'updateSourceMessages',
       updateModifiedMessages: 'updateModifiedMessages'
     })

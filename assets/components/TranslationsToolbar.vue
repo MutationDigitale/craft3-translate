@@ -13,10 +13,24 @@
       </div>
     </div>
     <div v-show="checkedSourceMessages.length === 0">
+      <div class="btn menubtn statusmenubtn">{{ t('Languages') }}</div>
+      <div class="menu">
+        <ul class="padded checkbox-menu">
+          <li v-for="language in languages" :key="language.id" class="checkbox-menu-item">
+            <input :id="`language-checkbox-${language.id}`"
+                   class="checkbox"
+                   type="checkbox"
+                   :checked="languages[language.id].checked"
+                   @input="updateLanguages(language.id, $event.target.checked)">
+            <label :for="`language-checkbox-${language.id}`">{{ language.displayName }}</label>
+          </li>
+        </ul>
+      </div>
+    </div>
+    <div v-show="checkedSourceMessages.length === 0">
       <div class="btn menubtn statusmenubtn"><span class="status" :class="{'pending': emptyMessages}"></span>{{
           !emptyMessages ? t('All') : t('Empty')
-        }}
-      </div>
+        }}</div>
       <div class="menu">
         <ul class="padded">
           <li>
@@ -75,6 +89,7 @@ export default {
     ...mapState({
       isAdding: state => state.isAdding,
       isDeleting: state => state.isDeleting,
+      languages: state => state.languages,
       category: state => state.category,
       sourceMessages: state => state.sourceMessages,
       emptyMessages: state => state.emptyMessages,
@@ -84,6 +99,11 @@ export default {
   methods: {
     t(str) {
       return this.$craft.t('translations-admin', str);
+    },
+    updateLanguages(languageId, value) {
+      const languages = this.languages;
+      languages[languageId].checked = value;
+      this.setLanguages(languages);
     },
     addMessage() {
       this.setIsAdding(true);
@@ -151,6 +171,7 @@ export default {
     ...mapMutations({
       setIsAdding: 'setIsAdding',
       setIsDeleting: 'setIsDeleting',
+      setLanguages: 'setLanguages',
       setCheckedSourceMessages: 'setCheckedSourceMessages',
       setSearch: 'setSearch',
       setEmptyMessages: 'setEmptyMessages'
@@ -184,5 +205,13 @@ textarea {
   min-height: 34px;
   height: 34px;
   width: 100%;
+}
+
+.checkbox-menu {
+  padding: 6px 0;
+}
+
+.checkbox-menu-item {
+  padding: 7px 0;
 }
 </style>
