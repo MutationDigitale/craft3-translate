@@ -1,5 +1,17 @@
 # Changelog
 
+## 2.5.0 - 2021-11-08
+
+### Added
+- New dropdown to limit the number of languages that are shown side by side in the overview
+
+### Changed
+- Updated to Vue 3
+
+### Fixed
+- Small layout fixes
+- Prevent firing an ajax call twice to get the translations
+
 ## 2.4.8 - 2021-10-28
 
 ### Fixed
