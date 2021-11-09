@@ -49,7 +49,7 @@ class UtilitiesController extends Controller
             'cp-notice',
             Craft::t(
                 'translations-admin',
-                '{count} translations imported.',
+                '{count} translation(s) imported.',
                 ['count' => $translationsImported]
             )
         );
@@ -68,7 +68,7 @@ class UtilitiesController extends Controller
             Craft::$app->getSession()->setNotice(
                 Craft::t(
                     'translations-admin',
-                    '{count} translations imported to the database.',
+                    '{count} translation(s) imported to the database.',
                     ['count' => $translationsImported]
                 )
             );
@@ -96,7 +96,7 @@ class UtilitiesController extends Controller
             Craft::$app->getSession()->setNotice(
                 Craft::t(
                     'translations-admin',
-                    '{count} translations exported to PHP files.',
+                    '{count} translation(s) exported to PHP files.',
                     ['count' => $translationsExported]
                 )
             );

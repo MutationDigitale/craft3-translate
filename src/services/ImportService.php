@@ -27,10 +27,13 @@ class ImportService extends Component
                 }
             }
 
+            $count = 0;
+
             foreach ($translations as $message => $sites) {
                 $languages = array();
                 foreach ($sites as $site => $translation) {
                     $languages[$site] = $translation;
+                    $count++;
                 }
 
                 $sourceMessage = SourceMessage::find()
@@ -46,7 +49,7 @@ class ImportService extends Component
                 }
             }
 
-            return count($translations);
+            return $count;
         } catch (Exception $exception) {
             return null;
         }
