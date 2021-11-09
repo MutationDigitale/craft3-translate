@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.5.1 - 2021-11-09
+
+### Changed
+- Better bundle JS/CSS
+
 ## 2.5.0 - 2021-11-09
 
 ### Added
