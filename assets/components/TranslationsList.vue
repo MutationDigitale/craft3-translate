@@ -128,6 +128,12 @@ export default {
     emptyMessages() {
       this.filterSourceMessages();
     },
+    languages: {
+      handler() {
+        this.filterSourceMessages();
+      },
+      deep: true
+    },
     category() {
       this.changeCategory();
     },
