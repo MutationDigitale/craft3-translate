@@ -20,6 +20,7 @@ use mutation\translate\models\Settings;
 use mutation\translate\models\SourceMessage;
 use mutation\translate\interfaces\StaticMessageInterface;
 use mutation\translate\resolvers\StaticMessageResolver;
+use mutation\translate\services\DbMessageSource;
 use mutation\translate\services\ExportService;
 use mutation\translate\services\ImportService;
 use mutation\translate\services\SourceMessageService;

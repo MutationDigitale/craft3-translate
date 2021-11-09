@@ -1,6 +1,6 @@
 <?php
 
-namespace mutation\translate;
+namespace mutation\translate\services;
 
 use Exception;
 
