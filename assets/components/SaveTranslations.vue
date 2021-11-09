@@ -82,7 +82,7 @@ export default {
 };
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
 .btn:disabled {
   opacity: 0.5;
   pointer-events: none;

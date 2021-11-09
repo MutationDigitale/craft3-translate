@@ -1,42 +1,58 @@
 // webpack.config.js
-const { VueLoaderPlugin } = require('vue-loader');
+const {VueLoaderPlugin} = require('vue-loader');
+const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const path = require('path');
 const webpack = require('webpack');
 
 const env = process.env.NODE_ENV;
 
+const srcDir = path.join(__dirname, 'assets');
+const outputDir = path.join(__dirname, 'src', 'resources');
+
 const config = {
-  entry: path.join(__dirname, 'assets', 'main.js'),
+  entry: path.join(srcDir, 'main.js'),
   mode: env,
   output: {
-    path: path.join(__dirname, 'src/resources/')
+    path: outputDir
   },
   module: {
     rules: [
       {
         test: /\.vue$/,
-        loader: 'vue-loader'
+        include: srcDir,
+        use: [
+          'vue-loader',
+        ],
       },
       {
         test: /\.js$/,
-        loader: 'babel-loader',
-        include: path.join(__dirname, 'src'),
+        include: srcDir,
+        use: [
+          'babel-loader',
+        ]
       },
       {
         test: /\.css$/,
         use: [
-          'vue-style-loader',
+          MiniCssExtractPlugin.loader,
           'css-loader',
         ],
       },
       {
         test: /\.scss$/,
+        include: srcDir,
         use: [
-          'vue-style-loader',
+          MiniCssExtractPlugin.loader,
           'css-loader',
-          'sass-loader'
-        ]
-      }
+          'sass-loader',
+        ],
+      },
+      {
+        test: /\.(png|jpg|gif)$/i,
+        use: [
+          'url-loader',
+        ],
+      },
     ],
   },
   resolve: {
@@ -46,6 +62,7 @@ const config = {
   },
   plugins: [
     new VueLoaderPlugin(),
+    new MiniCssExtractPlugin(),
     new webpack.DefinePlugin({
       __VUE_OPTIONS_API__: true,
       __VUE_PROD_DEVTOOLS__: false

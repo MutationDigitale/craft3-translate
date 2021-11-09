@@ -16,7 +16,7 @@ class TranslateBundle extends AssetBundle
         ];
 
         $this->css = [
-            'styles.css',
+            'main.css',
         ];
 
         $this->js = [
