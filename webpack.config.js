@@ -33,6 +33,7 @@ const config = {
       },
       {
         test: /\.css$/,
+        include: srcDir,
         use: [
           MiniCssExtractPlugin.loader,
           'css-loader',
@@ -49,6 +50,7 @@ const config = {
       },
       {
         test: /\.(png|jpg|gif)$/i,
+        include: srcDir,
         use: [
           'url-loader',
         ],
