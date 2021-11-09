@@ -13,9 +13,13 @@ class ExportService extends Component
     {
         try {
             $sourceMessages = Translate::getInstance()->sourceMessage->getAllSourceMessages();
+            $settingsCategories = Translate::getInstance()->getSettings()->getCategories();
             $count = 0;
             foreach ($sourceMessages as $language => $categories) {
                 foreach ($categories as $category => $messages) {
+                    if (!in_array($category, $settingsCategories, true)) {
+                        continue;
+                    }
                     $this->saveMessagesToFile($language, $category, $messages);
                     $count += count($messages);
                 }

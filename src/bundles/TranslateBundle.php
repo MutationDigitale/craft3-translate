@@ -1,6 +1,6 @@
 <?php
 
-namespace mutation\translate;
+namespace mutation\translate\bundles;
 
 use craft\web\AssetBundle;
 use craft\web\assets\cp\CpAsset;

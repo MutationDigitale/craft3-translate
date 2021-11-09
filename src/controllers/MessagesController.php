@@ -8,7 +8,7 @@ use mutation\translate\helpers\DbHelper;
 use mutation\translate\models\Message;
 use mutation\translate\models\SourceMessage;
 use mutation\translate\Translate;
-use mutation\translate\TranslateBundle;
+use mutation\translate\bundles\TranslateBundle;
 use yii\web\NotFoundHttpException;
 
 class MessagesController extends Controller

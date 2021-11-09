@@ -15,6 +15,7 @@
 ### Fixed
 - Small layout fixes
 - Prevent firing an ajax call twice to get the translations
+- Export only the DB translations from the categories selected in the settings to PHP files
 
 ## 2.4.8 - 2021-10-28
 
