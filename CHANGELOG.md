@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 2.5.0 - 2021-11-09
 
 ### Added
 - New dropdown to limit the number of languages that are shown side by side in the overview
