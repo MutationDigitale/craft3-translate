@@ -38,9 +38,8 @@
           </td>
 
           <td v-for="language in checkedLanguages" v-bind:key="language.id"
-              :class="{'modified': typeof sourceMessage.isModified !== 'undefined' &&
-                            sourceMessage.isModified !== null &&
-                            sourceMessage.isModified[language.id] === true}">
+              :class="{'modified': !isNullOrUndefined(sourceMessage.isModified) &&
+                                   sourceMessage.isModified[language.id] === true}">
             <div class="mobile-only cell-label">{{ language.displayName }}</div>
             <div class="message-text">
               <textarea class="text nicetext fullwidth"
@@ -195,7 +194,7 @@ export default {
       this.setFilteredSourceMessages(sourceMessages);
     },
     change(sourceMessage, language) {
-      if (typeof sourceMessage.isModified === 'undefined' || sourceMessage.isModified === null) {
+      if (this.isNullOrUndefined(sourceMessage.isModified)) {
         sourceMessage.isModified = {};
       }
 
@@ -224,18 +223,8 @@ export default {
     },
     isModified(sourceMessage, language) {
       let originalSourceMessage = this.originalSourceMessages[this.sourceMessages.indexOf(sourceMessage)];
-      let originalValue = originalSourceMessage.languages[language.id];
-      if (originalValue !== null) {
-        originalValue = originalValue.trim();
-      }
-      let newValue = sourceMessage.languages[language.id];
-      if (newValue !== null) {
-        newValue = newValue.trim();
-      }
-      if ((originalValue === '' || originalValue === null) &&
-        (newValue === '' || newValue === null)) {
-        return false;
-      }
+      let originalValue = this.normalizeStringValue(originalSourceMessage.languages[language.id]);
+      let newValue = this.normalizeStringValue(sourceMessage.languages[language.id]);
       return originalValue !== newValue;
     },
     toggleCheckedSourceMessages() {
@@ -254,7 +243,7 @@ export default {
       return this.$craft.t('translations-admin', str);
     },
     getNumberOfLines(str) {
-      if (typeof str === 'undefined' || str === null) {
+      if (this.isNullOrUndefined(str)) {
         return 1;
       }
       const nbLines = str.split(/\r\n|\r|\n/).length;
@@ -268,6 +257,12 @@ export default {
       const padding = parseFloat(styles.paddingLeft) + parseFloat(styles.paddingRight);
 
       return element.clientWidth - padding;
+    },
+    normalizeStringValue(value) {
+      return this.isNullOrUndefined(value) ? '' : value.trim();
+    },
+    isNullOrUndefined(value) {
+      return typeof value === 'undefined' || value === null;
     },
     ...mapMutations({
       setIsLoading: 'setIsLoading',

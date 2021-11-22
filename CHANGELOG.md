@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.5.2 - 2021-11-22
+
+### Fixed
+- Fixed a Javascript error happening in rare cases where a string was undefined
+
 ## 2.5.1 - 2021-11-09
 
 ### Changed
