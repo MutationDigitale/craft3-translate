@@ -1,6 +1,6 @@
 # Translations admin plugin for Craft CMS
 
-This plugins adds a control panel interface to edit your static translations in the database. 
+This plugins adds a control panel interface to edit your static translations in the database.
 
 ![Screenshot](./img/translate-plugin-screenhot.jpg)
 
@@ -92,4 +92,5 @@ Query static messages this way:
 
 - Add mapping for the import and support more format (Excel)
 - Refresh/sync option for the translations overview
-- Allow to override translations when importing from PHP files
+- Allow overriding translations when importing from PHP files
+- Add events when adding, saving and deleting translations
