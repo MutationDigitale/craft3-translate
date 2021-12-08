@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.3.6 - 2021-12-08
+
+### Fixed
+- Serve cache after all plugins are loaded
+
 ## 2.3.5 - 2021-09-17
 
 ### Fixed

@@ -10,6 +10,7 @@ use craft\events\ElementEvent;
 use craft\events\RegisterCacheOptionsEvent;
 use craft\helpers\ElementHelper;
 use craft\services\Elements;
+use craft\services\Plugins;
 use craft\utilities\ClearCaches;
 use craft\web\Application;
 use craft\web\Response;
@@ -43,8 +44,6 @@ class FileCachePlugin extends Plugin
 		$this->registerCache();
 
 		if ($this->isInstalled && !Craft::$app->request->getIsConsoleRequest()) {
-			$this->fileCacheService()->serveCache();
-
 			$this->initEvents();
 		}
 	}
@@ -76,6 +75,8 @@ class FileCachePlugin extends Plugin
 
 	private function initEvents()
 	{
+		Event::on(Plugins::class, Plugins::EVENT_AFTER_LOAD_PLUGINS, [$this, 'handleAfterLoadPlugins']);
+
 		Craft::$app->on(Application::EVENT_AFTER_REQUEST, [$this, 'handleAfterRequest']);
 
 		Event::on(Elements::class, Elements::EVENT_AFTER_SAVE_ELEMENT, [$this, 'handleElementChange']);
@@ -93,6 +94,11 @@ class FileCachePlugin extends Plugin
 				$variable->set('filecache', FileCacheVariable::class);
 			}
 		);
+	}
+
+	public function handleAfterLoadPlugins()
+	{
+		$this->fileCacheService()->serveCache();
 	}
 
 	public function handleAfterRequest()
