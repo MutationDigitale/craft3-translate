@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.5.3 - 2021-12-09
+
+### Fixed
+- Fixed a Javascript error happening where a string was undefined when filtering for empty messages
+
 ## 2.5.2 - 2021-11-22
 
 ### Fixed

@@ -15,6 +15,7 @@ const config = {
   output: {
     path: outputDir
   },
+  devtool: 'source-map',
   module: {
     rules: [
       {

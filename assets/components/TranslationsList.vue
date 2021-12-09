@@ -168,7 +168,7 @@ export default {
     },
     filterSourceMessages() {
       let sourceMessages = this.sourceMessages.filter((sourceMessage) => {
-        if (sourceMessage.message === null || this.search === null) {
+        if (this.isNullOrUndefined(sourceMessage.message) || this.isNullOrUndefined(this.search)) {
           return true;
         }
         const search = this.search.toLowerCase().trim();
@@ -183,7 +183,7 @@ export default {
       if (this.emptyMessages) {
         sourceMessages = sourceMessages.filter((sourceMessage) => {
           for (const language of this.checkedLanguages) {
-            if (sourceMessage.languages[language.id] === null ||
+            if (this.isNullOrUndefined(sourceMessage.languages[language.id]) ||
               sourceMessage.languages[language.id].trim() === '') {
               return true;
             }
