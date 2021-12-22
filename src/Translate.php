@@ -23,6 +23,7 @@ use mutation\translate\resolvers\StaticMessageResolver;
 use mutation\translate\services\DbMessageSource;
 use mutation\translate\services\ExportService;
 use mutation\translate\services\ImportService;
+use mutation\translate\services\MessagesService;
 use mutation\translate\services\SourceMessageService;
 use mutation\translate\services\TemplateService;
 use yii\base\Event;
@@ -32,6 +33,7 @@ use yii\i18n\MissingTranslationEvent;
 /**
  * Class Translate
  * @package mutation\translate
+ * @property MessagesService $messages
  * @property SourceMessageService $sourceMessage
  * @property TemplateService $template
  * @property ImportService $import
@@ -56,6 +58,7 @@ class Translate extends Plugin
         }
 
         $this->setComponents([
+            'messages' => MessagesService::class,
             'sourceMessage' => SourceMessageService::class,
             'template' => TemplateService::class,
             'import' => ImportService::class,
