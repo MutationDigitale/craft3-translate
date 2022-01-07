@@ -90,7 +90,7 @@ Query static messages this way:
 
 ## Roadmap
 
-- Add mapping for the import and support more format (Excel)
-- Refresh/sync option for the translations overview
-- Allow overriding translations when importing from PHP files
-- Add events when adding, saving and deleting translations
+- [ ] Add mapping for the import and support more format (Excel)
+- [ ] Refresh/sync option for the translations overview
+- [ ] Allow overriding translations when importing from PHP files
+- [X] Add events when adding, saving and deleting translations
