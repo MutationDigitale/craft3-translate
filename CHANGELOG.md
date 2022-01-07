@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.6.0 - 2022-01-07
+
+### Added
+- New events `EVENT_AFTER_SAVE_MESSAGES`, `EVENT_AFTER_ADD_MESSAGE` and `EVENT_AFTER_DELETE_MESSAGES`
+
 ## 2.5.3 - 2021-12-09
 
 ### Fixed

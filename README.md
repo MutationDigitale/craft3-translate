@@ -88,6 +88,17 @@ Query static messages this way:
 }
 ```
 
+## Events
+
+You can use these custom events in your plugin or module to do any actions after translations are added, saved or deleted (example: empty the cache):
+```
+use mutation\translate\services\MessagesService;
+
+Event::on(MessagesService::class, MessagesService::EVENT_AFTER_SAVE_MESSAGES, function (Event $e) { ... });
+Event::on(MessagesService::class, MessagesService::EVENT_AFTER_ADD_MESSAGE, function (Event $e) { ... });
+Event::on(MessagesService::class, MessagesService::EVENT_AFTER_DELETE_MESSAGES, function (Event $e) { ... });
+```
+
 ## Roadmap
 
 - [ ] Add mapping for the import and support more format (Excel)
