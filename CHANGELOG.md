@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.6.1 - 2022-01-12
+
+### Added
+- Invalidate Graphql cache when adding, deleting or saving translations ([#36](https://github.com/MutationDigitale/craft3-translate/issues/36)).
+
 ## 2.6.0 - 2022-01-07
 
 ### Added
