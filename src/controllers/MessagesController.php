@@ -71,6 +71,8 @@ class MessagesController extends Controller
             $languages[$one->id] = '';
         }
 
+        Craft::$app->getGql()->invalidateCaches();
+
         return $this->asJson([
             'success' => $sourceMessage,
             'sourceMessage' => [
@@ -89,6 +91,8 @@ class MessagesController extends Controller
 
         Translate::getInstance()->messages->deleteMessages($sourceMessageIds);
 
+        Craft::$app->getGql()->invalidateCaches();
+
         return $this->asJson(['success' => true]);
     }
 
@@ -99,6 +103,8 @@ class MessagesController extends Controller
         $translations = Craft::$app->request->getRequiredBodyParam('translations');
 
         Translate::getInstance()->messages->saveMessages($translations);
+
+        Craft::$app->getGql()->invalidateCaches();
 
         return $this->asJson(['success' => true]);
     }
