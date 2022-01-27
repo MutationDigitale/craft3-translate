@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.7.0 - 2022-01-27
+
+### Changed
+- Performance improvement by preventing unnecessary DB calls for missing translations
+
 ## 2.6.1 - 2022-01-12
 
 ### Added
