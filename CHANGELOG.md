@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.7.1 - 2022-01-28
+
+### Fixed
+- Fixed a bug where translations were not loaded properly ([#37](https://github.com/MutationDigitale/craft3-translate/issues/37)).
+
 ## 2.7.0 - 2022-01-27
 
 ### Changed
