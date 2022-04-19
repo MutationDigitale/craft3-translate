@@ -16,6 +16,7 @@
   "minimum-stability": "dev",
   "prefer-stable": true,
   "require": {
+    "php": "^8.0.0",
     "craftcms/cms": "^4.0.0-beta.1",
     "phpoffice/phpspreadsheet": "^1.22.0"
   },

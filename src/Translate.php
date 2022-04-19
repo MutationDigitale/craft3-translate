@@ -106,7 +106,7 @@ class Translate extends Plugin
 
     public function getSettingsResponse(): mixed
     {
-        Craft::$app->getResponse()->redirect(UrlHelper::cpUrl('translations-admin/plugin-settings'));
+        return Craft::$app->getResponse()->redirect(UrlHelper::cpUrl('translations-admin/plugin-settings'));
     }
 
     private function initDbMessages()
