@@ -135,19 +135,21 @@ class Translate extends Plugin
             UserPermissions::class,
             UserPermissions::EVENT_REGISTER_PERMISSIONS,
             function (RegisterUserPermissionsEvent $event) {
-                $label = Craft::t('translations-admin', 'Translations admin');
-                $event->permissions[$label] = [
-                    self::EXPORT_TRANSLATIONS_PERMISSION => [
-                        'label' => 'Export translations',
-                    ],
-                    self::IMPORT_TRANSLATIONS_PERMISSION => [
-                        'label' => 'Import translations',
-                    ],
-                    self::TRANSLATIONS_UTILITIES_PERMISSION => [
-                        'label' => 'Use translations utilities',
-                    ],
-                    self::CHANGE_TRANSLATIONS_SETTINGS_PERMISSION => [
-                        'label' => 'Change translations settings',
+                $event->permissions[] = [
+                    'heading' => Craft::t('translations-admin', 'Translations admin'),
+                    'permissions' => [
+                        self::EXPORT_TRANSLATIONS_PERMISSION => [
+                            'label' => 'Export translations',
+                        ],
+                        self::IMPORT_TRANSLATIONS_PERMISSION => [
+                            'label' => 'Import translations',
+                        ],
+                        self::TRANSLATIONS_UTILITIES_PERMISSION => [
+                            'label' => 'Use translations utilities',
+                        ],
+                        self::CHANGE_TRANSLATIONS_SETTINGS_PERMISSION => [
+                            'label' => 'Change translations settings',
+                        ]
                     ]
                 ];
             }
