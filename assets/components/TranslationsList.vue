@@ -301,6 +301,7 @@ table.data.translate-table tr td.modified {
 .translate-table pre {
   white-space: pre-wrap;
   word-wrap: break-word;
+  @include sans-serif-font();
 }
 
 .message-text {

@@ -3,6 +3,7 @@
 namespace mutation\translate;
 
 use Craft;
+use craft\base\Model;
 use craft\base\Plugin;
 use craft\events\RegisterGqlQueriesEvent;
 use craft\events\RegisterGqlTypesEvent;
@@ -73,7 +74,7 @@ class Translate extends Plugin
         $this->initGraphqlSupport();
     }
 
-    public function getCpNavItem()
+    public function getCpNavItem(): ?array
     {
         $currentUser = Craft::$app->getUser()->getIdentity();
         $general = Craft::$app->getConfig()->getGeneral();
@@ -98,12 +99,12 @@ class Translate extends Plugin
         return $item;
     }
 
-    protected function createSettingsModel()
+    protected function createSettingsModel(): ?Model
     {
         return new Settings();
     }
 
-    public function getSettingsResponse()
+    public function getSettingsResponse(): mixed
     {
         Craft::$app->getResponse()->redirect(UrlHelper::cpUrl('translations-admin/plugin-settings'));
     }

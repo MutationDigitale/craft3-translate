@@ -1,5 +1,10 @@
 # Changelog
 
+## 3.0.0 - Unreleased
+
+### Added
+- Support for Craft 4
+
 ## 2.7.1 - 2022-01-28
 
 ### Fixed
