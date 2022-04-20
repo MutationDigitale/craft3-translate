@@ -13,11 +13,10 @@
       "homepage": "https://mutation.io/"
     }
   ],
-  "minimum-stability": "dev",
   "prefer-stable": true,
   "require": {
-    "php": "^8.0.0",
-    "craftcms/cms": "^4.0.0-beta.1",
+    "php": "^8.0.2",
+    "craftcms/cms": "^4.0.0-alpha",
     "phpoffice/phpspreadsheet": "^1.22.0"
   },
   "autoload": {
@@ -39,8 +38,5 @@
       "yiisoft/yii2-composer": true,
       "craftcms/plugin-installer": true
     }
-  },
-  "require-dev": {
-    "craftcms/rector": "dev-main"
   }
 }
