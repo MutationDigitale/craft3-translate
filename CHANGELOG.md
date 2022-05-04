@@ -1,5 +1,10 @@
 # Changelog
 
+## 3.0.0 - 2022-05-04
+
+### Changed
+- Show the languages in the current Control Panel language with the native name after (same behavior as the language menu in the Sites Settings page)
+
 ## 3.0.0-beta.1 - 2022-04-20
 
 ### Added

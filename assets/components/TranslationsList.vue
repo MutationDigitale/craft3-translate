@@ -17,7 +17,8 @@
           <th :style="'width: ' + (96/(checkedLanguages.length + 1)) + '%'">{{ t('Key') }}</th>
           <th v-for="language in checkedLanguages" v-bind:key="language.id"
               :style="'width: ' + (96/(checkedLanguages.length + 1)) + '%'">
-            {{ language.displayName }}
+            <span>{{ language.displayName }}</span>
+            <span class="light" v-if="language.nativeName"> – {{ language.nativeName }}</span>
           </th>
         </tr>
         </thead>
@@ -40,7 +41,10 @@
           <td v-for="language in checkedLanguages" v-bind:key="language.id"
               :class="{'modified': !isNullOrUndefined(sourceMessage.isModified) &&
                                    sourceMessage.isModified[language.id] === true}">
-            <div class="mobile-only cell-label">{{ language.displayName }}</div>
+            <div class="mobile-only cell-label">
+              <span>{{ language.displayName }}</span>
+              <span class="light" v-if="language.nativeName"> – {{ language.nativeName }}</span>
+            </div>
             <div class="message-text">
               <textarea class="text nicetext fullwidth"
                         v-model="sourceMessage.languages[language.id]"

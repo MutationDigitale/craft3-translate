@@ -22,7 +22,10 @@
                    type="checkbox"
                    :checked="languages[language.id].checked"
                    @input="updateLanguages(language.id, $event.target.checked)">
-            <label :for="`language-checkbox-${language.id}`">{{ language.displayName }}</label>
+            <label :for="`language-checkbox-${language.id}`">
+              <span>{{ language.displayName }}</span>
+              <span class="light" v-if="language.nativeName"> – {{ language.nativeName }}</span>
+            </label>
           </li>
         </ul>
       </div>

@@ -41,10 +41,13 @@ class MessagesController extends Controller
 
         return $this->asJson([
             'languages' => array_map(
-                function ($lang) {
+                function ($locale) {
                     return [
-                        'id' => $lang->id,
-                        'displayName' => $lang->displayName
+                        'id' => $locale->id,
+                        'displayName' => $locale->getDisplayName(Craft::$app->language),
+                        'nativeName' => $locale->getLanguageID() !== Craft::$app->getLocale()->getLanguageID()
+                            ? $locale->getDisplayName()
+                            : false
                     ];
                 },
                 $siteLocales
