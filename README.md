@@ -29,7 +29,7 @@ This plugins adds a control panel interface to edit your static translations in 
 
 ## Requirements
 
-This plugin requires Craft CMS 3.4.0 or later.
+This plugin requires Craft CMS 4.0.0 or later.
 
 ## Installation
 
