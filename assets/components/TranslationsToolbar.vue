@@ -21,7 +21,7 @@
                    class="checkbox"
                    type="checkbox"
                    :checked="languages[language.id].checked"
-                   @input="updateLanguages(language.id, $event.target.checked)">
+                   @input="setLanguages(language.id, $event.target.checked)">
             <label :for="`language-checkbox-${language.id}`">
               <span>{{ language.displayName }}</span>
               <span class="light" v-if="language.nativeName"> – {{ language.nativeName }}</span>
@@ -103,10 +103,10 @@ export default {
     t(str) {
       return this.$craft.t('translations-admin', str);
     },
-    updateLanguages(languageId, value) {
+    setLanguages(languageId, value) {
       const languages = this.languages;
       languages[languageId].checked = value;
-      this.setLanguages(languages);
+      this.updateLanguages(languages);
     },
     addMessage() {
       this.setIsAdding(true);
@@ -174,12 +174,12 @@ export default {
     ...mapMutations({
       setIsAdding: 'setIsAdding',
       setIsDeleting: 'setIsDeleting',
-      setLanguages: 'setLanguages',
       setCheckedSourceMessages: 'setCheckedSourceMessages',
       setSearch: 'setSearch',
       setEmptyMessages: 'setEmptyMessages'
     }),
     ...mapActions({
+      updateLanguages: 'updateLanguages',
       updateSourceMessages: 'updateSourceMessages'
     })
   }

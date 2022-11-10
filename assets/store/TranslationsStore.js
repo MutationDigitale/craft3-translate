@@ -76,12 +76,8 @@ export const store = createStore({
     },
   },
   actions: {
-    updateLanguages ({ commit }, newLanguages) {
-      const languages = newLanguages;
-      newLanguages.forEach(lang => {
-        languages[lang.id] = lang;
-        languages[lang.id].checked = true;
-      });
+    updateLanguages ({ commit }, languages) {
+      localStorage.setItem('admin-translations-languages', JSON.stringify(languages));
       commit('setLanguages', languages);
     },
     updateSourceMessages ({ commit }, newSourceMessages) {

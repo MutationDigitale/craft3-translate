@@ -64,7 +64,7 @@
 
 <script>
 import axios from 'axios';
-import {mapActions, mapGetters, mapMutations, mapState} from 'vuex';
+import { mapActions, mapGetters, mapMutations, mapState } from 'vuex';
 
 export default {
   props: {
@@ -83,10 +83,10 @@ export default {
       }
     },
     checkedSourceMessages: {
-      get() {
+      get () {
         return this.$store.state.checkedSourceMessages;
       },
-      set(value) {
+      set (value) {
         this.setCheckedSourceMessages(value);
       }
     },
@@ -112,7 +112,7 @@ export default {
       displayedSourceMessages: 'displayedSourceMessages'
     })
   },
-  created() {
+  created () {
     this.setCategory(this.currentCategory);
 
     this.emitter.on('translations-saved', () => {
@@ -120,33 +120,33 @@ export default {
       this.updateModifiedMessages({});
       const sourceMessagesLength = this.sourceMessages.length;
       for (let i = 0; i < sourceMessagesLength; i++) {
-          this.sourceMessages[i].isModified = null;
+        this.sourceMessages[i].isModified = null;
       }
     });
   },
   watch: {
-    search() {
+    search () {
       this.filterSourceMessages();
     },
-    emptyMessages() {
+    emptyMessages () {
       this.filterSourceMessages();
     },
     languages: {
-      handler() {
+      handler () {
         this.filterSourceMessages();
       },
       deep: true
     },
-    category() {
+    category () {
       this.changeCategory();
     },
-    page() {
+    page () {
       document.documentElement.scrollTop = document.querySelector('#main').getBoundingClientRect().top +
         document.documentElement.scrollTop;
     }
   },
   methods: {
-    changeCategory() {
+    changeCategory () {
       this.setLanguages([]);
       this.setSourceMessages([]);
       this.setFilteredSourceMessages([]);
@@ -155,13 +155,28 @@ export default {
       this.updateModifiedMessages({});
       this.loadSourceMessages();
     },
-    loadSourceMessages() {
+    loadSourceMessages () {
       this.setIsLoading(true);
 
       axios
-        .get(this.$craft.getActionUrl('translations-admin/messages/get-translations', {category: this.category}))
+        .get(this.$craft.getActionUrl('translations-admin/messages/get-translations', { category: this.category }))
         .then((response) => {
-          this.updateLanguages(response.data.languages);
+          const localStorageLanguages = localStorage.getItem('admin-translations-languages');
+          let localStorageLanguagesObjects = null;
+          try {
+            localStorageLanguagesObjects = localStorageLanguages ? JSON.parse(localStorageLanguages) : null;
+          } catch (e) {
+            console.log(e);
+          }
+          const languages = response.data.languages;
+          let i = 0;
+          response.data.languages.forEach(lang => {
+            const localStorageLanguage = localStorageLanguagesObjects?.find(o => o.id === lang.id);
+            languages[lang.id] = lang;
+            languages[lang.id].checked = localStorageLanguage ? localStorageLanguage.checked : i < 5;
+            i++;
+          });
+          this.updateLanguages(languages);
           this.updateSourceMessages(response.data.sourceMessages);
         })
         .catch(() => {
@@ -170,7 +185,7 @@ export default {
           this.setIsLoading(false);
         });
     },
-    filterSourceMessages() {
+    filterSourceMessages () {
       let sourceMessages = this.sourceMessages.filter((sourceMessage) => {
         if (this.isNullOrUndefined(sourceMessage.message) || this.isNullOrUndefined(this.search)) {
           return true;
@@ -197,7 +212,7 @@ export default {
       }
       this.setFilteredSourceMessages(sourceMessages);
     },
-    change(sourceMessage, language) {
+    change (sourceMessage, language) {
       if (this.isNullOrUndefined(sourceMessage.isModified)) {
         sourceMessage.isModified = {};
       }
@@ -225,13 +240,13 @@ export default {
 
       this.updateModifiedMessages(modifiedMessages);
     },
-    isModified(sourceMessage, language) {
+    isModified (sourceMessage, language) {
       let originalSourceMessage = this.originalSourceMessages[this.sourceMessages.indexOf(sourceMessage)];
       let originalValue = this.normalizeStringValue(originalSourceMessage.languages[language.id]);
       let newValue = this.normalizeStringValue(sourceMessage.languages[language.id]);
       return originalValue !== newValue;
     },
-    toggleCheckedSourceMessages() {
+    toggleCheckedSourceMessages () {
       const checkedSourceMessages = [];
       if (this.checkedSourceMessages.length === 0) {
         for (const sourceMessage of this.displayedSourceMessages) {
@@ -240,13 +255,13 @@ export default {
       }
       this.setCheckedSourceMessages(checkedSourceMessages);
     },
-    copyObj(obj) {
+    copyObj (obj) {
       return JSON.parse(JSON.stringify(obj));
     },
-    t(str) {
+    t (str) {
       return this.$craft.t('translations-admin', str);
     },
-    getNumberOfLines(str) {
+    getNumberOfLines (str) {
       if (this.isNullOrUndefined(str)) {
         return 1;
       }
@@ -256,16 +271,16 @@ export default {
       }
       return 1;
     },
-    getElementContentWidth(element) {
+    getElementContentWidth (element) {
       const styles = window.getComputedStyle(element);
       const padding = parseFloat(styles.paddingLeft) + parseFloat(styles.paddingRight);
 
       return element.clientWidth - padding;
     },
-    normalizeStringValue(value) {
+    normalizeStringValue (value) {
       return this.isNullOrUndefined(value) ? '' : value.trim();
     },
-    isNullOrUndefined(value) {
+    isNullOrUndefined (value) {
       return typeof value === 'undefined' || value === null;
     },
     ...mapMutations({
