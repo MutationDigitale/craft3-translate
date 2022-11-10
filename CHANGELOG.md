@@ -1,5 +1,10 @@
 # Changelog
 
+## 3.0.1 - 2022-11-10
+
+### Changed
+- Limit the initial number of languages to 5 and keep the choices of languages inside local storage to improve UX when there are many languages ([#41](https://github.com/MutationDigitale/craft-translate/issues/41))
+
 ## 3.0.0 - 2022-05-04
 
 ### Changed

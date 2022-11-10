@@ -394,5 +394,15 @@ table.data.translate-table tr td.modified {
     box-sizing: border-box;
     padding: 18px 12px;
   }
+
+  body.ltr .tablepane table.data.translate-table td:first-child,
+  body.ltr .tablepane table.data.translate-table th:first-child {
+    padding-left: 12px;
+  }
+
+  body.ltr .tablepane table.data.translate-table td:last-child,
+  body.ltr .tablepane table.data.translate-table th:last-child {
+    padding-right: 12px;
+  }
 }
 </style>
