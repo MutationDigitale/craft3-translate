@@ -29,6 +29,9 @@ class SourceMessageService extends Component
         foreach ($groups as $group) {
             $languages = [];
             foreach ($group as $item) {
+                if (!in_array($item['language'], $siteLocales)) {
+                    continue;
+                }
                 $languages[$item['language']] = $item['translation'];
             }
             if (count($languages) < count($siteLocales)) {
