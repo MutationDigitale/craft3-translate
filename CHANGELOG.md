@@ -1,5 +1,10 @@
 # Changelog
 
+## 3.0.2 - 2023-06-01
+
+### Fixed
+- Do not export messages in missing site locales ([#50](https://github.com/MutationDigitale/craft3-translate/pull/50), thanks @birdkiwi)
+
 ## 3.0.1 - 2022-11-10
 
 ### Changed
