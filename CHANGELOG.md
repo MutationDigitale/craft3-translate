@@ -1,5 +1,10 @@
 # Changelog
 
+## 3.0.3 - 2023-06-28
+
+### Fixed
+- Register DbMessageSource only when plugin is enabled ([#51](https://github.com/MutationDigitale/craft3-translate/issues/51), thanks @goraxan)
+
 ## 3.0.2 - 2023-06-01
 
 ### Fixed

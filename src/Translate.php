@@ -66,7 +66,10 @@ class Translate extends Plugin
             'export' => ExportService::class,
         ]);
 
-        $this->initDbMessages();
+        if (Craft::$app->getPlugins()->isPluginEnabled($this->handle)) {
+            $this->initDbMessages();
+        }
+
         $this->initPermissions();
         $this->initSiteUrls();
         $this->initCpUrls();
