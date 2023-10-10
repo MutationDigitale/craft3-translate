@@ -1,5 +1,10 @@
 # Changelog
 
+## 3.0.4 - 2023-10-10
+
+### Fixed
+- Sort messages by language code ([#53](https://github.com/MutationDigitale/craft3-translate/pull/53), thanks @duxabilii)
+
 ## 3.0.3 - 2023-06-28
 
 ### Fixed
