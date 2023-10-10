@@ -41,6 +41,9 @@ class SourceMessageService extends Component
                     }
                 }
             }
+
+            ksort($languages);
+
             $sourceMessages[] = [
                 'id' => $group[0]['id'],
                 'message' => $group[0]['message'],
