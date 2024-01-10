@@ -1,6 +1,9 @@
 # Changelog
 
-## Unreleased
+## 3.1.0 - 2024-01-10
+
+> [!IMPORTANT]
+> You'll need to update the users' permissions for them to continue to be able to save, add, or delete translations.
 
 - Add "save", "add" and "delete" permissions ([#58](https://github.com/MutationDigitale/craft3-translate/issues/58))
 - PHP import for all categories instead of only site ([#57](https://github.com/MutationDigitale/craft3-translate/issues/57))
