@@ -331,6 +331,7 @@ table.data.translate-table tr td.modified {
   overflow-x: hidden;
   min-height: 34px;
   padding-right: 40px;
+  color: var(--gray-700);
 }
 
 .language-label {

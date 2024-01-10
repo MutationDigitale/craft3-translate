@@ -3,6 +3,7 @@
 namespace mutation\translate\services;
 
 use Craft;
+use craft\helpers\FileHelper;
 use Exception;
 use mutation\translate\helpers\DbHelper;
 use mutation\translate\models\SourceMessage;
@@ -13,39 +14,51 @@ class ImportService extends Component
     public function importPhpTranslationsToDatabase(): ?int
     {
         try {
-            $sites = Craft::$app->sites->getAllSites();
+            $languages = collect(Craft::$app->sites->getAllSites())
+                ->map(function($site) {
+                    return $site->language;
+                })
+                ->unique()
+                ->toArray();
+
             $translations = array();
-            foreach ($sites as $site) {
-                $path = Craft::$app->path->getSiteTranslationsPath()
-                    . DIRECTORY_SEPARATOR . $site->language . DIRECTORY_SEPARATOR . 'site.php';
-                $siteTranslations = array();
-                if (file_exists($path)) {
-                    $siteTranslations = include($path);
-                }
-                foreach ($siteTranslations as $key => $translation) {
-                    $translations[$key][$site->language] = $translation;
+            foreach ($languages as $language) {
+                $directory = Craft::$app->path->getSiteTranslationsPath() . DIRECTORY_SEPARATOR . $language;
+                $files = FileHelper::findFiles($directory, ['only'=>['*.php']]);
+
+                foreach ($files as $file) {
+                    $category = basename($file, ".php");
+                    $siteTranslations = include($file);
+                    foreach ($siteTranslations as $key => $translation) {
+                        $translations[$category][$key][$language] = $translation;
+                    }
                 }
             }
 
             $count = 0;
 
-            foreach ($translations as $message => $sites) {
-                $languages = array();
-                foreach ($sites as $site => $translation) {
-                    $languages[$site] = $translation;
-                    $count++;
-                }
+            foreach ($translations as $category => $messages) {
+                foreach ($messages as $message => $sites) {
+                    $languages = array();
+                    foreach ($sites as $site => $translation) {
+                        $languages[$site] = $translation;
+                        $count++;
+                    }
 
-                $sourceMessage = SourceMessage::find()
-                    ->where(array(DbHelper::caseSensitiveComparisonString('message') => $message, 'category' => 'site'))
-                    ->one();
+                    $sourceMessage = SourceMessage::find()
+                        ->where(array(
+                            DbHelper::caseSensitiveComparisonString('message') => $message,
+                            'category' => $category
+                        ))
+                        ->one();
 
-                if (!$sourceMessage) {
-                    $sourceMessage = new SourceMessage();
-                    $sourceMessage->category = 'site';
-                    $sourceMessage->message = $message;
-                    $sourceMessage->languages = $languages;
-                    $sourceMessage->save();
+                    if (!$sourceMessage) {
+                        $sourceMessage = new SourceMessage();
+                        $sourceMessage->category = $category;
+                        $sourceMessage->message = $message;
+                        $sourceMessage->languages = $languages;
+                        $sourceMessage->save();
+                    }
                 }
             }
 
