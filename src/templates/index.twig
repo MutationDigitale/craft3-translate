@@ -21,7 +21,9 @@
 ]) %}
 
 {% block actionButton %}
+  {% if craft.app.user.checkPermission('addTranslations') %}
     <save-translations></save-translations>
+  {% endif %}
 {% endblock %}
 
 {% block sidebar %}
@@ -31,7 +33,9 @@
 {% endblock %}
 
 {% block toolbar %}
-    <translations-toolbar></translations-toolbar>
+    <translations-toolbar
+      :add-permission="{{ craft.app.user.checkPermission('addTranslations') ? 'true' : 'false' }}"
+      :delete-permission="{{ craft.app.user.checkPermission('deleteTranslations') ? 'true' : 'false' }}"></translations-toolbar>
 {% endblock %}
 
 {% block content %}

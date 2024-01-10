@@ -5,6 +5,7 @@ namespace mutation\translate;
 use Craft;
 use craft\base\Model;
 use craft\base\Plugin;
+use craft\elements\User;
 use craft\events\RegisterGqlQueriesEvent;
 use craft\events\RegisterGqlTypesEvent;
 use craft\events\RegisterUrlRulesEvent;
@@ -43,6 +44,9 @@ use yii\i18n\MissingTranslationEvent;
  */
 class Translate extends Plugin
 {
+    public const SAVE_TRANSLATIONS_PERMISSION = 'saveTranslations';
+    public const ADD_TRANSLATIONS_PERMISSION = 'addTranslations';
+    public const DELETE_TRANSLATIONS_PERMISSION = 'deleteTranslations';
     public const EXPORT_TRANSLATIONS_PERMISSION = 'exportTranslations';
     public const IMPORT_TRANSLATIONS_PERMISSION = 'importTranslations';
     public const TRANSLATIONS_UTILITIES_PERMISSION = 'translationsUtilities';
@@ -84,21 +88,25 @@ class Translate extends Plugin
 
         $item = parent::getCpNavItem();
         $item['subnav']['translations'] = ['label' => 'Messages', 'url' => 'translations-admin'];
-        if ($currentUser->can(self::EXPORT_TRANSLATIONS_PERMISSION)) {
-            $item['subnav']['export'] = ['label' => 'Export', 'url' => 'translations-admin/export-messages'];
+
+        if ($currentUser instanceof User) {
+            if ($currentUser->can(self::EXPORT_TRANSLATIONS_PERMISSION)) {
+                $item['subnav']['export'] = ['label' => 'Export', 'url' => 'translations-admin/export-messages'];
+            }
+            if ($currentUser->can(self::IMPORT_TRANSLATIONS_PERMISSION)) {
+                $item['subnav']['import'] = ['label' => 'Import', 'url' => 'translations-admin/import-messages'];
+            }
+            if ($currentUser->can(self::TRANSLATIONS_UTILITIES_PERMISSION)) {
+                $item['subnav']['utilities'] = [
+                    'label' => 'Utilities',
+                    'url' => 'translations-admin/translations-utilities'
+                ];
+            }
+            if ($currentUser->can(self::CHANGE_TRANSLATIONS_SETTINGS_PERMISSION) && $general->allowAdminChanges) {
+                $item['subnav']['settings'] = ['label' => 'Settings', 'url' => 'translations-admin/plugin-settings'];
+            }
         }
-        if ($currentUser->can(self::IMPORT_TRANSLATIONS_PERMISSION)) {
-            $item['subnav']['import'] = ['label' => 'Import', 'url' => 'translations-admin/import-messages'];
-        }
-        if ($currentUser->can(self::TRANSLATIONS_UTILITIES_PERMISSION)) {
-            $item['subnav']['utilities'] = [
-                'label' => 'Utilities',
-                'url' => 'translations-admin/translations-utilities'
-            ];
-        }
-        if ($currentUser->can(self::CHANGE_TRANSLATIONS_SETTINGS_PERMISSION) && $general->allowAdminChanges) {
-            $item['subnav']['settings'] = ['label' => 'Settings', 'url' => 'translations-admin/plugin-settings'];
-        }
+
         return $item;
     }
 
@@ -141,6 +149,15 @@ class Translate extends Plugin
                 $event->permissions[] = [
                     'heading' => Craft::t('translations-admin', 'Translations admin'),
                     'permissions' => [
+                        self::SAVE_TRANSLATIONS_PERMISSION => [
+                            'label' => 'Save translations',
+                        ],
+                        self::ADD_TRANSLATIONS_PERMISSION => [
+                            'label' => 'Add translations',
+                        ],
+                        self::DELETE_TRANSLATIONS_PERMISSION => [
+                            'label' => 'Delete translations',
+                        ],
                         self::EXPORT_TRANSLATIONS_PERMISSION => [
                             'label' => 'Export translations',
                         ],

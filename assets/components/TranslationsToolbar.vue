@@ -4,7 +4,7 @@
       <div class="btn menubtn" data-icon="settings" :title="t('Actions')"></div>
       <div class="menu">
         <ul>
-          <li>
+          <li v-if="deletePermission">
             <a class="error" @click="deleteMessages()">
               {{ t('Delete') }}
             </a>
@@ -57,11 +57,10 @@
              v-model="search">
       <div class="clear hidden" title="Clear"></div>
     </div>
-    <div v-show="checkedSourceMessages.length === 0" class="textarea-container">
-            <textarea class="text" rows="1"
-                      v-model="messageToAdd" :placeholder="t('Message')"></textarea>
+    <div v-if="addPermission" v-show="checkedSourceMessages.length === 0" class="textarea-container">
+      <textarea class="text" rows="1" v-model="messageToAdd" :placeholder="t('Message')"></textarea>
     </div>
-    <div v-show="checkedSourceMessages.length === 0">
+    <div v-if="addPermission" v-show="checkedSourceMessages.length === 0">
       <button class="btn" type="button" @click="addMessage()"
               :disabled="messageToAdd === null || messageToAdd.trim() === ''">
         {{ t('Add') }}
@@ -75,6 +74,10 @@ import {mapActions, mapMutations, mapState} from 'vuex';
 import axios from 'axios';
 
 export default {
+  props: {
+    addPermission: Boolean,
+    deletePermission: Boolean,
+  },
   data() {
     return {
       messageToAdd: ''

@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Add "save", "add" and "delete" permissions ([#58](https://github.com/MutationDigitale/craft3-translate/issues/58))
 - PHP import for all categories instead of only site ([#57](https://github.com/MutationDigitale/craft3-translate/issues/57))
 
 ## 3.0.4 - 2023-10-10

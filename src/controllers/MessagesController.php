@@ -59,6 +59,7 @@ class MessagesController extends Controller
     public function actionAdd()
     {
         $this->requirePostRequest();
+        $this->requirePermission(Translate::ADD_TRANSLATIONS_PERMISSION);
 
         $message = Craft::$app->request->getRequiredBodyParam('message');
         $category = Craft::$app->request->getRequiredBodyParam('category');
@@ -89,6 +90,7 @@ class MessagesController extends Controller
     public function actionDelete()
     {
         $this->requirePostRequest();
+        $this->requirePermission(Translate::DELETE_TRANSLATIONS_PERMISSION);
 
         $sourceMessageIds = Craft::$app->request->getRequiredBodyParam('sourceMessageId');
 
@@ -102,6 +104,7 @@ class MessagesController extends Controller
     public function actionSave()
     {
         $this->requirePostRequest();
+        $this->requirePermission(Translate::SAVE_TRANSLATIONS_PERMISSION);
 
         $translations = Craft::$app->request->getRequiredBodyParam('translations');
 
