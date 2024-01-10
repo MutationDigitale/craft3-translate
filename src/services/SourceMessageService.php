@@ -46,6 +46,8 @@ class SourceMessageService extends Component
 
             $sourceMessages[] = [
                 'id' => $group[0]['id'],
+                'dateCreated' => $group[0]['dateCreated'],
+                'dateUpdated' => $group[0]['dateUpdated'],
                 'message' => $group[0]['message'],
                 'languages' => $languages
             ];

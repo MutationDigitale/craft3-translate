@@ -1,6 +1,129 @@
-.btn[data-v-385dd56d]:disabled{opacity:.5;pointer-events:none}
-.translate-table[data-v-2c6f2709]{table-layout:fixed}.translate-table tr:nth-child(2n) td[data-v-2c6f2709]{background-color:#f8f9fa}table.data.translate-table tr td.modified[data-v-2c6f2709]{background-color:#fffbea}.translate-table pre[data-v-2c6f2709]{white-space:pre-wrap;word-wrap:break-word;font-family:system-ui,BlinkMacSystemFont,-apple-system,"Segoe UI","Roboto","Oxygen","Ubuntu","Cantarell","Fira Sans","Droid Sans","Helvetica Neue",sans-serif}.message-text[data-v-2c6f2709]{position:relative}.message-text textarea[data-v-2c6f2709]{overflow-x:hidden;min-height:34px;padding-right:40px;color:var(--gray-700)}.language-label[data-v-2c6f2709]{text-transform:lowercase;font-size:11px;line-height:11px;display:inline-block;position:absolute;top:1px;right:1px;background:#f3f7fc;color:#33404d;border-radius:2px;padding:2px 5px 3px;pointer-events:none}.cell-label[data-v-2c6f2709]{margin-bottom:4px;font-weight:bold;color:rgba(0,0,0,.5)}.mobile-only[data-v-2c6f2709]{display:none}@media(max-width: 613px){.mobile-only[data-v-2c6f2709]{display:block}.language-label[data-v-2c6f2709]{display:none}.message-text textarea[data-v-2c6f2709]{padding-right:7px}.translate-table thead[data-v-2c6f2709]{display:none}.translate-table[data-v-2c6f2709],.translate-table tbody[data-v-2c6f2709],.translate-table tr[data-v-2c6f2709],.translate-table td[data-v-2c6f2709]{display:block}.translate-table tbody[data-v-2c6f2709],.translate-table tr[data-v-2c6f2709],.translate-table td[data-v-2c6f2709]{width:100%;border:0}table.data.translate-table td.checkbox-cell[data-v-2c6f2709]{width:100% !important;box-sizing:border-box;padding:18px 12px}body.ltr .tablepane table.data.translate-table td[data-v-2c6f2709]:first-child,body.ltr .tablepane table.data.translate-table th[data-v-2c6f2709]:first-child{padding-left:12px}body.ltr .tablepane table.data.translate-table td[data-v-2c6f2709]:last-child,body.ltr .tablepane table.data.translate-table th[data-v-2c6f2709]:last-child{padding-right:12px}}
-#translations-toolbar[data-v-41ff3a18]{flex-wrap:wrap}.search-container[data-v-41ff3a18]{flex:2}.textarea-container[data-v-41ff3a18]{height:34px;flex:1}textarea[data-v-41ff3a18]{min-width:160px;overflow-x:hidden;min-height:34px;height:34px;width:100%}.checkbox-menu[data-v-41ff3a18]{padding:6px 0}.checkbox-menu-item[data-v-41ff3a18]{padding:7px 0}
-.page-number.active[data-v-1233f384]{pointer-events:none;background:#cdd8e4}
+/*!****************************************************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/css-loader/dist/cjs.js!./node_modules/vue-loader/dist/stylePostLoader.js!./node_modules/sass-loader/dist/cjs.js!./node_modules/vue-loader/dist/index.js??ruleSet[1].rules[7].use[0]!./assets/components/SaveTranslations.vue?vue&type=style&index=0&id=460e990c&lang=scss&scoped=true ***!
+  \****************************************************************************************************************************************************************************************************************************************************************************************************************/
+.btn[data-v-460e990c]:disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+/*!****************************************************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/css-loader/dist/cjs.js!./node_modules/vue-loader/dist/stylePostLoader.js!./node_modules/sass-loader/dist/cjs.js!./node_modules/vue-loader/dist/index.js??ruleSet[1].rules[7].use[0]!./assets/components/TranslationsList.vue?vue&type=style&index=0&id=3b669c9b&lang=scss&scoped=true ***!
+  \****************************************************************************************************************************************************************************************************************************************************************************************************************/
+.translate-table[data-v-3b669c9b] {
+  table-layout: fixed;
+}
+.translate-table tr:nth-child(2n) td[data-v-3b669c9b] {
+  background-color: #f8f9fa;
+}
+table.data.translate-table tr td.modified[data-v-3b669c9b] {
+  background-color: #FFFBEA;
+}
+.translate-table pre[data-v-3b669c9b] {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  font-family: system-ui, BlinkMacSystemFont, -apple-system, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+}
+.message-text[data-v-3b669c9b] {
+  position: relative;
+}
+.message-text textarea[data-v-3b669c9b] {
+  overflow-x: hidden;
+  min-height: 34px;
+  padding-right: 40px;
+  color: var(--gray-700);
+}
+.language-label[data-v-3b669c9b] {
+  text-transform: lowercase;
+  font-size: 11px;
+  line-height: 11px;
+  display: inline-block;
+  position: absolute;
+  top: 1px;
+  right: 1px;
+  background: hsl(212, 60%, 97%);
+  color: hsl(209, 20%, 25%);
+  border-radius: 2px;
+  padding: 2px 5px 3px;
+  pointer-events: none;
+}
+.cell-label[data-v-3b669c9b] {
+  margin-bottom: 4px;
+  font-weight: bold;
+  color: rgba(0, 0, 0, 0.5);
+}
+.mobile-only[data-v-3b669c9b] {
+  display: none;
+}
+@media (max-width: 613px) {
+.mobile-only[data-v-3b669c9b] {
+    display: block;
+}
+.language-label[data-v-3b669c9b] {
+    display: none;
+}
+.message-text textarea[data-v-3b669c9b] {
+    padding-right: 7px;
+}
+.translate-table thead[data-v-3b669c9b] {
+    display: none;
+}
+.translate-table[data-v-3b669c9b],
+  .translate-table tbody[data-v-3b669c9b],
+  .translate-table tr[data-v-3b669c9b],
+  .translate-table td[data-v-3b669c9b] {
+    display: block;
+}
+.translate-table tbody[data-v-3b669c9b],
+  .translate-table tr[data-v-3b669c9b],
+  .translate-table td[data-v-3b669c9b] {
+    width: 100%;
+    border: 0;
+}
+table.data.translate-table td.checkbox-cell[data-v-3b669c9b] {
+    width: 100% !important;
+    box-sizing: border-box;
+    padding: 18px 12px;
+}
+body.ltr .tablepane table.data.translate-table td[data-v-3b669c9b]:first-child,
+  body.ltr .tablepane table.data.translate-table th[data-v-3b669c9b]:first-child {
+    padding-left: 12px;
+}
+body.ltr .tablepane table.data.translate-table td[data-v-3b669c9b]:last-child,
+  body.ltr .tablepane table.data.translate-table th[data-v-3b669c9b]:last-child {
+    padding-right: 12px;
+}
+}
+/*!*******************************************************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/css-loader/dist/cjs.js!./node_modules/vue-loader/dist/stylePostLoader.js!./node_modules/sass-loader/dist/cjs.js!./node_modules/vue-loader/dist/index.js??ruleSet[1].rules[7].use[0]!./assets/components/TranslationsToolbar.vue?vue&type=style&index=0&id=150b8be4&lang=scss&scoped=true ***!
+  \*******************************************************************************************************************************************************************************************************************************************************************************************************************/
+#translations-toolbar[data-v-150b8be4] {
+  flex-wrap: wrap;
+}
+.search-container[data-v-150b8be4] {
+  flex: 2;
+}
+.textarea-container[data-v-150b8be4] {
+  height: 34px;
+  flex: 1;
+}
+textarea[data-v-150b8be4] {
+  min-width: 160px;
+  overflow-x: hidden;
+  min-height: 34px;
+  height: 34px;
+  width: 100%;
+}
+.checkbox-menu[data-v-150b8be4] {
+  padding: 6px 0;
+}
+.checkbox-menu-item[data-v-150b8be4] {
+  padding: 7px 0;
+}
+/*!******************************************************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/css-loader/dist/cjs.js!./node_modules/vue-loader/dist/stylePostLoader.js!./node_modules/sass-loader/dist/cjs.js!./node_modules/vue-loader/dist/index.js??ruleSet[1].rules[7].use[0]!./assets/components/TranslationsFooter.vue?vue&type=style&index=0&id=7a1155d8&lang=scss&scoped=true ***!
+  \******************************************************************************************************************************************************************************************************************************************************************************************************************/
+.page-number.active[data-v-7a1155d8] {
+  pointer-events: none;
+  background: hsl(212, 30%, 85%);
+}
 
 /*# sourceMappingURL=main.css.map*/

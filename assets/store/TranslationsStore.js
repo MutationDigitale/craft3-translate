@@ -18,6 +18,8 @@ export const store = createStore({
     modifiedMessagesKeys: [],
     search: '',
     emptyMessages: false,
+    sortProperty: 'message',
+    sortDirection: 'asc'
   },
   getters: {
     displayedSourceMessages: state => {
@@ -25,7 +27,19 @@ export const store = createStore({
       let perPage = state.perPage;
       let from = (page * perPage) - perPage;
       let to = (page * perPage);
-      return state.filteredSourceMessages.slice(from, to);
+      return state.filteredSourceMessages
+        .sort((a, b) => {
+          const valueA = typeof a[state.sortProperty] !== 'undefined'
+            ? a[state.sortProperty]
+            : a.languages[state.sortProperty];
+          const valueB = typeof b[state.sortProperty] !== 'undefined'
+            ? b[state.sortProperty]
+            : b.languages[state.sortProperty];
+          return state.sortDirection === 'asc'
+            ? valueA?.localeCompare(valueB)
+            : valueB?.localeCompare(valueA);
+        })
+        .slice(from, to);
     }
   },
   mutations: {
@@ -73,6 +87,12 @@ export const store = createStore({
     },
     setEmptyMessages (state, value) {
       state.emptyMessages = value;
+    },
+    setSortProperty (state, value) {
+      state.sortProperty = value;
+    },
+    setSortDirection (state, value) {
+      state.sortDirection = value;
     },
   },
   actions: {

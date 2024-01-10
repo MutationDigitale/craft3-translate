@@ -4,7 +4,7 @@
       <table class="data fullwidth translate-table">
         <thead>
         <tr>
-          <th class="checkbox-cell selectallcontainer orderable" role="checkbox" tabindex="0"
+          <th class="checkbox-cell selectallcontainer" role="checkbox" tabindex="0"
               :aria-checked="ariaChecked" style="width: 4%" @click="toggleCheckedSourceMessages()">
             <div class="checkbox"
                  :class="{
@@ -14,11 +14,26 @@
                         checkedSourceMessages.length !== displayedSourceMessages.length
                  }"></div>
           </th>
-          <th :style="'width: ' + (96/(checkedLanguages.length + 1)) + '%'">{{ t('Key') }}</th>
-          <th v-for="language in checkedLanguages" v-bind:key="language.id"
-              :style="'width: ' + (96/(checkedLanguages.length + 1)) + '%'">
-            <span>{{ language.displayName }}</span>
-            <span class="light" v-if="language.nativeName"> – {{ language.nativeName }}</span>
+          <th class="orderable" :class="[{'ordered': sortProperty === 'message'}, sortDirection]">
+            <button type="button" @click="changeSort('message')">{{ t('Key') }}</button>
+          </th>
+          <th class="orderable"
+              :class="[{'ordered': sortProperty === language.id}, sortDirection]"
+              v-for="language in checkedLanguages" v-bind:key="language.id">
+            <button type="button" @click="changeSort(language.id)">
+              <span>{{ language.displayName }}</span>
+              <span class="light" v-if="language.nativeName"> – {{ language.nativeName }}</span>
+            </button>
+          </th>
+          <th class="orderable" :class="[{'ordered': sortProperty === 'dateCreated'}, sortDirection]">
+            <button type="button" @click="changeSort('dateCreated')">
+              {{ t('Date Created') }}
+            </button>
+          </th>
+          <th class="orderable" :class="[{'ordered': sortProperty === 'dateUpdated'}, sortDirection]">
+            <button type="button" @click="changeSort('dateUpdated')">
+              {{ t('Date Updated') }}
+            </button>
           </th>
         </tr>
         </thead>
@@ -55,6 +70,10 @@
               <div class="language-label">{{ language.id }}</div>
             </div>
           </td>
+
+          <td>{{ sourceMessage.dateCreated }}</td>
+
+          <td>{{ sourceMessage.dateUpdated }}</td>
         </tr>
         </tbody>
       </table>
@@ -107,6 +126,8 @@ export default {
       modifiedMessages: state => state.modifiedMessages,
       emptyMessages: state => state.emptyMessages,
       search: state => state.search,
+      sortProperty: state => state.sortProperty,
+      sortDirection: state => state.sortDirection,
     }),
     ...mapGetters({
       displayedSourceMessages: 'displayedSourceMessages'
@@ -283,6 +304,14 @@ export default {
     isNullOrUndefined (value) {
       return typeof value === 'undefined' || value === null;
     },
+    changeSort (property) {
+      if (this.sortProperty !== property) {
+        this.setSortProperty(property);
+        this.setSortDirection('asc');
+      } else {
+        this.setSortDirection(this.sortDirection === 'asc' ? 'desc' : 'asc');
+      }
+    },
     ...mapMutations({
       setIsLoading: 'setIsLoading',
       setCategory: 'setCategory',
@@ -291,7 +320,9 @@ export default {
       setFilteredSourceMessages: 'setFilteredSourceMessages',
       setEmptyMessages: 'setEmptyMessages',
       setCheckedSourceMessages: 'setCheckedSourceMessages',
-      setOriginalSourceMessages: 'setOriginalSourceMessages'
+      setOriginalSourceMessages: 'setOriginalSourceMessages',
+      setSortProperty: 'setSortProperty',
+      setSortDirection: 'setSortDirection',
     }),
     ...mapActions({
       updateLanguages: 'updateLanguages',
