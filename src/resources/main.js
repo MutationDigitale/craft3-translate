@@ -18771,7 +18771,8 @@ __webpack_require__.r(__webpack_exports__);
   },
   data() {
     return {
-      pages: []
+      pages: [],
+      isExporting: false
     };
   },
   computed: {
@@ -18780,7 +18781,8 @@ __webpack_require__.r(__webpack_exports__);
       perPage: state => state.perPage,
       sourceMessages: state => state.sourceMessages,
       filteredSourceMessages: state => state.filteredSourceMessages,
-      checkedSourceMessages: state => state.checkedSourceMessages
+      checkedSourceMessages: state => state.checkedSourceMessages,
+      category: state => state.category
     }),
     ...(0,vuex__WEBPACK_IMPORTED_MODULE_1__.mapGetters)({
       displayedSourceMessages: 'displayedSourceMessages'
@@ -18834,6 +18836,25 @@ __webpack_require__.r(__webpack_exports__);
         this.emitter.emit('translation-deleted-error');
       }).finally(() => {
         this.setIsDeleting(false);
+      });
+    },
+    exportMessages() {
+      this.isExporting = true;
+      const formData = {};
+      formData[this.$csrfTokenName] = this.$csrfTokenValue;
+      formData['category'] = this.category;
+      if (this.checkedSourceMessages && this.checkedSourceMessages.length > 0) {
+        formData['sourceMessageId'] = [];
+        for (const sourceMessageId of this.checkedSourceMessages) {
+          formData['sourceMessageId'].push(sourceMessageId);
+        }
+      }
+      this.$craft.downloadFromUrl('POST', this.$craft.getActionUrl('translations-admin/export/export'), formData).catch(e => {
+        if (!axios__WEBPACK_IMPORTED_MODULE_2__["default"].isCancel(e)) {
+          // Error
+        }
+      }).finally(() => {
+        this.isExporting = false;
       });
     },
     ...(0,vuex__WEBPACK_IMPORTED_MODULE_1__.mapMutations)({
@@ -19373,7 +19394,7 @@ const _hoisted_14 = {
 const _hoisted_15 = {
   key: 0
 };
-const _hoisted_16 = /*#__PURE__*/_withScopeId(() => /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", null, null, -1 /* HOISTED */));
+const _hoisted_16 = ["disabled"];
 function render(_ctx, _cache, $props, $setup, $data, $options) {
   return (0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)(vue__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_1, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_2, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", {
     class: (0,vue__WEBPACK_IMPORTED_MODULE_0__.normalizeClass)(["page-link page-first", {
@@ -19414,7 +19435,13 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
   }, null, 8 /* PROPS */, _hoisted_13), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_14, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("ul", null, [$props.deletePermission ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("li", _hoisted_15, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("a", {
     class: "error",
     onClick: _cache[4] || (_cache[4] = $event => $options.deleteMessages())
-  }, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($options.t('Delete')), 1 /* TEXT */)])) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true)])])], 512 /* NEED_PATCH */), [[vue__WEBPACK_IMPORTED_MODULE_0__.vShow, _ctx.checkedSourceMessages.length > 0]]), _hoisted_16], 64 /* STABLE_FRAGMENT */);
+  }, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($options.t('Delete')), 1 /* TEXT */)])) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true)])])], 512 /* NEED_PATCH */), [[vue__WEBPACK_IMPORTED_MODULE_0__.vShow, _ctx.checkedSourceMessages.length > 0]]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", null, [$props.exportPermission ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("button", {
+    key: 0,
+    class: "btn",
+    type: "button",
+    onClick: _cache[5] || (_cache[5] = $event => $options.exportMessages()),
+    disabled: $data.isExporting
+  }, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($options.t('Export')), 9 /* TEXT, PROPS */, _hoisted_16)) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true)])], 64 /* STABLE_FRAGMENT */);
 }
 
 /***/ }),

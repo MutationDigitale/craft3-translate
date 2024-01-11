@@ -55,6 +55,8 @@ class ExportController extends Controller
 
         $category = Craft::$app->request->getRequiredBodyParam('category');
 
+        $sourceMessageIds = Craft::$app->request->getBodyParam('sourceMessageId');
+
         $siteLocales = Craft::$app->i18n->getSiteLocales();
         sort($siteLocales);
 
@@ -71,6 +73,14 @@ class ExportController extends Controller
         fputcsv($fp, $columnHeader);
 
         $sourceMessages = Translate::getInstance()->sourceMessage->getSourceMessagesArrayByCategory($category);
+
+        if ($sourceMessageIds && count($sourceMessageIds) > 0) {
+            $sourceMessages = collect($sourceMessages)
+                ->filter(function ($item) use ($sourceMessageIds) {
+                    return in_array($item["id"], $sourceMessageIds);
+                })
+                ->toArray();
+        }
 
         // output each row of the data
         foreach ($sourceMessages as $sourceMessage) {

@@ -51,7 +51,11 @@
       </ul>
     </div>
   </div>
-  <div></div>
+  <div>
+    <button v-if="exportPermission" class="btn" type="button" @click="exportMessages()" :disabled="isExporting">
+      {{ t('Export') }}
+    </button>
+  </div>
 </template>
 
 <script>
@@ -66,6 +70,7 @@ export default {
   data() {
     return {
       pages: [],
+      isExporting: false,
     };
   },
   computed: {
@@ -74,7 +79,8 @@ export default {
       perPage: state => state.perPage,
       sourceMessages: state => state.sourceMessages,
       filteredSourceMessages: state => state.filteredSourceMessages,
-      checkedSourceMessages: state => state.checkedSourceMessages
+      checkedSourceMessages: state => state.checkedSourceMessages,
+      category: state => state.category
     }),
     ...mapGetters({
       displayedSourceMessages: 'displayedSourceMessages'
@@ -136,6 +142,35 @@ export default {
         })
         .finally(() => {
           this.setIsDeleting(false);
+        });
+    },
+    exportMessages() {
+      this.isExporting = true;
+
+      const formData = {};
+
+      formData[this.$csrfTokenName] = this.$csrfTokenValue;
+      formData['category'] = this.category;
+
+      if (this.checkedSourceMessages && this.checkedSourceMessages.length > 0) {
+        formData['sourceMessageId'] = [];
+        for (const sourceMessageId of this.checkedSourceMessages) {
+          formData['sourceMessageId'].push(sourceMessageId);
+        }
+      }
+
+      this.$craft.downloadFromUrl(
+        'POST',
+        this.$craft.getActionUrl('translations-admin/export/export'),
+        formData
+      )
+        .catch((e) => {
+            if (!axios.isCancel(e)) {
+              // Error
+            }
+        })
+        .finally(() => {
+          this.isExporting = false;
         });
     },
     ...mapMutations({

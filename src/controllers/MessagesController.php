@@ -82,7 +82,9 @@ class MessagesController extends Controller
             'sourceMessage' => [
                 'id' => $sourceMessage->id,
                 'message' => $sourceMessage->message,
-                'languages' => $languages
+                'languages' => $languages,
+                'dateCreated' => $sourceMessage->dateCreated,
+                'dateUpdated' => $sourceMessage->dateUpdated
             ]
         ]);
     }
