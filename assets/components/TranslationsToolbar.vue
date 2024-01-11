@@ -1,7 +1,32 @@
 <template>
   <div id="translations-toolbar" class="flex flex-grow">
     <div>
-      <button class="btn menubtn statusmenubtn">{{ t('Columns') }}</button>
+      <button class="btn menubtn statusmenubtn"><span class="status" :class="{'pending': emptyMessages}"></span>{{
+          !emptyMessages ? t('All') : t('Empty')
+        }}</button>
+      <div class="menu">
+        <ul class="padded">
+          <li>
+            <a :class="{'sel': !emptyMessages}"
+               @click="setEmptyMessages(false)">
+              <span class="status"></span>{{ t('All') }}
+            </a>
+          </li>
+          <li>
+            <a :class="{'sel': emptyMessages}"
+               @click="setEmptyMessages(true)">
+              <span class="status pending"></span>{{ t('Empty') }}
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+    <div class="flex-grow texticon search icon search-container">
+      <input class="text fullwidth" type="text" autocomplete="off" placeholder="Search"
+             v-model="search">
+    </div>
+    <div>
+      <button class="btn menubtn" data-icon="sliders">{{ t('Columns') }}</button>
       <div class="menu">
         <ul class="padded checkbox-menu">
           <li v-for="language in languages" :key="language.id" class="checkbox-menu-item">
@@ -27,31 +52,6 @@
           </li>
         </ul>
       </div>
-    </div>
-    <div>
-      <button class="btn menubtn statusmenubtn"><span class="status" :class="{'pending': emptyMessages}"></span>{{
-          !emptyMessages ? t('All') : t('Empty')
-        }}</button>
-      <div class="menu">
-        <ul class="padded">
-          <li>
-            <a :class="{'sel': !emptyMessages}"
-               @click="setEmptyMessages(false)">
-              <span class="status"></span>{{ t('All') }}
-            </a>
-          </li>
-          <li>
-            <a :class="{'sel': emptyMessages}"
-               @click="setEmptyMessages(true)">
-              <span class="status pending"></span>{{ t('Empty') }}
-            </a>
-          </li>
-        </ul>
-      </div>
-    </div>
-    <div class="flex-grow texticon search icon search-container">
-      <input class="text fullwidth" type="text" autocomplete="off" placeholder="Search"
-             v-model="search">
     </div>
     <div v-if="addPermission" class="textarea-container">
       <textarea class="text" rows="1" v-model="messageToAdd" :placeholder="t('Message')"></textarea>

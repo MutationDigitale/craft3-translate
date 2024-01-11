@@ -19589,34 +19589,35 @@ const _hoisted_3 = {
   class: "menu"
 };
 const _hoisted_4 = {
+  class: "padded"
+};
+const _hoisted_5 = /*#__PURE__*/_withScopeId(() => /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", {
+  class: "status"
+}, null, -1 /* HOISTED */));
+const _hoisted_6 = /*#__PURE__*/_withScopeId(() => /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", {
+  class: "status pending"
+}, null, -1 /* HOISTED */));
+const _hoisted_7 = {
+  class: "flex-grow texticon search icon search-container"
+};
+const _hoisted_8 = {
+  class: "btn menubtn",
+  "data-icon": "sliders"
+};
+const _hoisted_9 = {
+  class: "menu"
+};
+const _hoisted_10 = {
   class: "padded checkbox-menu"
 };
-const _hoisted_5 = ["id", "checked", "onInput"];
-const _hoisted_6 = ["for"];
-const _hoisted_7 = {
+const _hoisted_11 = ["id", "checked", "onInput"];
+const _hoisted_12 = ["for"];
+const _hoisted_13 = {
   key: 0,
   class: "light"
 };
-const _hoisted_8 = ["id", "checked", "onInput"];
-const _hoisted_9 = ["for"];
-const _hoisted_10 = {
-  class: "btn menubtn statusmenubtn"
-};
-const _hoisted_11 = {
-  class: "menu"
-};
-const _hoisted_12 = {
-  class: "padded"
-};
-const _hoisted_13 = /*#__PURE__*/_withScopeId(() => /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", {
-  class: "status"
-}, null, -1 /* HOISTED */));
-const _hoisted_14 = /*#__PURE__*/_withScopeId(() => /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", {
-  class: "status pending"
-}, null, -1 /* HOISTED */));
-const _hoisted_15 = {
-  class: "flex-grow texticon search icon search-container"
-};
+const _hoisted_14 = ["id", "checked", "onInput"];
+const _hoisted_15 = ["for"];
 const _hoisted_16 = {
   key: 0,
   class: "textarea-container"
@@ -19627,7 +19628,27 @@ const _hoisted_18 = {
 };
 const _hoisted_19 = ["disabled"];
 function render(_ctx, _cache, $props, $setup, $data, $options) {
-  return (0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_1, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", null, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("button", _hoisted_2, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($options.t('Columns')), 1 /* TEXT */), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_3, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("ul", _hoisted_4, [((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(true), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)(vue__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, (0,vue__WEBPACK_IMPORTED_MODULE_0__.renderList)(_ctx.languages, language => {
+  return (0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_1, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", null, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("button", _hoisted_2, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", {
+    class: (0,vue__WEBPACK_IMPORTED_MODULE_0__.normalizeClass)(["status", {
+      'pending': _ctx.emptyMessages
+    }])
+  }, null, 2 /* CLASS */), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createTextVNode)((0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)(!_ctx.emptyMessages ? $options.t('All') : $options.t('Empty')), 1 /* TEXT */)]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_3, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("ul", _hoisted_4, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("li", null, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("a", {
+    class: (0,vue__WEBPACK_IMPORTED_MODULE_0__.normalizeClass)({
+      'sel': !_ctx.emptyMessages
+    }),
+    onClick: _cache[0] || (_cache[0] = $event => _ctx.setEmptyMessages(false))
+  }, [_hoisted_5, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createTextVNode)((0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($options.t('All')), 1 /* TEXT */)], 2 /* CLASS */)]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("li", null, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("a", {
+    class: (0,vue__WEBPACK_IMPORTED_MODULE_0__.normalizeClass)({
+      'sel': _ctx.emptyMessages
+    }),
+    onClick: _cache[1] || (_cache[1] = $event => _ctx.setEmptyMessages(true))
+  }, [_hoisted_6, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createTextVNode)((0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($options.t('Empty')), 1 /* TEXT */)], 2 /* CLASS */)])])])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_7, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.withDirectives)((0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("input", {
+    class: "text fullwidth",
+    type: "text",
+    autocomplete: "off",
+    placeholder: "Search",
+    "onUpdate:modelValue": _cache[2] || (_cache[2] = $event => $options.search = $event)
+  }, null, 512 /* NEED_PATCH */), [[vue__WEBPACK_IMPORTED_MODULE_0__.vModelText, $options.search]])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", null, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("button", _hoisted_8, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($options.t('Columns')), 1 /* TEXT */), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_9, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("ul", _hoisted_10, [((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(true), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)(vue__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, (0,vue__WEBPACK_IMPORTED_MODULE_0__.renderList)(_ctx.languages, language => {
     return (0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("li", {
       key: language.id,
       class: "checkbox-menu-item"
@@ -19637,9 +19658,9 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
       type: "checkbox",
       checked: _ctx.languages[language.id].checked,
       onInput: $event => $options.setLanguages(language.id, $event.target.checked)
-    }, null, 40 /* PROPS, NEED_HYDRATION */, _hoisted_5), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("label", {
+    }, null, 40 /* PROPS, NEED_HYDRATION */, _hoisted_11), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("label", {
       for: `language-checkbox-${language.id}`
-    }, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", null, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)(language.displayName), 1 /* TEXT */), language.nativeName ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("span", _hoisted_7, " – " + (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)(language.nativeName), 1 /* TEXT */)) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true)], 8 /* PROPS */, _hoisted_6)]);
+    }, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", null, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)(language.displayName), 1 /* TEXT */), language.nativeName ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("span", _hoisted_13, " – " + (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)(language.nativeName), 1 /* TEXT */)) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true)], 8 /* PROPS */, _hoisted_12)]);
   }), 128 /* KEYED_FRAGMENT */)), ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(true), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)(vue__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, (0,vue__WEBPACK_IMPORTED_MODULE_0__.renderList)(_ctx.columns, column => {
     return (0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("li", {
       key: column.key,
@@ -19650,30 +19671,10 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
       type: "checkbox",
       checked: _ctx.columns[column.key].checked,
       onInput: $event => $options.setColumns(column.key, $event.target.checked)
-    }, null, 40 /* PROPS, NEED_HYDRATION */, _hoisted_8), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("label", {
+    }, null, 40 /* PROPS, NEED_HYDRATION */, _hoisted_14), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("label", {
       for: `column-checkbox-${column.key}`
-    }, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($options.t(column.name)), 9 /* TEXT, PROPS */, _hoisted_9)]);
-  }), 128 /* KEYED_FRAGMENT */))])])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", null, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("button", _hoisted_10, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", {
-    class: (0,vue__WEBPACK_IMPORTED_MODULE_0__.normalizeClass)(["status", {
-      'pending': _ctx.emptyMessages
-    }])
-  }, null, 2 /* CLASS */), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createTextVNode)((0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)(!_ctx.emptyMessages ? $options.t('All') : $options.t('Empty')), 1 /* TEXT */)]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_11, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("ul", _hoisted_12, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("li", null, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("a", {
-    class: (0,vue__WEBPACK_IMPORTED_MODULE_0__.normalizeClass)({
-      'sel': !_ctx.emptyMessages
-    }),
-    onClick: _cache[0] || (_cache[0] = $event => _ctx.setEmptyMessages(false))
-  }, [_hoisted_13, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createTextVNode)((0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($options.t('All')), 1 /* TEXT */)], 2 /* CLASS */)]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("li", null, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("a", {
-    class: (0,vue__WEBPACK_IMPORTED_MODULE_0__.normalizeClass)({
-      'sel': _ctx.emptyMessages
-    }),
-    onClick: _cache[1] || (_cache[1] = $event => _ctx.setEmptyMessages(true))
-  }, [_hoisted_14, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createTextVNode)((0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($options.t('Empty')), 1 /* TEXT */)], 2 /* CLASS */)])])])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_15, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.withDirectives)((0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("input", {
-    class: "text fullwidth",
-    type: "text",
-    autocomplete: "off",
-    placeholder: "Search",
-    "onUpdate:modelValue": _cache[2] || (_cache[2] = $event => $options.search = $event)
-  }, null, 512 /* NEED_PATCH */), [[vue__WEBPACK_IMPORTED_MODULE_0__.vModelText, $options.search]])]), $props.addPermission ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_16, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.withDirectives)((0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("textarea", {
+    }, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($options.t(column.name)), 9 /* TEXT, PROPS */, _hoisted_15)]);
+  }), 128 /* KEYED_FRAGMENT */))])])]), $props.addPermission ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_16, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.withDirectives)((0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("textarea", {
     class: "text",
     rows: "1",
     "onUpdate:modelValue": _cache[3] || (_cache[3] = $event => $data.messageToAdd = $event),

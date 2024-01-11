@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+- Add sorting to columns
+- Add "Date Created" and "Date Updated" columns
+- Allow to hide "Date Created" and "Date Updated" columns
+- Move "actions" button to bottom to reflect changes in new Craft CMS
+
 ## 3.1.0 - 2024-01-10
 
 > [!IMPORTANT]
