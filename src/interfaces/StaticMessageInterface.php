@@ -50,6 +50,8 @@ class StaticMessageInterface
             'message' => Type::string(),
             'language' => Type::string(),
             'category' => Type::string(),
+            'dateCreated' => Type::string(),
+            'dateUpdated' => Type::string(),
         ];
     }
 }

@@ -1,6 +1,6 @@
 # Translations admin plugin for Craft CMS
 
-This plugins adds a control panel interface to edit your static translations in the database.
+This plugins adds a control panel interface for your clients to edit your static translations for each language side by side.
 
 ![Screenshot](./img/translate-plugin-screenhot.jpg)
 
@@ -8,24 +8,17 @@ This plugins adds a control panel interface to edit your static translations in 
 
 - Add, edit or delete translations in the Control Panel with each language side by side.
 
-- Filter missing translations and search by keywords.
+- Choose a category, filter by missing translations, search by keywords and sort by columns.
 
-- Configure which translations categories you'll be able to edit.
+- Export all or a subset of your translations to a CSV file and import it back after translators worked on it.
 
-- Translations will be kept inside your database instead of PHP files.
+- Translations will be kept inside your database instead of PHP files for a better workflow.
 
-- When a page is visited on the site, missing translations will automatically be added.
+- Optionally, missing translations are automatically added to the database when a page is visited.
 
-- Export your translations to a CSV file and import it back after handing it to your translation team.
+- Ability to parse your twig templates or migrate from your existing PHP translations (and export it back to PHP files).
 
-- GraphQL support to query static messages
-
-- Utilities:
-
-    - Parse all site templates to add missing translations
-    - Migrate your existing PHP translations to your database
-    - Export all your database translations to PHP files
-    - Delete all translations
+- GraphQL support to query your translations.
 
 ## Requirements
 
@@ -44,11 +37,14 @@ You can now edit your translations in the control panel `/admin/translations-adm
 ## Permissions
 
 You have special permissions for the Translations admin plugin:
+- Save translations
+- Add translations
+- Delete translations
 - Update translations
 - Export translations
 - Import translations
-- Use utilities
-- Change settings
+- Use translations utilities
+- Change translations settings
 
 ## Settings
 
@@ -84,6 +80,8 @@ Query static messages this way:
     message
     language
     category
+    dateCreated
+    dateUpdated
   }
 }
 ```
@@ -98,10 +96,3 @@ Event::on(MessagesService::class, MessagesService::EVENT_AFTER_SAVE_MESSAGES, fu
 Event::on(MessagesService::class, MessagesService::EVENT_AFTER_ADD_MESSAGE, function (Event $e) { ... });
 Event::on(MessagesService::class, MessagesService::EVENT_AFTER_DELETE_MESSAGES, function (Event $e) { ... });
 ```
-
-## Roadmap
-
-- [ ] Add mapping for the import and support more format (Excel)
-- [ ] Refresh/sync option for the translations overview
-- [ ] Allow overriding translations when importing from PHP files
-- [X] Add events when adding, saving and deleting translations

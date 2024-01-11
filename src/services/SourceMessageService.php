@@ -109,6 +109,8 @@ class SourceMessageService extends Component
                 "message" => $row["translation"],
                 'language' => $row['language'],
                 'category' => $row['category'],
+                'dateCreated' => $row['dateCreated'],
+                'dateUpdated' => $row['dateUpdated'],
             ];
         }
 
