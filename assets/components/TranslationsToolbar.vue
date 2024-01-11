@@ -1,7 +1,7 @@
 <template>
   <div id="translations-toolbar" class="flex flex-grow">
     <div>
-      <button class="btn menubtn statusmenubtn"><span class="status" :class="{'pending': emptyMessages, 'all': !emptyMessages}"></span>{{
+      <button class="btn menubtn statusmenubtn"><span class="status" :class="{'disabled': emptyMessages, 'all': !emptyMessages}"></span>{{
           !emptyMessages ? t('All') : t('Empty')
         }}</button>
       <div class="menu">
@@ -15,7 +15,7 @@
           <li>
             <a :class="{'sel': emptyMessages}"
                @click="setEmptyMessages(true)">
-              <span class="status pending"></span>{{ t('Empty') }}
+              <span class="status disabled"></span>{{ t('Empty') }}
             </a>
           </li>
         </ul>
