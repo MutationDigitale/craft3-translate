@@ -26,6 +26,13 @@ table.data.translate-table tr td.modified[data-v-3b669c9b] {
   word-wrap: break-word;
   font-family: system-ui, BlinkMacSystemFont, -apple-system, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
 }
+table.data.translate-table td.checkbox-cell input.checkbox[data-v-3b669c9b],
+table.data.translate-table td.checkbox-cell input.checkbox + label[data-v-3b669c9b],
+table.data.translate-table th.checkbox-cell input.checkbox[data-v-3b669c9b],
+table.data.translate-table th.checkbox-cell input.checkbox + label[data-v-3b669c9b] {
+  position: absolute;
+  top: calc(50% - 8px);
+}
 .message-text[data-v-3b669c9b] {
   position: relative;
 }

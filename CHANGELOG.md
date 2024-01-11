@@ -6,6 +6,7 @@
 - Add "Date Created" and "Date Updated" columns
 - Allow to hide "Date Created" and "Date Updated" columns
 - Move "actions" button to bottom to reflect changes in new Craft CMS
+- Allow selecting multiple lines with shift key
 
 ## 3.1.0 - 2024-01-10
 

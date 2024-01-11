@@ -46,8 +46,10 @@
             <input :id="'source-message-' + sourceMessage.id" type="checkbox" class="checkbox"
                    :title="t('Select')"
                    :value="sourceMessage.id"
-                   v-model="checkedSourceMessages">
-            <label :for="'source-message-' + sourceMessage.id"></label>
+                   v-model="checkedSourceMessages"
+                   ref="sourceMessageCheckbox">
+            <label :for="'source-message-' + sourceMessage.id"
+                   @click="onSourceMessageCheckboxClick"></label>
           </td>
 
           <td>
@@ -94,6 +96,11 @@ import { mapActions, mapGetters, mapMutations, mapState } from 'vuex';
 export default {
   props: {
     currentCategory: String
+  },
+  data () {
+    return {
+      lastCheckbox: null
+    };
   },
   computed: {
     ariaChecked: function () {
@@ -332,6 +339,32 @@ export default {
         this.setSortDirection(this.sortDirection === 'asc' ? 'desc' : 'asc');
       }
     },
+    onSourceMessageCheckboxClick (event) {
+      const checkboxes = this.$refs["sourceMessageCheckbox"];
+      const checkbox = event.target.previousSibling;
+      const checkboxIndex = checkboxes.indexOf(checkbox);
+      const firstCheckbox = checkboxes.find(el => el.checked);
+      let lastCheckbox = null;
+      if (this.lastCheckbox !== null && this.lastCheckbox !== checkbox) {
+        lastCheckbox = this.lastCheckbox;
+      } else if (firstCheckbox !== undefined && firstCheckbox !== checkbox) {
+        lastCheckbox = firstCheckbox;
+      }
+      const lastCheckboxIndex = checkboxes.indexOf(lastCheckbox);
+      const min = Math.min(checkboxIndex, lastCheckboxIndex);
+      const max = Math.max(checkboxIndex, lastCheckboxIndex);
+
+      if (event.shiftKey && lastCheckbox !== null) {
+        this.checkedSourceMessages = [];
+        for (let i = min; i <= max; i++) {
+          this.checkedSourceMessages.push(this.displayedSourceMessages[i].id);
+        }
+      }
+
+      if (!event.shiftKey) {
+        this.lastCheckbox = !checkbox.checked ? checkbox : null;
+      }
+    },
     ...mapMutations({
       setIsLoading: 'setIsLoading',
       setCategory: 'setCategory',
@@ -378,6 +411,14 @@ table.data.translate-table tr td.modified {
   white-space: pre-wrap;
   word-wrap: break-word;
   @include sans-serif-font();
+}
+
+table.data.translate-table td.checkbox-cell input.checkbox,
+table.data.translate-table td.checkbox-cell input.checkbox + label,
+table.data.translate-table th.checkbox-cell input.checkbox,
+table.data.translate-table th.checkbox-cell input.checkbox + label {
+  position: absolute;
+  top: calc(50% - 8px);
 }
 
 .message-text {

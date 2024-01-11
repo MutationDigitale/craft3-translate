@@ -18867,6 +18867,11 @@ __webpack_require__.r(__webpack_exports__);
   props: {
     currentCategory: String
   },
+  data() {
+    return {
+      lastCheckbox: null
+    };
+  },
   computed: {
     ariaChecked: function () {
       if (this.checkedSourceMessages.length === 0) {
@@ -19087,6 +19092,30 @@ __webpack_require__.r(__webpack_exports__);
         this.setSortDirection('asc');
       } else {
         this.setSortDirection(this.sortDirection === 'asc' ? 'desc' : 'asc');
+      }
+    },
+    onSourceMessageCheckboxClick(event) {
+      const checkboxes = this.$refs["sourceMessageCheckbox"];
+      const checkbox = event.target.previousSibling;
+      const checkboxIndex = checkboxes.indexOf(checkbox);
+      const firstCheckbox = checkboxes.find(el => el.checked);
+      let lastCheckbox = null;
+      if (this.lastCheckbox !== null && this.lastCheckbox !== checkbox) {
+        lastCheckbox = this.lastCheckbox;
+      } else if (firstCheckbox !== undefined && firstCheckbox !== checkbox) {
+        lastCheckbox = firstCheckbox;
+      }
+      const lastCheckboxIndex = checkboxes.indexOf(lastCheckbox);
+      const min = Math.min(checkboxIndex, lastCheckboxIndex);
+      const max = Math.max(checkboxIndex, lastCheckboxIndex);
+      if (event.shiftKey && lastCheckbox !== null) {
+        this.checkedSourceMessages = [];
+        for (let i = min; i <= max; i++) {
+          this.checkedSourceMessages.push(this.displayedSourceMessages[i].id);
+        }
+      }
+      if (!event.shiftKey) {
+        this.lastCheckbox = !checkbox.checked ? checkbox : null;
       }
     },
     ...(0,vuex__WEBPACK_IMPORTED_MODULE_1__.mapMutations)({
@@ -19513,9 +19542,12 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
       class: "checkbox",
       title: $options.t('Select'),
       value: sourceMessage.id,
-      "onUpdate:modelValue": _cache[4] || (_cache[4] = $event => $options.checkedSourceMessages = $event)
+      "onUpdate:modelValue": _cache[4] || (_cache[4] = $event => $options.checkedSourceMessages = $event),
+      ref_for: true,
+      ref: "sourceMessageCheckbox"
     }, null, 8 /* PROPS */, _hoisted_7), [[vue__WEBPACK_IMPORTED_MODULE_0__.vModelCheckbox, $options.checkedSourceMessages]]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("label", {
-      for: 'source-message-' + sourceMessage.id
+      for: 'source-message-' + sourceMessage.id,
+      onClick: _cache[5] || (_cache[5] = (...args) => $options.onSourceMessageCheckboxClick && $options.onSourceMessageCheckboxClick(...args))
     }, null, 8 /* PROPS */, _hoisted_8)]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("td", null, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_9, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($options.t('Key')), 1 /* TEXT */), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("pre", null, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)(sourceMessage.message), 1 /* TEXT */)]), ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(true), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)(vue__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, (0,vue__WEBPACK_IMPORTED_MODULE_0__.renderList)($options.checkedLanguages, language => {
       return (0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("td", {
         key: language.id,
