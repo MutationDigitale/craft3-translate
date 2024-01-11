@@ -7,6 +7,10 @@ export const store = createStore({
     isDeleting: false,
     category: null,
     languages: [],
+    columns: {
+      dateCreated: { key: 'dateCreated', name: 'Date Created', checked: true },
+      dateUpdated: { key: 'dateUpdated', name: 'Date Updated', checked: true },
+    },
     originalSourceMessages: [],
     sourceMessages: [],
     filteredSourceMessages: [],
@@ -94,8 +98,15 @@ export const store = createStore({
     setSortDirection (state, value) {
       state.sortDirection = value;
     },
+    setColumns (state, value) {
+      state.columns = value;
+    },
   },
   actions: {
+    updateColumns ({ commit }, columns) {
+      localStorage.setItem('admin-translations-columns', JSON.stringify(columns));
+      commit('setColumns', columns);
+    },
     updateLanguages ({ commit }, languages) {
       localStorage.setItem('admin-translations-languages', JSON.stringify(languages));
       commit('setLanguages', languages);

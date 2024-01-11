@@ -19,7 +19,8 @@
     "All",
     "Empty",
     "Date Created",
-    "Date Updated"
+    "Date Updated",
+    "Columns"
 ]) %}
 
 {% block actionButton %}
@@ -36,8 +37,7 @@
 
 {% block toolbar %}
     <translations-toolbar
-      :add-permission="{{ craft.app.user.checkPermission('addTranslations') ? 'true' : 'false' }}"
-      :delete-permission="{{ craft.app.user.checkPermission('deleteTranslations') ? 'true' : 'false' }}"></translations-toolbar>
+      :add-permission="{{ craft.app.user.checkPermission('addTranslations') ? 'true' : 'false' }}"></translations-toolbar>
 {% endblock %}
 
 {% block content %}
@@ -47,7 +47,9 @@
 {% endblock %}
 
 {% block footer %}
-    <translations-footer></translations-footer>
+    <translations-footer
+      :delete-permission="{{ craft.app.user.checkPermission('deleteTranslations') ? 'true' : 'false' }}"
+      :export-permission="{{ craft.app.user.checkPermission('exportTranslations') ? 'true' : 'false' }}"></translations-footer>
 {% endblock %}
 
 {% block foot %}

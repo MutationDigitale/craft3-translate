@@ -1,5 +1,5 @@
 <template>
-  <div id="count-container" class="light flex-grow">
+  <div id="count-container" class="light">
     <div class="flex pagination">
       <div class="page-link page-first" :title="t('First Page')" :class="{'disabled': page === 1}"
            @click="setPage(1)">
@@ -39,12 +39,30 @@
       </div>
     </div>
   </div>
+  <div v-show="checkedSourceMessages.length > 0">
+    <div class="btn secondary menubtn" data-icon="settings" :title="t('Actions')"></div>
+    <div class="menu">
+      <ul>
+        <li v-if="deletePermission">
+          <a class="error" @click="deleteMessages()">
+            {{ t('Delete') }}
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
+  <div></div>
 </template>
 
 <script>
-import {mapGetters, mapMutations, mapState} from 'vuex';
+import { mapActions, mapGetters, mapMutations, mapState } from 'vuex';
+import axios from 'axios';
 
 export default {
+  props: {
+    deletePermission: Boolean,
+    exportPermission: Boolean,
+  },
   data() {
     return {
       pages: [],
@@ -54,7 +72,9 @@ export default {
     ...mapState({
       page: state => state.page,
       perPage: state => state.perPage,
-      filteredSourceMessages: state => state.filteredSourceMessages
+      sourceMessages: state => state.sourceMessages,
+      filteredSourceMessages: state => state.filteredSourceMessages,
+      checkedSourceMessages: state => state.checkedSourceMessages
     }),
     ...mapGetters({
       displayedSourceMessages: 'displayedSourceMessages'
@@ -85,9 +105,47 @@ export default {
     t(str) {
       return this.$craft.t('translations-admin', str);
     },
+    deleteMessages() {
+      this.setIsDeleting(true);
+
+      const formData = new FormData();
+
+      formData.append(this.$csrfTokenName, this.$csrfTokenValue);
+      formData.append('action', 'translations-admin/messages/delete');
+
+      for (const sourceMessageId of this.checkedSourceMessages) {
+        formData.append('sourceMessageId[]', sourceMessageId);
+      }
+
+      axios
+        .post('', formData)
+        .then((response) => {
+          if (response.data.success) {
+            this.emitter.emit('translation-deleted');
+            const sourceMessages = this.sourceMessages.filter((sourceMessage) => {
+              return this.checkedSourceMessages.indexOf(sourceMessage.id) === -1;
+            });
+            this.updateSourceMessages(sourceMessages);
+            this.setCheckedSourceMessages([]);
+          } else {
+            this.emitter.emit('translation-deleted-error');
+          }
+        })
+        .catch(() => {
+          this.emitter.emit('translation-deleted-error');
+        })
+        .finally(() => {
+          this.setIsDeleting(false);
+        });
+    },
     ...mapMutations({
+      setCheckedSourceMessages: 'setCheckedSourceMessages',
+      setIsDeleting: 'setIsDeleting',
       setPage: 'setPage',
     }),
+    ...mapActions({
+      updateSourceMessages: 'updateSourceMessages'
+    })
   }
 };
 </script>

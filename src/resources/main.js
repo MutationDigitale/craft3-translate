@@ -18550,6 +18550,18 @@ const store = (0,vuex__WEBPACK_IMPORTED_MODULE_0__.createStore)({
     isDeleting: false,
     category: null,
     languages: [],
+    columns: {
+      dateCreated: {
+        key: 'dateCreated',
+        name: 'Date Created',
+        checked: true
+      },
+      dateUpdated: {
+        key: 'dateUpdated',
+        name: 'Date Updated',
+        checked: true
+      }
+    },
     originalSourceMessages: [],
     sourceMessages: [],
     filteredSourceMessages: [],
@@ -18628,9 +18640,18 @@ const store = (0,vuex__WEBPACK_IMPORTED_MODULE_0__.createStore)({
     },
     setSortDirection(state, value) {
       state.sortDirection = value;
+    },
+    setColumns(state, value) {
+      state.columns = value;
     }
   },
   actions: {
+    updateColumns({
+      commit
+    }, columns) {
+      localStorage.setItem('admin-translations-columns', JSON.stringify(columns));
+      commit('setColumns', columns);
+    },
     updateLanguages({
       commit
     }, languages) {
@@ -18739,9 +18760,15 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var core_js_modules_es_array_push_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! core-js/modules/es.array.push.js */ "./node_modules/core-js/modules/es.array.push.js");
 /* harmony import */ var core_js_modules_es_array_push_js__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(core_js_modules_es_array_push_js__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var vuex__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! vuex */ "./node_modules/vuex/dist/vuex.esm-bundler.js");
+/* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! axios */ "./node_modules/axios/lib/axios.js");
+
 
 
 /* harmony default export */ __webpack_exports__["default"] = ({
+  props: {
+    deletePermission: Boolean,
+    exportPermission: Boolean
+  },
   data() {
     return {
       pages: []
@@ -18751,7 +18778,9 @@ __webpack_require__.r(__webpack_exports__);
     ...(0,vuex__WEBPACK_IMPORTED_MODULE_1__.mapState)({
       page: state => state.page,
       perPage: state => state.perPage,
-      filteredSourceMessages: state => state.filteredSourceMessages
+      sourceMessages: state => state.sourceMessages,
+      filteredSourceMessages: state => state.filteredSourceMessages,
+      checkedSourceMessages: state => state.checkedSourceMessages
     }),
     ...(0,vuex__WEBPACK_IMPORTED_MODULE_1__.mapGetters)({
       displayedSourceMessages: 'displayedSourceMessages'
@@ -18782,8 +18811,38 @@ __webpack_require__.r(__webpack_exports__);
     t(str) {
       return this.$craft.t('translations-admin', str);
     },
+    deleteMessages() {
+      this.setIsDeleting(true);
+      const formData = new FormData();
+      formData.append(this.$csrfTokenName, this.$csrfTokenValue);
+      formData.append('action', 'translations-admin/messages/delete');
+      for (const sourceMessageId of this.checkedSourceMessages) {
+        formData.append('sourceMessageId[]', sourceMessageId);
+      }
+      axios__WEBPACK_IMPORTED_MODULE_2__["default"].post('', formData).then(response => {
+        if (response.data.success) {
+          this.emitter.emit('translation-deleted');
+          const sourceMessages = this.sourceMessages.filter(sourceMessage => {
+            return this.checkedSourceMessages.indexOf(sourceMessage.id) === -1;
+          });
+          this.updateSourceMessages(sourceMessages);
+          this.setCheckedSourceMessages([]);
+        } else {
+          this.emitter.emit('translation-deleted-error');
+        }
+      }).catch(() => {
+        this.emitter.emit('translation-deleted-error');
+      }).finally(() => {
+        this.setIsDeleting(false);
+      });
+    },
     ...(0,vuex__WEBPACK_IMPORTED_MODULE_1__.mapMutations)({
+      setCheckedSourceMessages: 'setCheckedSourceMessages',
+      setIsDeleting: 'setIsDeleting',
       setPage: 'setPage'
+    }),
+    ...(0,vuex__WEBPACK_IMPORTED_MODULE_1__.mapActions)({
+      updateSourceMessages: 'updateSourceMessages'
     })
   }
 });
@@ -18846,7 +18905,8 @@ __webpack_require__.r(__webpack_exports__);
       emptyMessages: state => state.emptyMessages,
       search: state => state.search,
       sortProperty: state => state.sortProperty,
-      sortDirection: state => state.sortDirection
+      sortDirection: state => state.sortDirection,
+      columns: state => state.columns
     }),
     ...(0,vuex__WEBPACK_IMPORTED_MODULE_1__.mapGetters)({
       displayedSourceMessages: 'displayedSourceMessages'
@@ -18892,6 +18952,7 @@ __webpack_require__.r(__webpack_exports__);
       this.setCheckedSourceMessages([]);
       this.updateModifiedMessages({});
       this.loadSourceMessages();
+      this.loadColumns();
     },
     loadSourceMessages() {
       this.setIsLoading(true);
@@ -18918,6 +18979,18 @@ __webpack_require__.r(__webpack_exports__);
       }).catch(() => {}).finally(() => {
         this.setIsLoading(false);
       });
+    },
+    loadColumns() {
+      const localStorageColumns = localStorage.getItem('admin-translations-columns');
+      let localStorageColumnsObjects = null;
+      try {
+        localStorageColumnsObjects = localStorageColumns ? JSON.parse(localStorageColumns) : null;
+      } catch (e) {
+        console.log(e);
+      }
+      if (localStorageColumnsObjects) {
+        this.setColumns(localStorageColumnsObjects);
+      }
     },
     filterSourceMessages() {
       let sourceMessages = this.sourceMessages.filter(sourceMessage => {
@@ -19026,7 +19099,8 @@ __webpack_require__.r(__webpack_exports__);
       setCheckedSourceMessages: 'setCheckedSourceMessages',
       setOriginalSourceMessages: 'setOriginalSourceMessages',
       setSortProperty: 'setSortProperty',
-      setSortDirection: 'setSortDirection'
+      setSortDirection: 'setSortDirection',
+      setColumns: 'setColumns'
     }),
     ...(0,vuex__WEBPACK_IMPORTED_MODULE_1__.mapActions)({
       updateLanguages: 'updateLanguages',
@@ -19095,14 +19169,14 @@ __webpack_require__.r(__webpack_exports__);
 
 /* harmony default export */ __webpack_exports__["default"] = ({
   props: {
-    addPermission: Boolean,
-    deletePermission: Boolean
+    addPermission: Boolean
   },
   data() {
     return {
       messageToAdd: ''
     };
   },
+  mounted() {},
   computed: {
     search: {
       get() {
@@ -19116,6 +19190,7 @@ __webpack_require__.r(__webpack_exports__);
       isAdding: state => state.isAdding,
       isDeleting: state => state.isDeleting,
       languages: state => state.languages,
+      columns: state => state.columns,
       category: state => state.category,
       sourceMessages: state => state.sourceMessages,
       emptyMessages: state => state.emptyMessages,
@@ -19130,6 +19205,11 @@ __webpack_require__.r(__webpack_exports__);
       const languages = this.languages;
       languages[languageId].checked = value;
       this.updateLanguages(languages);
+    },
+    setColumns(columnKey, value) {
+      const columns = this.columns;
+      columns[columnKey].checked = value;
+      this.updateColumns(columns);
     },
     addMessage() {
       this.setIsAdding(true);
@@ -19154,40 +19234,15 @@ __webpack_require__.r(__webpack_exports__);
         this.messageToAdd = '';
       });
     },
-    deleteMessages() {
-      this.setIsDeleting(true);
-      const formData = new FormData();
-      formData.append(this.$csrfTokenName, this.$csrfTokenValue);
-      formData.append('action', 'translations-admin/messages/delete');
-      for (const sourceMessageId of this.checkedSourceMessages) {
-        formData.append('sourceMessageId[]', sourceMessageId);
-      }
-      axios__WEBPACK_IMPORTED_MODULE_2__["default"].post('', formData).then(response => {
-        if (response.data.success) {
-          this.emitter.emit('translation-deleted');
-          const sourceMessages = this.sourceMessages.filter(sourceMessage => {
-            return this.checkedSourceMessages.indexOf(sourceMessage.id) === -1;
-          });
-          this.updateSourceMessages(sourceMessages);
-          this.setCheckedSourceMessages([]);
-        } else {
-          this.emitter.emit('translation-deleted-error');
-        }
-      }).catch(() => {
-        this.emitter.emit('translation-deleted-error');
-      }).finally(() => {
-        this.setIsDeleting(false);
-      });
-    },
     ...(0,vuex__WEBPACK_IMPORTED_MODULE_1__.mapMutations)({
       setIsAdding: 'setIsAdding',
-      setIsDeleting: 'setIsDeleting',
       setCheckedSourceMessages: 'setCheckedSourceMessages',
       setSearch: 'setSearch',
       setEmptyMessages: 'setEmptyMessages'
     }),
     ...(0,vuex__WEBPACK_IMPORTED_MODULE_1__.mapActions)({
       updateLanguages: 'updateLanguages',
+      updateColumns: 'updateColumns',
       updateSourceMessages: 'updateSourceMessages'
     })
   }
@@ -19241,7 +19296,7 @@ __webpack_require__.r(__webpack_exports__);
 const _withScopeId = n => ((0,vue__WEBPACK_IMPORTED_MODULE_0__.pushScopeId)("data-v-7a1155d8"), n = n(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.popScopeId)(), n);
 const _hoisted_1 = {
   id: "count-container",
-  class: "light flex-grow"
+  class: "light"
 };
 const _hoisted_2 = {
   class: "flex pagination"
@@ -19282,8 +19337,16 @@ const _hoisted_11 = [_hoisted_10];
 const _hoisted_12 = {
   class: "page-info"
 };
+const _hoisted_13 = ["title"];
+const _hoisted_14 = {
+  class: "menu"
+};
+const _hoisted_15 = {
+  key: 0
+};
+const _hoisted_16 = /*#__PURE__*/_withScopeId(() => /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", null, null, -1 /* HOISTED */));
 function render(_ctx, _cache, $props, $setup, $data, $options) {
-  return (0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_1, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_2, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", {
+  return (0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)(vue__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_1, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_2, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", {
     class: (0,vue__WEBPACK_IMPORTED_MODULE_0__.normalizeClass)(["page-link page-first", {
       'disabled': _ctx.page === 1
     }]),
@@ -19315,7 +19378,14 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
     }]),
     title: $options.t('Last Page'),
     onClick: _cache[3] || (_cache[3] = $event => $options.setPage($data.pages.length))
-  }, [..._hoisted_11], 10 /* CLASS, PROPS */, _hoisted_9), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_12, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)((_ctx.page - 1) * _ctx.perPage) + "-" + (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)((_ctx.page - 1) * _ctx.perPage + _ctx.displayedSourceMessages.length) + " " + (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($options.t('of')) + " " + (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)(_ctx.filteredSourceMessages.length) + " " + (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($options.t('translations')), 1 /* TEXT */)])]);
+  }, [..._hoisted_11], 10 /* CLASS, PROPS */, _hoisted_9), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_12, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)((_ctx.page - 1) * _ctx.perPage) + "-" + (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)((_ctx.page - 1) * _ctx.perPage + _ctx.displayedSourceMessages.length) + " " + (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($options.t('of')) + " " + (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)(_ctx.filteredSourceMessages.length) + " " + (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($options.t('translations')), 1 /* TEXT */)])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.withDirectives)((0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", null, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", {
+    class: "btn secondary menubtn",
+    "data-icon": "settings",
+    title: $options.t('Actions')
+  }, null, 8 /* PROPS */, _hoisted_13), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_14, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("ul", null, [$props.deletePermission ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("li", _hoisted_15, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("a", {
+    class: "error",
+    onClick: _cache[4] || (_cache[4] = $event => $options.deleteMessages())
+  }, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($options.t('Delete')), 1 /* TEXT */)])) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true)])])], 512 /* NEED_PATCH */), [[vue__WEBPACK_IMPORTED_MODULE_0__.vShow, _ctx.checkedSourceMessages.length > 0]]), _hoisted_16], 64 /* STABLE_FRAGMENT */);
 }
 
 /***/ }),
@@ -19367,6 +19437,18 @@ const _hoisted_13 = ["onUpdate:modelValue", "onChange", "onKeyup", "rows"];
 const _hoisted_14 = {
   class: "language-label"
 };
+const _hoisted_15 = {
+  key: 0
+};
+const _hoisted_16 = {
+  class: "mobile-only-inline"
+};
+const _hoisted_17 = {
+  key: 1
+};
+const _hoisted_18 = {
+  class: "mobile-only-inline"
+};
 function render(_ctx, _cache, $props, $setup, $data, $options) {
   return (0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", {
     class: (0,vue__WEBPACK_IMPORTED_MODULE_0__.normalizeClass)(["elements", {
@@ -19403,21 +19485,23 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
       type: "button",
       onClick: $event => $options.changeSort(language.id)
     }, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", null, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)(language.displayName), 1 /* TEXT */), language.nativeName ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("span", _hoisted_5, " – " + (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)(language.nativeName), 1 /* TEXT */)) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true)], 8 /* PROPS */, _hoisted_4)], 2 /* CLASS */);
-  }), 128 /* KEYED_FRAGMENT */)), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("th", {
+  }), 128 /* KEYED_FRAGMENT */)), _ctx.columns['dateCreated'].checked ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("th", {
+    key: 0,
     class: (0,vue__WEBPACK_IMPORTED_MODULE_0__.normalizeClass)(["orderable", [{
       'ordered': _ctx.sortProperty === 'dateCreated'
     }, _ctx.sortDirection]])
   }, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("button", {
     type: "button",
     onClick: _cache[2] || (_cache[2] = $event => $options.changeSort('dateCreated'))
-  }, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($options.t('Date Created')), 1 /* TEXT */)], 2 /* CLASS */), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("th", {
+  }, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($options.t('Date Created')), 1 /* TEXT */)], 2 /* CLASS */)) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true), _ctx.columns['dateUpdated'].checked ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("th", {
+    key: 1,
     class: (0,vue__WEBPACK_IMPORTED_MODULE_0__.normalizeClass)(["orderable", [{
       'ordered': _ctx.sortProperty === 'dateUpdated'
     }, _ctx.sortDirection]])
   }, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("button", {
     type: "button",
     onClick: _cache[3] || (_cache[3] = $event => $options.changeSort('dateUpdated'))
-  }, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($options.t('Date Updated')), 1 /* TEXT */)], 2 /* CLASS */)])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("tbody", null, [((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(true), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)(vue__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, (0,vue__WEBPACK_IMPORTED_MODULE_0__.renderList)(_ctx.displayedSourceMessages, sourceMessage => {
+  }, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($options.t('Date Updated')), 1 /* TEXT */)], 2 /* CLASS */)) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true)])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("tbody", null, [((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(true), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)(vue__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, (0,vue__WEBPACK_IMPORTED_MODULE_0__.renderList)(_ctx.displayedSourceMessages, sourceMessage => {
     return (0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("tr", {
       key: sourceMessage.id,
       class: (0,vue__WEBPACK_IMPORTED_MODULE_0__.normalizeClass)({
@@ -19446,7 +19530,7 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
         rows: $options.getNumberOfLines(sourceMessage.languages[language.id]),
         autocomplete: "off"
       }, null, 40 /* PROPS, NEED_HYDRATION */, _hoisted_13), [[vue__WEBPACK_IMPORTED_MODULE_0__.vModelText, sourceMessage.languages[language.id]]]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_14, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)(language.id), 1 /* TEXT */)])], 2 /* CLASS */);
-    }), 128 /* KEYED_FRAGMENT */)), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("td", null, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)(sourceMessage.dateCreated), 1 /* TEXT */), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("td", null, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)(sourceMessage.dateUpdated), 1 /* TEXT */)], 2 /* CLASS */);
+    }), 128 /* KEYED_FRAGMENT */)), _ctx.columns['dateCreated'].checked ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("td", _hoisted_15, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", _hoisted_16, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($options.t('Date Created')) + ": ", 1 /* TEXT */), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createTextVNode)((0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)(sourceMessage.dateCreated), 1 /* TEXT */)])) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true), _ctx.columns['dateUpdated'].checked ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("td", _hoisted_17, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", _hoisted_18, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($options.t('Date Updated')) + ": ", 1 /* TEXT */), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createTextVNode)((0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)(sourceMessage.dateUpdated), 1 /* TEXT */)])) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true)], 2 /* CLASS */);
   }), 128 /* KEYED_FRAGMENT */))])])])], 2 /* CLASS */);
 }
 
@@ -19498,68 +19582,52 @@ const _hoisted_1 = {
   id: "translations-toolbar",
   class: "flex flex-grow"
 };
-const _hoisted_2 = ["title"];
+const _hoisted_2 = {
+  class: "btn menubtn statusmenubtn"
+};
 const _hoisted_3 = {
   class: "menu"
 };
 const _hoisted_4 = {
-  key: 0
-};
-const _hoisted_5 = {
-  class: "btn menubtn statusmenubtn"
-};
-const _hoisted_6 = {
-  class: "menu"
-};
-const _hoisted_7 = {
   class: "padded checkbox-menu"
+};
+const _hoisted_5 = ["id", "checked", "onInput"];
+const _hoisted_6 = ["for"];
+const _hoisted_7 = {
+  key: 0,
+  class: "light"
 };
 const _hoisted_8 = ["id", "checked", "onInput"];
 const _hoisted_9 = ["for"];
 const _hoisted_10 = {
-  key: 0,
-  class: "light"
-};
-const _hoisted_11 = {
   class: "btn menubtn statusmenubtn"
 };
-const _hoisted_12 = {
+const _hoisted_11 = {
   class: "menu"
 };
-const _hoisted_13 = {
+const _hoisted_12 = {
   class: "padded"
 };
-const _hoisted_14 = /*#__PURE__*/_withScopeId(() => /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", {
+const _hoisted_13 = /*#__PURE__*/_withScopeId(() => /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", {
   class: "status"
 }, null, -1 /* HOISTED */));
-const _hoisted_15 = /*#__PURE__*/_withScopeId(() => /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", {
+const _hoisted_14 = /*#__PURE__*/_withScopeId(() => /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", {
   class: "status pending"
 }, null, -1 /* HOISTED */));
-const _hoisted_16 = {
-  class: "flex-grow texticon search icon clearable search-container"
+const _hoisted_15 = {
+  class: "flex-grow texticon search icon search-container"
 };
-const _hoisted_17 = /*#__PURE__*/_withScopeId(() => /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", {
-  class: "clear hidden",
-  title: "Clear"
-}, null, -1 /* HOISTED */));
-const _hoisted_18 = {
+const _hoisted_16 = {
   key: 0,
   class: "textarea-container"
 };
-const _hoisted_19 = ["placeholder"];
-const _hoisted_20 = {
+const _hoisted_17 = ["placeholder"];
+const _hoisted_18 = {
   key: 1
 };
-const _hoisted_21 = ["disabled"];
+const _hoisted_19 = ["disabled"];
 function render(_ctx, _cache, $props, $setup, $data, $options) {
-  return (0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_1, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.withDirectives)((0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", null, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", {
-    class: "btn menubtn",
-    "data-icon": "settings",
-    title: $options.t('Actions')
-  }, null, 8 /* PROPS */, _hoisted_2), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_3, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("ul", null, [$props.deletePermission ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("li", _hoisted_4, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("a", {
-    class: "error",
-    onClick: _cache[0] || (_cache[0] = $event => $options.deleteMessages())
-  }, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($options.t('Delete')), 1 /* TEXT */)])) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true)])])], 512 /* NEED_PATCH */), [[vue__WEBPACK_IMPORTED_MODULE_0__.vShow, _ctx.checkedSourceMessages.length > 0]]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.withDirectives)((0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", null, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_5, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($options.t('Languages')), 1 /* TEXT */), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_6, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("ul", _hoisted_7, [((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(true), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)(vue__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, (0,vue__WEBPACK_IMPORTED_MODULE_0__.renderList)(_ctx.languages, language => {
+  return (0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_1, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", null, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("button", _hoisted_2, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($options.t('Columns')), 1 /* TEXT */), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_3, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("ul", _hoisted_4, [((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(true), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)(vue__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, (0,vue__WEBPACK_IMPORTED_MODULE_0__.renderList)(_ctx.languages, language => {
     return (0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("li", {
       key: language.id,
       class: "checkbox-menu-item"
@@ -19569,40 +19637,53 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
       type: "checkbox",
       checked: _ctx.languages[language.id].checked,
       onInput: $event => $options.setLanguages(language.id, $event.target.checked)
-    }, null, 40 /* PROPS, NEED_HYDRATION */, _hoisted_8), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("label", {
+    }, null, 40 /* PROPS, NEED_HYDRATION */, _hoisted_5), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("label", {
       for: `language-checkbox-${language.id}`
-    }, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", null, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)(language.displayName), 1 /* TEXT */), language.nativeName ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("span", _hoisted_10, " – " + (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)(language.nativeName), 1 /* TEXT */)) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true)], 8 /* PROPS */, _hoisted_9)]);
-  }), 128 /* KEYED_FRAGMENT */))])])], 512 /* NEED_PATCH */), [[vue__WEBPACK_IMPORTED_MODULE_0__.vShow, _ctx.checkedSourceMessages.length === 0]]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.withDirectives)((0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", null, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_11, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", {
+    }, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", null, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)(language.displayName), 1 /* TEXT */), language.nativeName ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("span", _hoisted_7, " – " + (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)(language.nativeName), 1 /* TEXT */)) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true)], 8 /* PROPS */, _hoisted_6)]);
+  }), 128 /* KEYED_FRAGMENT */)), ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(true), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)(vue__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, (0,vue__WEBPACK_IMPORTED_MODULE_0__.renderList)(_ctx.columns, column => {
+    return (0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("li", {
+      key: column.key,
+      class: "checkbox-menu-item"
+    }, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("input", {
+      id: `column-checkbox-${column.key}`,
+      class: "checkbox",
+      type: "checkbox",
+      checked: _ctx.columns[column.key].checked,
+      onInput: $event => $options.setColumns(column.key, $event.target.checked)
+    }, null, 40 /* PROPS, NEED_HYDRATION */, _hoisted_8), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("label", {
+      for: `column-checkbox-${column.key}`
+    }, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($options.t(column.name)), 9 /* TEXT, PROPS */, _hoisted_9)]);
+  }), 128 /* KEYED_FRAGMENT */))])])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", null, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("button", _hoisted_10, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", {
     class: (0,vue__WEBPACK_IMPORTED_MODULE_0__.normalizeClass)(["status", {
       'pending': _ctx.emptyMessages
     }])
-  }, null, 2 /* CLASS */), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createTextVNode)((0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)(!_ctx.emptyMessages ? $options.t('All') : $options.t('Empty')), 1 /* TEXT */)]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_12, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("ul", _hoisted_13, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("li", null, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("a", {
+  }, null, 2 /* CLASS */), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createTextVNode)((0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)(!_ctx.emptyMessages ? $options.t('All') : $options.t('Empty')), 1 /* TEXT */)]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_11, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("ul", _hoisted_12, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("li", null, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("a", {
     class: (0,vue__WEBPACK_IMPORTED_MODULE_0__.normalizeClass)({
       'sel': !_ctx.emptyMessages
     }),
-    onClick: _cache[1] || (_cache[1] = $event => _ctx.setEmptyMessages(false))
-  }, [_hoisted_14, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createTextVNode)((0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($options.t('All')), 1 /* TEXT */)], 2 /* CLASS */)]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("li", null, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("a", {
+    onClick: _cache[0] || (_cache[0] = $event => _ctx.setEmptyMessages(false))
+  }, [_hoisted_13, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createTextVNode)((0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($options.t('All')), 1 /* TEXT */)], 2 /* CLASS */)]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("li", null, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("a", {
     class: (0,vue__WEBPACK_IMPORTED_MODULE_0__.normalizeClass)({
       'sel': _ctx.emptyMessages
     }),
-    onClick: _cache[2] || (_cache[2] = $event => _ctx.setEmptyMessages(true))
-  }, [_hoisted_15, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createTextVNode)((0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($options.t('Empty')), 1 /* TEXT */)], 2 /* CLASS */)])])])], 512 /* NEED_PATCH */), [[vue__WEBPACK_IMPORTED_MODULE_0__.vShow, _ctx.checkedSourceMessages.length === 0]]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.withDirectives)((0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_16, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.withDirectives)((0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("input", {
+    onClick: _cache[1] || (_cache[1] = $event => _ctx.setEmptyMessages(true))
+  }, [_hoisted_14, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createTextVNode)((0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($options.t('Empty')), 1 /* TEXT */)], 2 /* CLASS */)])])])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_15, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.withDirectives)((0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("input", {
     class: "text fullwidth",
     type: "text",
     autocomplete: "off",
     placeholder: "Search",
-    "onUpdate:modelValue": _cache[3] || (_cache[3] = $event => $options.search = $event)
-  }, null, 512 /* NEED_PATCH */), [[vue__WEBPACK_IMPORTED_MODULE_0__.vModelText, $options.search]]), _hoisted_17], 512 /* NEED_PATCH */), [[vue__WEBPACK_IMPORTED_MODULE_0__.vShow, _ctx.checkedSourceMessages.length === 0]]), $props.addPermission ? (0,vue__WEBPACK_IMPORTED_MODULE_0__.withDirectives)(((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_18, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.withDirectives)((0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("textarea", {
+    "onUpdate:modelValue": _cache[2] || (_cache[2] = $event => $options.search = $event)
+  }, null, 512 /* NEED_PATCH */), [[vue__WEBPACK_IMPORTED_MODULE_0__.vModelText, $options.search]])]), $props.addPermission ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_16, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.withDirectives)((0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("textarea", {
     class: "text",
     rows: "1",
-    "onUpdate:modelValue": _cache[4] || (_cache[4] = $event => $data.messageToAdd = $event),
+    "onUpdate:modelValue": _cache[3] || (_cache[3] = $event => $data.messageToAdd = $event),
     placeholder: $options.t('Message')
-  }, null, 8 /* PROPS */, _hoisted_19), [[vue__WEBPACK_IMPORTED_MODULE_0__.vModelText, $data.messageToAdd]])], 512 /* NEED_PATCH */)), [[vue__WEBPACK_IMPORTED_MODULE_0__.vShow, _ctx.checkedSourceMessages.length === 0]]) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true), $props.addPermission ? (0,vue__WEBPACK_IMPORTED_MODULE_0__.withDirectives)(((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_20, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("button", {
+  }, null, 8 /* PROPS */, _hoisted_17), [[vue__WEBPACK_IMPORTED_MODULE_0__.vModelText, $data.messageToAdd]])])) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true), $props.addPermission ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_18, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("button", {
     class: "btn",
     type: "button",
-    onClick: _cache[5] || (_cache[5] = $event => $options.addMessage()),
+    onClick: _cache[4] || (_cache[4] = $event => $options.addMessage()),
     disabled: $data.messageToAdd === null || $data.messageToAdd.trim() === ''
-  }, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($options.t('Add')), 9 /* TEXT, PROPS */, _hoisted_21)], 512 /* NEED_PATCH */)), [[vue__WEBPACK_IMPORTED_MODULE_0__.vShow, _ctx.checkedSourceMessages.length === 0]]) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true)]);
+  }, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($options.t('Add')), 9 /* TEXT, PROPS */, _hoisted_19)])) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true)]);
 }
 
 /***/ }),

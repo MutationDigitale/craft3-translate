@@ -11,6 +11,10 @@
 .translate-table[data-v-3b669c9b] {
   table-layout: fixed;
 }
+.translate-table th button[data-v-3b669c9b] {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 .translate-table tr:nth-child(2n) td[data-v-3b669c9b] {
   background-color: #f8f9fa;
 }
@@ -53,9 +57,15 @@ table.data.translate-table tr td.modified[data-v-3b669c9b] {
 .mobile-only[data-v-3b669c9b] {
   display: none;
 }
+.mobile-only-inline[data-v-3b669c9b] {
+  display: none;
+}
 @media (max-width: 613px) {
 .mobile-only[data-v-3b669c9b] {
     display: block;
+}
+.mobile-only-inline[data-v-3b669c9b] {
+    display: inline;
 }
 .language-label[data-v-3b669c9b] {
     display: none;

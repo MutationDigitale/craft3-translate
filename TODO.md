@@ -1,7 +1,9 @@
 # TODO
 
-- [ ] Add Sorting
-- [ ] Add "view" button with sorting and columns
-- [ ] Move actions to bottom
+- [X] Add Sorting
+- [X] Move actions to bottom
+- [X] Add "columns" button
+- [ ] Add selection with shift
 - [ ] Add copy to language action
 - [ ] Add copy to category action
+- [ ] Add export

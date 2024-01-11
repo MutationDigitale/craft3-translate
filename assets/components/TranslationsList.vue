@@ -25,12 +25,14 @@
               <span class="light" v-if="language.nativeName"> – {{ language.nativeName }}</span>
             </button>
           </th>
-          <th class="orderable" :class="[{'ordered': sortProperty === 'dateCreated'}, sortDirection]">
+          <th v-if="columns['dateCreated'].checked"
+              class="orderable" :class="[{'ordered': sortProperty === 'dateCreated'}, sortDirection]">
             <button type="button" @click="changeSort('dateCreated')">
               {{ t('Date Created') }}
             </button>
           </th>
-          <th class="orderable" :class="[{'ordered': sortProperty === 'dateUpdated'}, sortDirection]">
+          <th v-if="columns['dateUpdated'].checked"
+              class="orderable" :class="[{'ordered': sortProperty === 'dateUpdated'}, sortDirection]">
             <button type="button" @click="changeSort('dateUpdated')">
               {{ t('Date Updated') }}
             </button>
@@ -71,9 +73,13 @@
             </div>
           </td>
 
-          <td>{{ sourceMessage.dateCreated }}</td>
+          <td v-if="columns['dateCreated'].checked">
+            <span class="mobile-only-inline">{{ t('Date Created') }}: </span>{{ sourceMessage.dateCreated }}
+          </td>
 
-          <td>{{ sourceMessage.dateUpdated }}</td>
+          <td v-if="columns['dateUpdated'].checked">
+            <span class="mobile-only-inline">{{ t('Date Updated') }}: </span>{{ sourceMessage.dateUpdated }}
+          </td>
         </tr>
         </tbody>
       </table>
@@ -128,6 +134,7 @@ export default {
       search: state => state.search,
       sortProperty: state => state.sortProperty,
       sortDirection: state => state.sortDirection,
+      columns: state => state.columns,
     }),
     ...mapGetters({
       displayedSourceMessages: 'displayedSourceMessages'
@@ -175,6 +182,7 @@ export default {
       this.setCheckedSourceMessages([]);
       this.updateModifiedMessages({});
       this.loadSourceMessages();
+      this.loadColumns();
     },
     loadSourceMessages () {
       this.setIsLoading(true);
@@ -205,6 +213,18 @@ export default {
         .finally(() => {
           this.setIsLoading(false);
         });
+    },
+    loadColumns () {
+      const localStorageColumns = localStorage.getItem('admin-translations-columns');
+      let localStorageColumnsObjects = null;
+      try {
+        localStorageColumnsObjects = localStorageColumns ? JSON.parse(localStorageColumns) : null;
+      } catch (e) {
+        console.log(e);
+      }
+      if (localStorageColumnsObjects) {
+        this.setColumns(localStorageColumnsObjects);
+      }
     },
     filterSourceMessages () {
       let sourceMessages = this.sourceMessages.filter((sourceMessage) => {
@@ -323,6 +343,7 @@ export default {
       setOriginalSourceMessages: 'setOriginalSourceMessages',
       setSortProperty: 'setSortProperty',
       setSortDirection: 'setSortDirection',
+      setColumns: 'setColumns',
     }),
     ...mapActions({
       updateLanguages: 'updateLanguages',
@@ -338,6 +359,11 @@ export default {
 
 .translate-table {
   table-layout: fixed;
+}
+
+.translate-table th button {
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .translate-table tr:nth-child(2n) td {
@@ -390,9 +416,17 @@ table.data.translate-table tr td.modified {
   display: none;
 }
 
+.mobile-only-inline {
+  display: none;
+}
+
 @media (max-width: 613px) {
   .mobile-only {
     display: block;
+  }
+
+  .mobile-only-inline {
+    display: inline;
   }
 
   .language-label {
