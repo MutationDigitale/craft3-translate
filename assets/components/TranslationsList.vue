@@ -26,13 +26,13 @@
             </button>
           </th>
           <th v-if="columns['dateCreated'].checked"
-              class="orderable" :class="[{'ordered': sortProperty === 'dateCreated'}, sortDirection]">
+              class="orderable date-column" :class="[{'ordered': sortProperty === 'dateCreated'}, sortDirection]">
             <button type="button" @click="changeSort('dateCreated')">
               {{ t('Date Created') }}
             </button>
           </th>
           <th v-if="columns['dateUpdated'].checked"
-              class="orderable" :class="[{'ordered': sortProperty === 'dateUpdated'}, sortDirection]">
+              class="orderable date-column" :class="[{'ordered': sortProperty === 'dateUpdated'}, sortDirection]">
             <button type="button" @click="changeSort('dateUpdated')">
               {{ t('Date Updated') }}
             </button>
@@ -413,6 +413,10 @@ table.data.translate-table tr td.modified {
   @include sans-serif-font();
 }
 
+.translate-table .date-column {
+  width: 172px;
+}
+
 table.data.translate-table td.checkbox-cell input.checkbox,
 table.data.translate-table td.checkbox-cell input.checkbox + label,
 table.data.translate-table th.checkbox-cell input.checkbox,
@@ -461,7 +465,7 @@ table.data.translate-table th.checkbox-cell input.checkbox + label {
   display: none;
 }
 
-@media (max-width: 613px) {
+@media (max-width: 767px) {
   .mobile-only {
     display: block;
   }
@@ -510,6 +514,10 @@ table.data.translate-table th.checkbox-cell input.checkbox + label {
   body.ltr .tablepane table.data.translate-table td:last-child,
   body.ltr .tablepane table.data.translate-table th:last-child {
     padding-right: 12px;
+  }
+
+  .translate-table .date-column {
+    width: auto;
   }
 }
 </style>
