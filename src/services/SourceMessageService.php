@@ -47,7 +47,6 @@ class SourceMessageService extends Component
             $sourceMessages[] = [
                 'id' => $group[0]['id'],
                 'dateCreated' => $group[0]['dateCreated'],
-                'dateUpdated' => $group[0]['dateUpdated'],
                 'message' => $group[0]['message'],
                 'languages' => $languages
             ];
@@ -110,7 +109,6 @@ class SourceMessageService extends Component
                 'language' => $row['language'],
                 'category' => $row['category'],
                 'dateCreated' => $row['dateCreated'],
-                'dateUpdated' => $row['dateUpdated'],
             ];
         }
 

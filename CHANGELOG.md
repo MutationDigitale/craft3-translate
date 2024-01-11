@@ -2,9 +2,8 @@
 
 ## Unreleased
 
-- Add sorting to columns
-- Add "Date Created" and "Date Updated" columns
-- Allow to hide "Date Created" and "Date Updated" columns
+- Added "Date Created" column with the option to hide it
+- Added sorting for "Key" and "Date Created" columns
 - Move "actions" button to bottom to reflect changes in new Craft CMS
 - Allow selecting multiple lines with shift key
 - Export button directly in messages list with the ability to select which messages to export

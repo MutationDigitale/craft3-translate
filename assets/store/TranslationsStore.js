@@ -9,7 +9,6 @@ export const store = createStore({
     languages: [],
     columns: {
       dateCreated: { key: 'dateCreated', name: 'Date Created', checked: true },
-      dateUpdated: { key: 'dateUpdated', name: 'Date Updated', checked: true },
     },
     originalSourceMessages: [],
     sourceMessages: [],
@@ -33,12 +32,8 @@ export const store = createStore({
       let to = (page * perPage);
       return state.filteredSourceMessages
         .sort((a, b) => {
-          const valueA = typeof a[state.sortProperty] !== 'undefined'
-            ? a[state.sortProperty]
-            : a.languages[state.sortProperty];
-          const valueB = typeof b[state.sortProperty] !== 'undefined'
-            ? b[state.sortProperty]
-            : b.languages[state.sortProperty];
+          const valueA = a[state.sortProperty];
+          const valueB = b[state.sortProperty];
           return state.sortDirection === 'asc'
             ? valueA?.localeCompare(valueB)
             : valueB?.localeCompare(valueA);

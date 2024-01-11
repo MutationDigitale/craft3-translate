@@ -8,7 +8,7 @@ This plugins adds a control panel interface for your clients to edit your static
 
 - Add, edit or delete translations in the Control Panel with each language side by side.
 
-- Choose a category, filter by missing translations, search by keywords and sort by columns.
+- Choose a category, filter by missing translations, search by keywords and sort by key/date.
 
 - Export all or a subset of your translations to a CSV file and import it back after translators worked on it.
 
@@ -81,7 +81,6 @@ Query static messages this way:
     language
     category
     dateCreated
-    dateUpdated
   }
 }
 ```

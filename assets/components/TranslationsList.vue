@@ -17,24 +17,14 @@
           <th class="orderable" :class="[{'ordered': sortProperty === 'message'}, sortDirection]">
             <button type="button" @click="changeSort('message')">{{ t('Key') }}</button>
           </th>
-          <th class="orderable"
-              :class="[{'ordered': sortProperty === language.id}, sortDirection]"
-              v-for="language in checkedLanguages" v-bind:key="language.id">
-            <button type="button" @click="changeSort(language.id)">
-              <span>{{ language.displayName }}</span>
-              <span class="light" v-if="language.nativeName"> – {{ language.nativeName }}</span>
-            </button>
+          <th v-for="language in checkedLanguages" v-bind:key="language.id">
+            <span>{{ language.displayName }}</span>
+            <span class="light" v-if="language.nativeName"> – {{ language.nativeName }}</span>
           </th>
           <th v-if="columns['dateCreated'].checked"
               class="orderable date-column" :class="[{'ordered': sortProperty === 'dateCreated'}, sortDirection]">
             <button type="button" @click="changeSort('dateCreated')">
               {{ t('Date Created') }}
-            </button>
-          </th>
-          <th v-if="columns['dateUpdated'].checked"
-              class="orderable date-column" :class="[{'ordered': sortProperty === 'dateUpdated'}, sortDirection]">
-            <button type="button" @click="changeSort('dateUpdated')">
-              {{ t('Date Updated') }}
             </button>
           </th>
         </tr>
@@ -77,10 +67,6 @@
 
           <td v-if="columns['dateCreated'].checked">
             <span class="mobile-only-inline">{{ t('Date Created') }}: </span>{{ sourceMessage.dateCreated }}
-          </td>
-
-          <td v-if="columns['dateUpdated'].checked">
-            <span class="mobile-only-inline">{{ t('Date Updated') }}: </span>{{ sourceMessage.dateUpdated }}
           </td>
         </tr>
         </tbody>
