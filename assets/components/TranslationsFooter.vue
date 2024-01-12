@@ -40,16 +40,9 @@
     </div>
   </div>
   <div v-show="checkedSourceMessages.length > 0">
-    <div class="btn secondary menubtn" data-icon="settings" :title="t('Actions')"></div>
-    <div class="menu">
-      <ul>
-        <li v-if="deletePermission">
-          <a class="error" @click="deleteMessages()">
-            {{ t('Delete') }}
-          </a>
-        </li>
-      </ul>
-    </div>
+    <button v-if="deletePermission" class="btn secondary" data-icon="trash"  @click="deleteMessages()">
+      {{ t('Delete') }}
+    </button>
   </div>
   <div>
     <button v-if="exportPermission" class="btn" type="button" @click="exportMessages()" :disabled="isExporting">
@@ -112,6 +105,10 @@ export default {
       return this.$craft.t('translations-admin', str);
     },
     deleteMessages() {
+      if (!confirm(this.t('Are you sure you want to delete the selected translations?'))) {
+        return;
+      }
+
       this.setIsDeleting(true);
 
       const formData = new FormData();
