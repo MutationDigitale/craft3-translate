@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 3.2.0 - 2024-01-12
 
 - Added "Date Created" column with the option to hide it
 - Added sorting for "Key" and "Date Created" columns
