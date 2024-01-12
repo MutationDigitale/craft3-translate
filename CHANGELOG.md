@@ -1,5 +1,9 @@
 # Changelog
 
+## 4.0.0-beta.1
+
+- Craft 5 support
+
 ## 3.2.0 - 2024-01-12
 
 - Added "Date Created" column with the option to hide it
