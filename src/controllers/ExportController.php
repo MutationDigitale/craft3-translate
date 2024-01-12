@@ -79,6 +79,14 @@ class ExportController extends Controller
                 ->filter(function ($item) use ($sourceMessageIds) {
                     return in_array($item["id"], $sourceMessageIds);
                 })
+                ->sort(function ($a, $b) use ($sourceMessageIds) {
+                    $aIndex = array_search($a["id"], $sourceMessageIds);
+                    $bIndex = array_search($b["id"], $sourceMessageIds);
+                    if ($aIndex == $bIndex) {
+                        return 0;
+                    }
+                    return ($aIndex < $bIndex) ? -1 : 1;
+                })
                 ->toArray();
         }
 
