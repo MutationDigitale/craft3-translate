@@ -1,7 +1,8 @@
 <template>
   <div class="elements" :class="{'busy': isLoading || isAdding || isDeleting}">
     <div class="tableview tablepane">
-      <table class="data fullwidth translate-table">
+      <table class="data fullwidth translate-table"
+             ref="translateTable">
         <thead>
         <tr>
           <th class="checkbox-cell selectallcontainer" role="checkbox" tabindex="0"
@@ -33,11 +34,12 @@
         <tr v-for="sourceMessage in displayedSourceMessages" v-bind:key="sourceMessage.id"
             :class="{'sel': checkedSourceMessages.indexOf(sourceMessage.id) > -1}">
           <td class="checkbox-cell">
-            <input :id="'source-message-' + sourceMessage.id" type="checkbox" class="checkbox"
+            <input :id="'source-message-' + sourceMessage.id"
+                   type="checkbox"
+                   class="checkbox source-message-checkbox"
                    :title="t('Select')"
                    :value="sourceMessage.id"
-                   v-model="checkedSourceMessages"
-                   ref="sourceMessageCheckbox">
+                   v-model="checkedSourceMessages">
             <label :for="'source-message-' + sourceMessage.id"
                    @click="onSourceMessageCheckboxClick"></label>
           </td>
@@ -326,7 +328,7 @@ export default {
       }
     },
     onSourceMessageCheckboxClick (event) {
-      const checkboxes = this.$refs["sourceMessageCheckbox"];
+      const checkboxes = Array.from(this.$refs["translateTable"].querySelectorAll('.source-message-checkbox'));
       const checkbox = event.target.previousSibling;
       const checkboxIndex = checkboxes.indexOf(checkbox);
       const firstCheckbox = checkboxes.find(el => el.checked);
