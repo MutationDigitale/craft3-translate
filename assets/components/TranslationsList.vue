@@ -329,11 +329,12 @@ export default {
     },
     onSourceMessageCheckboxClick (event) {
       const checkboxes = Array.from(this.$refs["translateTable"].querySelectorAll('.source-message-checkbox'));
+      const checkedCheckboxes = checkboxes.filter(c => c.checked);
       const checkbox = event.target.previousSibling;
       const checkboxIndex = checkboxes.indexOf(checkbox);
       const firstCheckbox = checkboxes.find(el => el.checked);
       let lastCheckbox = null;
-      if (this.lastCheckbox !== null && this.lastCheckbox !== checkbox) {
+      if (this.lastCheckbox !== null && this.lastCheckbox !== checkbox && checkedCheckboxes.includes(this.lastCheckbox)) {
         lastCheckbox = this.lastCheckbox;
       } else if (firstCheckbox !== undefined && firstCheckbox !== checkbox) {
         lastCheckbox = firstCheckbox;
