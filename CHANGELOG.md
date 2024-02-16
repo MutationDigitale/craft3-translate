@@ -1,5 +1,9 @@
 # Changelog
 
+## 3.2.2 - 2024-02-16
+
+- "Import PHP translations to DB" will now import messages for existing source messages if the message is empty in the imported language ([#61](https://github.com/MutationDigitale/craft3-translate/issues/61))
+
 ## 3.2.1 - 2024-02-16
 
 - Fix installation for MySQL when `sql_require_primary_key` is `true` ([#60](https://github.com/MutationDigitale/craft3-translate/issues/60))

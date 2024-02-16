@@ -82,6 +82,7 @@ class ImportController extends Controller
             foreach ($rows as $row) {
                 $key = $row[0];
 
+                /* @var SourceMessage $sourceMessage */
                 $sourceMessage = SourceMessage::find()
                     ->where(array(DbHelper::caseSensitiveComparisonString('message') => $key, 'category' => $category))
                     ->one();
@@ -99,6 +100,7 @@ class ImportController extends Controller
                     $translation = trim($translation) !== '' ? $translation : null;
                     $i++;
 
+                    /* @var Message $message */
                     $message = Message::find()
                         ->where(array('language' => $siteLocale->id, 'id' => $sourceMessage->id))
                         ->one();

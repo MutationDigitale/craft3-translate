@@ -6,6 +6,7 @@ use Craft;
 use craft\helpers\FileHelper;
 use Exception;
 use mutation\translate\helpers\DbHelper;
+use mutation\translate\models\Message;
 use mutation\translate\models\SourceMessage;
 use yii\base\Component;
 
@@ -38,13 +39,8 @@ class ImportService extends Component
             $count = 0;
 
             foreach ($translations as $category => $messages) {
-                foreach ($messages as $message => $sites) {
-                    $languages = array();
-                    foreach ($sites as $site => $translation) {
-                        $languages[$site] = $translation;
-                        $count++;
-                    }
-
+                foreach ($messages as $message => $languages) {
+                    /* @var SourceMessage $sourceMessage */
                     $sourceMessage = SourceMessage::find()
                         ->where(array(
                             DbHelper::caseSensitiveComparisonString('message') => $message,
@@ -56,8 +52,28 @@ class ImportService extends Component
                         $sourceMessage = new SourceMessage();
                         $sourceMessage->category = $category;
                         $sourceMessage->message = $message;
-                        $sourceMessage->languages = $languages;
                         $sourceMessage->save();
+                    }
+
+                    foreach ($languages as $language => $translation) {
+                        /* @var Message $message */
+                        $message = Message::find()
+                            ->where(array('language' => $language, 'id' => $sourceMessage->id))
+                            ->one();
+
+                        if (!$message) {
+                            $message = new Message();
+                            $message->id = $sourceMessage->id;
+                            $message->language = $language;
+                            $message->translation = null;
+                        }
+
+                        if ($message->translation === null || trim($message->translation) === '') {
+                            $message->translation = $translation;
+                            if ($message->save()) {
+                                $count++;
+                            }
+                        }
                     }
                 }
             }
