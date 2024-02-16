@@ -23,19 +23,6 @@ class Install extends Migration
             $tableOptions = 'CHARACTER SET utf8 COLLATE utf8_unicode_ci ENGINE=InnoDB';
         }
 
-        // Support table creation without primary key when sql_require_primary_key
-        // is enabled (like on DigitalOcean Managed Databases)
-        // https://docs.digitalocean.com/products/databases/mysql/how-to/create-primary-keys/
-        if ($this->db->driverName === 'mysql') {
-            try {
-                $requirePrimaryKey = $this->db->createCommand('SHOW SESSION VARIABLES LIKE "sql_require_primary_key";')->queryAll();
-                if (isset($requirePrimaryKey[0]['Value']) && $requirePrimaryKey[0]['Value'] === 'ON') {
-                    $this->execute('SET SESSION sql_require_primary_key = 0');
-                }
-            } catch (\yii\db\Exception $e) {
-            }
-        }
-
         $this->createTable(
             '{{%source_message}}',
             [
@@ -60,11 +47,12 @@ class Install extends Migration
 
                 'language' => $this->string(16)->notNull(),
                 'translation' => $this->text(),
+
+                'PRIMARY KEY([[id]], [[language]])',
             ],
             $tableOptions
         );
 
-        $this->addPrimaryKey('pk_message_id_language', '{{%message}}', ['id', 'language']);
         $this->addForeignKey(
             'fk_message_source_message',
             '{{%message}}',

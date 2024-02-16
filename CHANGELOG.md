@@ -1,5 +1,9 @@
 # Changelog
 
+## 3.2.1 - 2024-02-16
+
+- Fix installation for MySQL when `sql_require_primary_key` is `true` ([#60](https://github.com/MutationDigitale/craft3-translate/issues/60))
+
 ## 3.2.0 - 2024-01-12
 
 - Added "Date Created" column with the option to hide it
