@@ -8,6 +8,7 @@ use Exception;
 use mutation\translate\helpers\DbHelper;
 use mutation\translate\models\Message;
 use mutation\translate\models\SourceMessage;
+use mutation\translate\Translate;
 use yii\base\Component;
 
 class ImportService extends Component
@@ -15,23 +16,33 @@ class ImportService extends Component
     public function importPhpTranslationsToDatabase(): ?int
     {
         try {
-            $languages = collect(Craft::$app->sites->getAllSites())
-                ->map(function($site) {
-                    return $site->language;
+            $locales = collect(Craft::$app->i18n->getSiteLocales())
+                ->map(function($locale) {
+                    return $locale->id;
                 })
-                ->unique()
                 ->toArray();
 
-            $translations = array();
-            foreach ($languages as $language) {
-                $directory = Craft::$app->path->getSiteTranslationsPath() . DIRECTORY_SEPARATOR . $language;
-                $files = FileHelper::findFiles($directory, ['only'=>['*.php']]);
+            $categories = Translate::getInstance()->settings->getCategories();
+            $siteTranslationsPath = Craft::$app->path->getSiteTranslationsPath();
 
-                foreach ($files as $file) {
-                    $category = basename($file, ".php");
-                    $siteTranslations = include($file);
-                    foreach ($siteTranslations as $key => $translation) {
-                        $translations[$category][$key][$language] = $translation;
+            $translations = array();
+            foreach ($categories as $category) {
+                foreach ($locales as $locale) {
+                    $categoryFile = FileHelper::normalizePath("{$siteTranslationsPath}/{$locale}/{$category}.php");
+
+                    // Check for fallback language if file doesn't exist
+                    if (str_contains($locale, '-') && !file_exists($categoryFile)) {
+                        $fallbackLocale = explode("-", $locale)[0];
+                        $categoryFile = FileHelper::normalizePath("{$siteTranslationsPath}/{$fallbackLocale}/{$category}.php");
+                    }
+
+                    if (!file_exists($categoryFile)) {
+                        continue;
+                    }
+
+                    $siteCategoryTranslations = include($categoryFile);
+                    foreach ($siteCategoryTranslations as $key => $translation) {
+                        $translations[$category][$key][$locale] = $translation;
                     }
                 }
             }
@@ -39,7 +50,7 @@ class ImportService extends Component
             $count = 0;
 
             foreach ($translations as $category => $messages) {
-                foreach ($messages as $message => $languages) {
+                foreach ($messages as $message => $locales) {
                     /* @var SourceMessage $sourceMessage */
                     $sourceMessage = SourceMessage::find()
                         ->where(array(
@@ -55,16 +66,16 @@ class ImportService extends Component
                         $sourceMessage->save();
                     }
 
-                    foreach ($languages as $language => $translation) {
+                    foreach ($locales as $locale => $translation) {
                         /* @var Message $message */
                         $message = Message::find()
-                            ->where(array('language' => $language, 'id' => $sourceMessage->id))
+                            ->where(array('language' => $locale, 'id' => $sourceMessage->id))
                             ->one();
 
                         if (!$message) {
                             $message = new Message();
                             $message->id = $sourceMessage->id;
-                            $message->language = $language;
+                            $message->language = $locale;
                             $message->translation = null;
                         }
 

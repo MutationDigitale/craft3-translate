@@ -1,5 +1,9 @@
 # Changelog
 
+## 3.2.3 - 2024-03-07
+
+- Make PHP translations import more robust by importing only configured categories with fallback language (example: `en` for `en-CA`) and only if it exists ([#62](https://github.com/MutationDigitale/craft3-translate/issues/62))
+
 ## 3.2.2 - 2024-02-16
 
 - "Import PHP translations to DB" will now import messages for existing source messages if the message is empty in the imported language ([#61](https://github.com/MutationDigitale/craft3-translate/issues/61))
