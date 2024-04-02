@@ -1,5 +1,9 @@
 # Changelog
 
+## 4.0.0-beta.1
+
+- Craft 5 support
+
 ## 3.2.3 - 2024-03-07
 
 - Make PHP translations import more robust by importing only configured categories with fallback language (example: `en` for `en-CA`) and only if it exists ([#62](https://github.com/MutationDigitale/craft3-translate/issues/62))
