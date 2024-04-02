@@ -1,5 +1,9 @@
 # Changelog
 
+## 4.0.0
+
+- Craft 5 stable release
+
 ## 4.0.0-beta.1
 
 - Craft 5 support
