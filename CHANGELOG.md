@@ -1,5 +1,9 @@
 # Changelog
 
+## 4.0.1
+
+- Fix issue when changing category if the CP trigger is different from `admin` ([#64](https://github.com/MutationDigitale/craft3-translate/issues/64))
+
 ## 4.0.0
 
 - Craft 5 stable release

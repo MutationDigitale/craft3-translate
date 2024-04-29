@@ -37,7 +37,7 @@ export default {
     changeCategory(cat, pushState = true) {
       this.setCategory(cat);
       if (pushState) {
-        window.history.pushState({}, '', '/admin/translations-admin/' + cat);
+        window.history.pushState({}, '', `/${this.$craft.cpTrigger}/translations-admin/${cat}`);
       }
     },
     ...mapMutations({
