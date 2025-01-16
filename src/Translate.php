@@ -227,6 +227,14 @@ class Translate extends Plugin
                     return;
                 }
 
+                foreach ($this->settings->getExcludedMessages() as $excludedMessagePattern) {
+                    if (str_contains($event->message, $excludedMessagePattern)) {
+                        Craft::getLogger()->log("Excluded translation message: {$event->message} because of message pattern {$excludedMessagePattern}", Logger::LEVEL_INFO, 'translations');
+                        return;
+                    }
+                }
+
+
                 $sourceMessage = SourceMessage::find()
                     ->where(array(DbHelper::caseSensitiveComparisonString('message') => $event->message, 'category' => $event->category))
                     ->one();

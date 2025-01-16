@@ -10,6 +10,7 @@ class Settings extends Model
     public $categories = [['category' => 'site']];
     public $addMissingTranslations = true;
     public $addMissingSiteRequestOnly = true;
+    public $excludedMessages = [];
 
     public function getCategories()
     {
@@ -22,5 +23,10 @@ class Settings extends Model
             }
         }
         return $cats;
+    }
+
+    public function getExcludedMessages()
+    {
+        return $this->excludedMessages;
     }
 }

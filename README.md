@@ -54,6 +54,7 @@ You can either go the **settings page** or create a file `translations-admin.php
 - **Categories**: Choose the source message categories you want to have in your database and control panel.
 - **Add missing translations**: Controls whether missing translations are automatically added to the database when a page is visited.
 - **Add missing translations for site request only**: Controls whether missing translations are only added when the request is from the site.
+- **Excluded Messages**: Messages that should not be added to the database, identified by the start of the string (basic matching, no regex — see example).
 
 Config file example:
 ```
@@ -66,7 +67,11 @@ return [
         ['category' => 'app']
     ],
     'addMissingTranslations' => false,
-    'addMissingSiteRequestOnly' => false
+    'addMissingSiteRequestOnly' => false,
+     'excludedMessages' => [
+        'Submission triggered for',
+        'Submission marked as spam'
+    ]
 ];
 ```
 
