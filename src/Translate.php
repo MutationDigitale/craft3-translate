@@ -31,6 +31,7 @@ use mutation\translate\services\TemplateService;
 use yii\base\Event;
 use yii\i18n\MessageSource;
 use yii\i18n\MissingTranslationEvent;
+use yii\log\Logger;
 
 /**
  * Class Translate
