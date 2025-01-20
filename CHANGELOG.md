@@ -1,5 +1,9 @@
 # Changelog
 
+## 4.1.0 - 2025-01-20
+
+- Added a way to exclude some messages to be added automatically to the database (thank you @mnlmaier for the PR ([#68](https://github.com/MutationDigitale/craft3-translate/pull/68))
+
 ## 4.0.2 - 2024-04-30
 
 - Fix requirements
