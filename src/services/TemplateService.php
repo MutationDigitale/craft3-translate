@@ -20,32 +20,34 @@ class TemplateService extends Component
     public function parseTemplates(): int
     {
         $view = Craft::$app->getView();
-
         $view->setTemplateMode('site');
-
         $twig = $view->getTwig();
 
-        $templates_path = Craft::parseEnv('@templates');
+        // Get template paths from config or use default
+        $templatePaths = $this->getTemplatePaths();
+        $messages = [];
 
-        $template_files = $this->getDirContents($templates_path);
+        foreach ($templatePaths as $templatesPath) {
+            $template_files = $this->getDirContents($templatesPath);
 
-        $messages = array();
+            foreach ($template_files as $file) {
+                $template_str = file_get_contents($file);
+                $twig_source = new Source($template_str, basename($file));
 
-        foreach ($template_files as $file) {
-            $template_str = file_get_contents($file);
-            $twig_source = new Source($template_str, basename($file));
-
-            try {
-                $token_stream = $twig->tokenize($twig_source);
-                $tree = $twig->parse($token_stream);
-                $this->listFunctionCalls($tree, $tree, $messages);
-            } catch (Exception $e) {
+                try {
+                    $token_stream = $twig->tokenize($twig_source);
+                    $tree = $twig->parse($token_stream);
+                    $this->listFunctionCalls($tree, $tree, $messages);
+                } catch (Exception $e) {
+                    // Log error if needed
+                    Craft::warning("Failed to parse template: {$file}", __METHOD__);
+                }
             }
         }
 
         foreach ($messages as $message) {
             $sourceMessage = SourceMessage::find()
-                ->where(array(DbHelper::caseSensitiveComparisonString('message') => $message['value'], 'category' => $message['category']))
+                ->where([DbHelper::caseSensitiveComparisonString('message') => $message['value'], 'category' => $message['category']])
                 ->one();
 
             if (!$sourceMessage) {
@@ -57,6 +59,36 @@ class TemplateService extends Component
         }
 
         return count($messages);
+    }
+
+    private function getTemplatePaths(): array
+    {
+        $view = Craft::$app->getView();
+        $paths = [];
+
+        // Get template roots from registered site templates
+        $paths = array_column($view->getSiteTemplateRoots(), 0);
+
+        // Get additional paths from config
+        $config = Craft::$app->config->getConfigFromFile('translations');
+        if (isset($config['templatePaths']) && is_array($config['templatePaths'])) {
+            // Convert config paths to absolute using Craft::getAlias()
+            $configPaths = array_map(function($path) {
+                return Craft::getAlias($path);
+            }, $config['templatePaths']);
+
+            // Merge with existing paths
+            $paths = array_merge($paths, $configPaths);
+        }
+
+        // Add default templates path if not present
+        $defaultPath = Craft::getAlias('@templates');
+        if (!in_array($defaultPath, $paths)) {
+            $paths[] = $defaultPath;
+        }
+
+        // Remove duplicates
+        return array_unique($paths);
     }
 
     private function listFunctionCalls($tree, $node, array &$list): void
