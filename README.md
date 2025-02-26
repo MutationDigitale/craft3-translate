@@ -57,7 +57,7 @@ You can either go the **settings page** or create a file `translations-admin.php
 - **Excluded Messages**: Messages that should not be added to the database, identified by the start of the string (basic matching, no regex — see example).
 
 Config file example:
-```
+```PHP
 <?php
 
 return [
@@ -78,7 +78,7 @@ return [
 ## GraphQL
 
 Query static messages this way:
-```
+```GRAPHQL
 {
   staticMessages(language:["en-CA", "fr-CA"], category: ["site", "app"]) {
     key
@@ -93,7 +93,7 @@ Query static messages this way:
 ## Events
 
 You can use these custom events in your plugin or module to do any actions after translations are added, saved or deleted (example: empty the cache):
-```
+```PHP
 use mutation\translate\services\MessagesService;
 
 Event::on(MessagesService::class, MessagesService::EVENT_AFTER_SAVE_MESSAGES, function (Event $e) { ... });
