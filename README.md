@@ -100,3 +100,13 @@ Event::on(MessagesService::class, MessagesService::EVENT_AFTER_SAVE_MESSAGES, fu
 Event::on(MessagesService::class, MessagesService::EVENT_AFTER_ADD_MESSAGE, function (Event $e) { ... });
 Event::on(MessagesService::class, MessagesService::EVENT_AFTER_DELETE_MESSAGES, function (Event $e) { ... });
 ```
+
+## Methods
+
+You can create a new translation programmatically (in migrations or otherwise):
+```PHP
+use mutation\translate\Translate as TranslatePlugin;
+...
+TranslatePlugin::getInstance()->messages->addMessage("Lorem ipsum", "site");
+```
+The second parameter is the category (site, app, etc.)
