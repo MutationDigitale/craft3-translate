@@ -6,6 +6,7 @@ use Craft;
 use craft\helpers\UrlHelper;
 use craft\web\Controller;
 use mutation\translate\Translate;
+use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
 
 class SettingsController extends Controller
@@ -20,6 +21,7 @@ class SettingsController extends Controller
         $templateTitle = Craft::t('translations-admin', 'Settings');
 
         $variables = [];
+        $variables['readOnly'] = !Craft::$app->getConfig()->getGeneral()->allowAdminChanges;
         $variables['fullPageForm'] = true;
         $variables['pluginName'] = $pluginName;
         $variables['title'] = $templateTitle;
@@ -42,6 +44,10 @@ class SettingsController extends Controller
 
     public function actionSave()
     {
+        if (!Craft::$app->getConfig()->getGeneral()->allowAdminChanges) {
+            throw new ForbiddenHttpException('Administrative changes are disallowed in this environment.');
+        }
+
         $this->requirePermission(Translate::CHANGE_TRANSLATIONS_SETTINGS_PERMISSION);
 
         $this->requirePostRequest();

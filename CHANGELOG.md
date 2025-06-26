@@ -1,5 +1,11 @@
 # Changelog
 
+## 4.2.0 - 2025-06-26
+
+- Add the ability to override the source language ([#67](https://github.com/MutationDigitale/craft3-translate/issues/67))
+- Make the Categories setting mandatory ([#76](https://github.com/MutationDigitale/craft3-translate/issues/76))
+- Allow to see the settings in read only mode
+
 ## 4.1.1 - 2025-01-20
 
 - Fixed a missing import

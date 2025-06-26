@@ -51,6 +51,7 @@ You have special permissions for the Translations admin plugin:
 You can either go the **settings page** or create a file `translations-admin.php` in your `config` directory.
 
 - **Plugin Name**: How the plugin should be named in the CP
+- **Source Language**: By default, the plugin uses the primary site for the source language, but you can override it with this setting.
 - **Categories**: Choose the source message categories you want to have in your database and control panel.
 - **Add missing translations**: Controls whether missing translations are automatically added to the database when a page is visited.
 - **Add missing translations for site request only**: Controls whether missing translations are only added when the request is from the site.
@@ -62,9 +63,10 @@ Config file example:
 
 return [
     'pluginName' => 'Translations',
+    'sourceLanguage' => 'en',
     'categories' => [
-        ['category' => 'site'],
-        ['category' => 'app']
+        'site',
+        'app'
     ],
     'addMissingTranslations' => false,
     'addMissingSiteRequestOnly' => false,

@@ -53,6 +53,9 @@ class Translate extends Plugin
     public const TRANSLATIONS_UTILITIES_PERMISSION = 'translationsUtilities';
     public const CHANGE_TRANSLATIONS_SETTINGS_PERMISSION = 'changeTranslationsSettings';
 
+    public bool $hasCpSettings = true;
+    public bool $hasReadOnlyCpSettings = true;
+
     public function init()
     {
         parent::init();
@@ -85,7 +88,6 @@ class Translate extends Plugin
     public function getCpNavItem(): ?array
     {
         $currentUser = Craft::$app->getUser()->getIdentity();
-        $general = Craft::$app->getConfig()->getGeneral();
 
         $item = parent::getCpNavItem();
         $item['subnav']['translations'] = ['label' => 'Messages', 'url' => 'translations-admin'];
@@ -103,7 +105,7 @@ class Translate extends Plugin
                     'url' => 'translations-admin/translations-utilities'
                 ];
             }
-            if ($currentUser->can(self::CHANGE_TRANSLATIONS_SETTINGS_PERMISSION) && $general->allowAdminChanges) {
+            if ($currentUser->can(self::CHANGE_TRANSLATIONS_SETTINGS_PERMISSION)) {
                 $item['subnav']['settings'] = ['label' => 'Settings', 'url' => 'translations-admin/plugin-settings'];
             }
         }
@@ -121,6 +123,11 @@ class Translate extends Plugin
         return Craft::$app->getResponse()->redirect(UrlHelper::cpUrl('translations-admin/plugin-settings'));
     }
 
+    public function getReadOnlySettingsResponse(): mixed
+    {
+        return $this->getSettingsResponse();
+    }
+
     private function initDbMessages()
     {
         /** @var I18N $i18n */
@@ -129,7 +136,7 @@ class Translate extends Plugin
         foreach ($this->settings->getCategories() as $category) {
             $i18n->translations[$category] = [
                 'class' => DbMessageSource::class,
-                'sourceLanguage' => Craft::$app->getSites()->getPrimarySite()->language,
+                'sourceLanguage' => $this->settings->getSourceLanguage(),
                 'forceTranslation' => true,
             ];
         }

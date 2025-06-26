@@ -2,12 +2,23 @@
 
 {% import "_includes/forms" as forms %}
 
+{% if readOnly %}
+    {% set contentNotice = readOnlyNotice() %}
+{% endif %}
+
+{% block actionButton %}
+    {% if not readOnly %}
+        <button type="submit" class="btn submit">{{ 'Save' | t('translations-admin') }}</button>
+    {% endif %}
+{% endblock %}
+
 {% block content %}
 
-    <input type="hidden" name="action" value="translations-admin/settings/save">
-    <input type="hidden" name="pluginHandle" value="translations-admin">
-
-    {{ redirectInput("translations-admin/plugin-settings") }}
+    {% if not readOnly %}
+        {{ actionInput('translations-admin/settings/save') }}
+        {{ hiddenInput('pluginHandle', 'translations-admin') }}
+        {{ redirectInput("translations-admin/plugin-settings") }}
+    {% endif %}
 
     {% namespace "settings" %}
 
@@ -18,7 +29,19 @@
             id: 'pluginName',
             name: 'pluginName',
             value: settings.pluginName,
-            required: true
+            required: true,
+            disabled: readOnly
+        }) }}
+
+        {{ forms.selectizeField({
+            label: "Source Language"|t('app'),
+            instructions: "By default, the source language is set to the primary site language, but you can override it here." | t('translations-admin'),
+            id: 'sourceLanguage',
+            name: 'sourceLanguage',
+            value: settings.sourceLanguage|default(currentSite.getLanguage(false)),
+            options: craft.cp.getLanguageOptions(true),
+            required: true,
+            disabled: readOnly
         }) }}
 
         {{ forms.editableTableField({
@@ -26,7 +49,7 @@
             instructions: "Choose the source message categories you want to have in your database and control panel" | t("translations-admin"),
             id: 'categories',
             name: 'categories',
-            required: false,
+            required: true,
             allowAdd: true,
             allowReorder: true,
             allowDelete: true,
@@ -41,8 +64,9 @@
                     code: true,
                 },
             },
-            rows: settings.categories,
+            rows: collect(settings.categories).flatten().map(c => {category: c}),
             errors: settings.getErrors("categories"),
+            static: readOnly
         }) }}
 
         {{ forms.lightswitchField({
@@ -52,6 +76,7 @@
             name: "addMissingTranslations",
             on: settings.addMissingTranslations,
             errors: settings.getErrors("addMissingTranslations"),
+            disabled: readOnly
         }) }}
 
         {{ forms.lightswitchField({
@@ -61,6 +86,32 @@
             name: "addMissingSiteRequestOnly",
             on: settings.addMissingSiteRequestOnly,
             errors: settings.getErrors("addMissingSiteRequestOnly"),
+            disabled: readOnly
+        }) }}
+
+        {{ forms.editableTableField({
+            label: "Excluded messages" | t("translations-admin"),
+            instructions: "Messages that should not be added to the database, identified by the start of the string (basic matching, no regex)" | t("translations-admin"),
+            id: 'excludedMessages',
+            name: 'excludedMessages',
+            required: false,
+            allowAdd: true,
+            allowReorder: true,
+            allowDelete: true,
+            defaultValues: {
+                pattern: "",
+            },
+            cols: {
+                message: {
+                    heading: "Excluded message" | t("translations-admin"),
+                    type: "singleline",
+                    width: "100%",
+                    code: true,
+                },
+            },
+            rows: settings.excludedMessages ? collect(settings.excludedMessages).flatten().map(m => {message: m}) : [],
+            errors: settings.getErrors("excludedMessages"),
+            static: readOnly
         }) }}
 
     {% endnamespace %}

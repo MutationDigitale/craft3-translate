@@ -71,6 +71,11 @@ const config = {
       __VUE_PROD_DEVTOOLS__: false
     }),
   ],
+  performance: {
+    hints: false,
+    maxEntrypointSize: 512000,
+    maxAssetSize: 512000
+  },
 };
 
 module.exports = config;
