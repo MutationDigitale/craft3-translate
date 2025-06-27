@@ -14,7 +14,7 @@ class MessagesService extends Component
     const EVENT_AFTER_SAVE_MESSAGES = 'afterSaveMessages';
     const EVENT_AFTER_DELETE_MESSAGES = 'afterDeleteMessages';
 
-    public function addMessage($message, $category)
+    public function addMessage($message, $category, $languages = null)
     {
         $sourceMessage = SourceMessage::find()
             ->where(array(DbHelper::caseSensitiveComparisonString('message') => $message, 'category' => $category))
@@ -28,6 +28,10 @@ class MessagesService extends Component
         $sourceMessage->category = $category;
         $sourceMessage->message = $message;
 
+        if ($languages !== null) {
+            $sourceMessage->languages = $languages;
+        }
+
         if ($sourceMessage->save()) {
             $this->trigger(self::EVENT_AFTER_ADD_MESSAGE, new Event());
 
@@ -39,6 +43,8 @@ class MessagesService extends Component
 
     public function saveMessages($translations)
     {
+        $messages = [];
+
         foreach ($translations as $localeId => $item) {
             foreach ($item as $id => $translation) {
                 $message = Message::find()
@@ -57,6 +63,8 @@ class MessagesService extends Component
         }
 
         $this->trigger(self::EVENT_AFTER_SAVE_MESSAGES, new Event());
+
+        return $messages;
     }
 
     public function deleteMessages($sourceMessageIds)

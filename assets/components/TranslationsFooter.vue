@@ -39,9 +39,33 @@
       </div>
     </div>
   </div>
-  <div v-show="checkedSourceMessages.length > 0">
-    <button v-if="deletePermission" class="btn secondary" data-icon="trash"  @click="deleteMessages()">
+  <div class="flex">
+    <button v-show="checkedSourceMessages.length === 0 && copiedMessages.length > 0 && copiedMessagesCategory !== category"
+            v-if="addPermission"
+            type="button"
+            class="btn paste-btn"
+            @click="pasteMessages()">
+      <span class="inline-flex gap-xs">
+        <span class="cp-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" focusable="false" aria-hidden="true"><path d="M0 130h64v92H0v-92zM130 64V0h92v64h-92zM64 98V64h34V0H64C28.7 0 0 28.7 0 64v34M254 64h34v64h64V64c0-35.3-28.7-64-64-64h-34M128 288H64v-34H0v34c0 35.3 28.7 64 64 64h64M448 160H224c-35.3 0-64 28.7-64 64v224c0 35.3 28.7 64 64 64h224c35.3 0 64-28.7 64-64V224c0-35.3-28.7-64-64-64zm0 259v29H224V224h224v195z"></path></svg></span>
+        <span class="label">Paste translations</span>
+      </span>
+    </button>
+    <button v-show="checkedSourceMessages.length > 0"
+            v-if="deletePermission"
+            class="btn secondary"
+            data-icon="trash"
+            @click="deleteMessages()">
       {{ t('Delete') }}
+    </button>
+    <button v-show="checkedSourceMessages.length > 0"
+            v-if="addPermission"
+            type="button"
+            class="btn secondary"
+            @click="copyMessages()">
+      <span class="inline-flex gap-xs">
+        <span class="cp-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" focusable="false" aria-hidden="true"><path d="M0 130h64v92H0v-92zM130 64V0h92v64h-92zM64 98V64h34V0H64C28.7 0 0 28.7 0 64v34M254 64h34v64h64V64c0-35.3-28.7-64-64-64h-34M128 288H64v-34H0v34c0 35.3 28.7 64 64 64h64M448 160H224c-35.3 0-64 28.7-64 64v224c0 35.3 28.7 64 64 64h224c35.3 0 64-28.7 64-64V224c0-35.3-28.7-64-64-64zm0 259v29H224V224h224v195z"></path></svg></span>
+        <span class="label">Copy translations</span>
+      </span>
     </button>
   </div>
   <div>
@@ -57,11 +81,14 @@ import axios from 'axios';
 
 export default {
   props: {
+    addPermission: Boolean,
     deletePermission: Boolean,
     exportPermission: Boolean,
   },
   data() {
     return {
+      copiedMessages: [],
+      copiedMessagesCategory: '',
       pages: [],
       isExporting: false,
     };
@@ -141,6 +168,51 @@ export default {
           this.setIsDeleting(false);
         });
     },
+    copyMessages() {
+      this.copiedMessages = this.sourceMessages.filter(s => this.checkedSourceMessages.includes(s.id));
+      this.copiedMessagesCategory = this.category;
+      this.emitter.emit('translations-copied');
+    },
+    pasteMessages() {
+      this.setIsAdding(true);
+
+      const formData = new FormData();
+
+      formData.append(this.$csrfTokenName, this.$csrfTokenValue);
+      formData.append('action', 'translations-admin/messages/add-multiple');
+
+      formData.append('category', this.category);
+
+      for (const sourceMessageId in this.copiedMessages) {
+        formData.append('sourceMessages[' + sourceMessageId + '][message]', this.copiedMessages[sourceMessageId]["message"]);
+        for (const language in this.copiedMessages[sourceMessageId]["languages"]) {
+          formData.append('sourceMessages[' + sourceMessageId + '][languages][' + language + ']', this.copiedMessages[sourceMessageId]["languages"][language]);
+        }
+      }
+
+      axios
+        .post('', formData)
+        .then((response) => {
+          if (response.data.success) {
+            this.emitter.emit('translations-pasted');
+            const sourceMessages = this.sourceMessages;
+            response.data.sourceMessages.forEach(sourceMessage => {
+              sourceMessages.push(sourceMessage);
+            });
+            this.updateSourceMessages(sourceMessages);
+          } else {
+            this.emitter.emit('translations-pasted-error');
+          }
+        })
+        .catch(() => {
+          this.emitter.emit('translations-pasted-error');
+        })
+        .finally(() => {
+          this.setIsAdding(false);
+          this.copiedMessages = [];
+          this.copiedMessagesCategory = '';
+        });
+    },
     exportMessages() {
       this.isExporting = true;
 
@@ -172,6 +244,7 @@ export default {
     },
     ...mapMutations({
       setCheckedSourceMessages: 'setCheckedSourceMessages',
+      setIsAdding: 'setIsAdding',
       setIsDeleting: 'setIsDeleting',
       setPage: 'setPage',
     }),

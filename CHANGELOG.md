@@ -1,5 +1,9 @@
 # Changelog
 
+## 4.2.1
+
+- Add the ability to copy messages from one category to another ([#14](https://github.com/MutationDigitale/craft3-translate/issues/14))
+
 ## 4.2.0 - 2025-06-26
 
 - Add the ability to override the source language ([#67](https://github.com/MutationDigitale/craft3-translate/issues/67))

@@ -35,6 +35,15 @@ const app = createApp({
     this.emitter.on('translation-deleted-error', () => {
       this.$craft.cp.displayError(this.$craft.t('translations-admin', 'Translation not deleted'));
     });
+    this.emitter.on('translations-copied', () => {
+      this.$craft.cp.displayNotice(this.$craft.t('translations-admin', 'Translations copied'));
+    });
+    this.emitter.on('translations-pasted', () => {
+      this.$craft.cp.displayNotice(this.$craft.t('translations-admin', 'Translations pasted'));
+    });
+    this.emitter.on('translations-pasted-error', () => {
+      this.$craft.cp.displayError(this.$craft.t('translations-admin', 'Translations not pasted'));
+    });
   },
   mounted() {
     // Redo Jquery selectors after Vue has mounted

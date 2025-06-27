@@ -88,6 +88,37 @@ class MessagesController extends Controller
         ]);
     }
 
+    public function actionAddMultiple()
+    {
+        $this->requirePostRequest();
+        $this->requirePermission(Translate::ADD_TRANSLATIONS_PERMISSION);
+
+        $sourceMessages = Craft::$app->request->getRequiredBodyParam('sourceMessages');
+        $category = Craft::$app->request->getRequiredBodyParam('category');
+
+        $addedSourceMessages = [];
+
+        foreach ($sourceMessages as $sourceMessage) {
+            if ($addedSourceMessage = Translate::getInstance()->messages->addMessage($sourceMessage["message"], $category, $sourceMessage["languages"])) {
+                $addedSourceMessages[] = $addedSourceMessage;
+            }
+        }
+
+        Craft::$app->getGql()->invalidateCaches();
+
+        return $this->asJson([
+            'success' => count($addedSourceMessages) > 0,
+            'sourceMessages' => collect($addedSourceMessages)->map(function ($sourceMessage) {
+                return [
+                    'id' => $sourceMessage->id,
+                    'message' => $sourceMessage->message,
+                    'languages' => $sourceMessage->getTranslations(),
+                    'dateCreated' => $sourceMessage->dateCreated,
+                ];
+            })
+        ]);
+    }
+
     public function actionDelete()
     {
         $this->requirePostRequest();
@@ -109,10 +140,10 @@ class MessagesController extends Controller
 
         $translations = Craft::$app->request->getRequiredBodyParam('translations');
 
-        Translate::getInstance()->messages->saveMessages($translations);
+        $messages = Translate::getInstance()->messages->saveMessages($translations);
 
         Craft::$app->getGql()->invalidateCaches();
 
-        return $this->asJson(['success' => true]);
+        return $this->asJson(['success' => true, 'messages' => $messages]);
     }
 }
