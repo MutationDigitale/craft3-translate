@@ -55,7 +55,7 @@ class ImportService extends Component
                     $sourceMessage = SourceMessage::find()
                         ->where(array(
                             DbHelper::caseSensitiveComparisonString('message') => $message,
-                            'category' => $category
+                            'category' => $category,
                         ))
                         ->one();
 

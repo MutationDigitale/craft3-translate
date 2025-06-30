@@ -4,8 +4,8 @@ namespace mutation\translate\controllers;
 
 use Craft;
 use craft\web\Controller;
-use mutation\translate\Translate;
 use mutation\translate\bundles\TranslateBundle;
+use mutation\translate\Translate;
 
 class MessagesController extends Controller
 {
@@ -41,13 +41,13 @@ class MessagesController extends Controller
 
         return $this->asJson([
             'languages' => array_map(
-                function ($locale) {
+                function($locale) {
                     return [
                         'id' => $locale->id,
                         'displayName' => $locale->getDisplayName(Craft::$app->language),
                         'nativeName' => $locale->getLanguageID() !== Craft::$app->getLocale()->getLanguageID()
                             ? $locale->getDisplayName()
-                            : false
+                            : false,
                     ];
                 },
                 $siteLocales
@@ -84,7 +84,7 @@ class MessagesController extends Controller
                 'message' => $sourceMessage->message,
                 'languages' => $languages,
                 'dateCreated' => $sourceMessage->dateCreated,
-            ]
+            ],
         ]);
     }
 
@@ -108,14 +108,14 @@ class MessagesController extends Controller
 
         return $this->asJson([
             'success' => count($addedSourceMessages) > 0,
-            'sourceMessages' => collect($addedSourceMessages)->map(function ($sourceMessage) {
+            'sourceMessages' => collect($addedSourceMessages)->map(function($sourceMessage) {
                 return [
                     'id' => $sourceMessage->id,
                     'message' => $sourceMessage->message,
                     'languages' => $sourceMessage->getTranslations(),
                     'dateCreated' => $sourceMessage->dateCreated,
                 ];
-            })
+            }),
         ]);
     }
 

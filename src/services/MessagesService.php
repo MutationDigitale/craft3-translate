@@ -10,9 +10,9 @@ use yii\base\Event;
 
 class MessagesService extends Component
 {
-    const EVENT_AFTER_ADD_MESSAGE = 'afterAddMessage';
-    const EVENT_AFTER_SAVE_MESSAGES = 'afterSaveMessages';
-    const EVENT_AFTER_DELETE_MESSAGES = 'afterDeleteMessages';
+    public const EVENT_AFTER_ADD_MESSAGE = 'afterAddMessage';
+    public const EVENT_AFTER_SAVE_MESSAGES = 'afterSaveMessages';
+    public const EVENT_AFTER_DELETE_MESSAGES = 'afterDeleteMessages';
 
     public function addMessage($message, $category, $languages = null)
     {

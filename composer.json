@@ -14,10 +14,14 @@
     }
   ],
   "prefer-stable": true,
+  "minimum-stability": "dev",
   "require": {
     "php": "^8.2",
     "craftcms/cms": "^5.6.0",
     "phpoffice/phpspreadsheet": "^1.22.0"
+  },
+  "require-dev": {
+    "craftcms/ecs": "dev-main"
   },
   "autoload": {
     "psr-4": {
@@ -38,5 +42,9 @@
       "yiisoft/yii2-composer": true,
       "craftcms/plugin-installer": true
     }
+  },
+  "scripts": {
+    "check-cs": "ecs check --ansi",
+    "fix-cs": "ecs check --ansi --fix"
   }
 }

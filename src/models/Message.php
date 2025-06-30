@@ -38,7 +38,7 @@ class Message extends ActiveRecord
                 'exist',
                 'skipOnError' => true,
                 'targetClass' => SourceMessage::class,
-                'targetAttribute' => ['id' => 'id']
+                'targetAttribute' => ['id' => 'id'],
             ],
         ];
     }

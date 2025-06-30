@@ -2,6 +2,7 @@
 
 ## 4.2.1
 
+- Add support for multiple template paths (thank you @marknotton-yello for the PR [#71](https://github.com/MutationDigitale/craft3-translate/pull/71))
 - Add the ability to copy messages from one category to another ([#14](https://github.com/MutationDigitale/craft3-translate/issues/14))
 
 ## 4.2.0 - 2025-06-26

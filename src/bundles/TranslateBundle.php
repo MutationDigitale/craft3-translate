@@ -20,7 +20,7 @@ class TranslateBundle extends AssetBundle
         ];
 
         $this->js = [
-            'main.js'
+            'main.js',
         ];
 
         parent::init();

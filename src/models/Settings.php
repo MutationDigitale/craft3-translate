@@ -28,13 +28,17 @@ class Settings extends Model
 
     public function getCategories()
     {
-        if (!$this->categories) return ['site'];
+        if (!$this->categories) {
+            return ['site'];
+        }
         return collect($this->categories)->flatten()->toArray();
     }
 
     public function getExcludedMessages()
     {
-        if (!$this->excludedMessages) return [];
+        if (!$this->excludedMessages) {
+            return [];
+        }
         return collect($this->excludedMessages)->flatten()->toArray();
     }
 }

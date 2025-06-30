@@ -76,10 +76,10 @@ class ExportController extends Controller
 
         if ($sourceMessageIds && count($sourceMessageIds) > 0) {
             $sourceMessages = collect($sourceMessages)
-                ->filter(function ($item) use ($sourceMessageIds) {
+                ->filter(function($item) use ($sourceMessageIds) {
                     return in_array($item["id"], $sourceMessageIds);
                 })
-                ->sort(function ($a, $b) use ($sourceMessageIds) {
+                ->sort(function($a, $b) use ($sourceMessageIds) {
                     $aIndex = array_search($a["id"], $sourceMessageIds);
                     $bIndex = array_search($b["id"], $sourceMessageIds);
                     if ($aIndex == $bIndex) {
@@ -93,7 +93,7 @@ class ExportController extends Controller
         // output each row of the data
         foreach ($sourceMessages as $sourceMessage) {
             $row = [
-                $sourceMessage['message']
+                $sourceMessage['message'],
             ];
             foreach ($sourceMessage['languages'] as $language) {
                 $row[] = $language;

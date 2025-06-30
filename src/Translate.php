@@ -18,9 +18,9 @@ use craft\web\UrlManager;
 use GraphQL\Type\Definition\Type;
 use mutation\translate\arguments\StaticMessageArguments;
 use mutation\translate\helpers\DbHelper;
+use mutation\translate\interfaces\StaticMessageInterface;
 use mutation\translate\models\Settings;
 use mutation\translate\models\SourceMessage;
-use mutation\translate\interfaces\StaticMessageInterface;
 use mutation\translate\resolvers\StaticMessageResolver;
 use mutation\translate\services\DbMessageSource;
 use mutation\translate\services\ExportService;
@@ -102,7 +102,7 @@ class Translate extends Plugin
             if ($currentUser->can(self::TRANSLATIONS_UTILITIES_PERMISSION)) {
                 $item['subnav']['utilities'] = [
                     'label' => 'Utilities',
-                    'url' => 'translations-admin/translations-utilities'
+                    'url' => 'translations-admin/translations-utilities',
                 ];
             }
             if ($currentUser->can(self::CHANGE_TRANSLATIONS_SETTINGS_PERMISSION)) {
@@ -143,7 +143,7 @@ class Translate extends Plugin
 
         Craft::$app->setComponents(
             [
-                'i18n' => $i18n
+                'i18n' => $i18n,
             ]
         );
     }
@@ -153,7 +153,7 @@ class Translate extends Plugin
         Event::on(
             UserPermissions::class,
             UserPermissions::EVENT_REGISTER_PERMISSIONS,
-            function (RegisterUserPermissionsEvent $event) {
+            function(RegisterUserPermissionsEvent $event) {
                 $event->permissions[] = [
                     'heading' => Craft::t('translations-admin', 'Translations admin'),
                     'permissions' => [
@@ -177,8 +177,8 @@ class Translate extends Plugin
                         ],
                         self::CHANGE_TRANSLATIONS_SETTINGS_PERMISSION => [
                             'label' => 'Change translations settings',
-                        ]
-                    ]
+                        ],
+                    ],
                 ];
             }
         );
@@ -189,7 +189,7 @@ class Translate extends Plugin
         Event::on(
             UrlManager::class,
             UrlManager::EVENT_REGISTER_SITE_URL_RULES,
-            static function (RegisterUrlRulesEvent $event) {
+            static function(RegisterUrlRulesEvent $event) {
                 $event->rules['translations-admin/utilities/missing'] = 'translations-admin/utilities/missing';
             }
         );
@@ -200,7 +200,7 @@ class Translate extends Plugin
         Event::on(
             UrlManager::class,
             UrlManager::EVENT_REGISTER_CP_URL_RULES,
-            function (RegisterUrlRulesEvent $event) {
+            function(RegisterUrlRulesEvent $event) {
                 $event->rules['translations-admin'] = 'translations-admin/messages/index';
                 foreach ($this->settings->getCategories() as $category) {
                     $event->rules["translations-admin/<category:$category>"] = 'translations-admin/messages/index';
@@ -218,7 +218,7 @@ class Translate extends Plugin
         Event::on(
             MessageSource::class,
             MessageSource::EVENT_MISSING_TRANSLATION,
-            function (MissingTranslationEvent $event) {
+            function(MissingTranslationEvent $event) {
                 if (!$this->settings->addMissingTranslations) {
                     return;
                 }
@@ -261,7 +261,7 @@ class Translate extends Plugin
         Event::on(
             Gql::class,
             Gql::EVENT_REGISTER_GQL_TYPES,
-            function (RegisterGqlTypesEvent $event) {
+            function(RegisterGqlTypesEvent $event) {
                 $event->types[] = StaticMessageInterface::class;
             }
         );
@@ -269,7 +269,7 @@ class Translate extends Plugin
         Event::on(
             Gql::class,
             Gql::EVENT_REGISTER_GQL_QUERIES,
-            function (RegisterGqlQueriesEvent $event) {
+            function(RegisterGqlQueriesEvent $event) {
                 $event->queries['staticMessages'] =
                     [
                         'type' => Type::listOf(StaticMessageInterface::getType()),

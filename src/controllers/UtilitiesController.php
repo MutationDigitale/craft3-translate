@@ -72,8 +72,7 @@ class UtilitiesController extends Controller
                     ['count' => $translationsImported]
                 )
             );
-        }
-        else {
+        } else {
             Craft::$app->getSession()->setError(
                 Craft::t(
                     'translations-admin',
@@ -100,8 +99,7 @@ class UtilitiesController extends Controller
                     ['count' => $translationsExported]
                 )
             );
-        }
-        else {
+        } else {
             Craft::$app->getSession()->setError(
                 Craft::t(
                     'translations-admin',

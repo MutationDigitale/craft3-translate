@@ -12,12 +12,12 @@ class StaticMessageArguments
             'language' => [
                 'name' => 'language',
                 'type' => Type::listOf(Type::string()),
-                'description' => 'Determines which language(s) the static messages should be queried in. Defaults to the current (requested) language.'
+                'description' => 'Determines which language(s) the static messages should be queried in. Defaults to the current (requested) language.',
             ],
             'category' => [
                 'name' => 'category',
                 'type' => Type::listOf(Type::string()),
-                'description' => 'Determines which category(ies) the static messages should be queried in. Defaults to the site category.'
+                'description' => 'Determines which category(ies) the static messages should be queried in. Defaults to the site category.',
             ],
         ];
     }

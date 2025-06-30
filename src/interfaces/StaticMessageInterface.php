@@ -14,7 +14,7 @@ class StaticMessageInterface
     /**
      * @return string
      */
-    static public function getName(): string
+    public static function getName(): string
     {
         return 'StaticMessagesType';
     }
@@ -22,7 +22,7 @@ class StaticMessageInterface
     /**
      * @return Type
      */
-    static public function getType()
+    public static function getType()
     {
         if ($type = GqlEntityRegistry::getEntity(self::class)) {
             return $type;

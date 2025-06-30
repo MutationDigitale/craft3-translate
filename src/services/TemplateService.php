@@ -28,14 +28,14 @@ class TemplateService extends Component
         $messages = [];
 
         foreach ($templatePaths as $templatesPath) {
-            $template_files = $this->getDirContents($templatesPath);
+            $templateFiles = $this->getDirContents($templatesPath);
 
-            foreach ($template_files as $file) {
-                $template_str = file_get_contents($file);
-                $twig_source = new Source($template_str, basename($file));
+            foreach ($templateFiles as $file) {
+                $templateStr = file_get_contents($file);
+                $twigSource = new Source($templateStr, basename($file));
 
                 try {
-                    $token_stream = $twig->tokenize($twig_source);
+                    $token_stream = $twig->tokenize($twigSource);
                     $tree = $twig->parse($token_stream);
                     $this->listFunctionCalls($tree, $tree, $messages);
                 } catch (Exception $e) {
@@ -64,7 +64,6 @@ class TemplateService extends Component
     private function getTemplatePaths(): array
     {
         $view = Craft::$app->getView();
-        $paths = [];
 
         // Get template roots from registered site templates
         $paths = array_column($view->getSiteTemplateRoots(), 0);

@@ -2,10 +2,7 @@
 
 namespace mutation\translate\migrations;
 
-use Craft;
 use craft\db\Migration;
-use Exception;
-use mutation\translate\models\SourceMessage;
 
 /**
  * m191016_152459_init migration.
