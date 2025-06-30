@@ -45,8 +45,7 @@ class UtilitiesController extends Controller
 
         $translationsImported = Translate::getInstance()->template->parseTemplates();
 
-        Craft::$app->getSession()->setFlash(
-            'cp-notice',
+        Craft::$app->getSession()->setNotice(
             Craft::t(
                 'translations-admin',
                 '{count} translation(s) imported.',
