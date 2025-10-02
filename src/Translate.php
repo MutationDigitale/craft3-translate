@@ -223,7 +223,7 @@ class Translate extends Plugin
                     return;
                 }
 
-                if (!Craft::$app->request->isSiteRequest && $this->settings->addMissingSiteRequestOnly) {
+                if (!(Craft::$app->has('request', true) && Craft::$app->request->isSiteRequest) && $this->settings->addMissingSiteRequestOnly) {
                     return;
                 }
 
