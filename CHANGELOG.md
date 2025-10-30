@@ -1,5 +1,9 @@
 # Changelog
 
+## 4.2.2 - Unreleased
+
+- Add request check when adding missing translations to support testing frameworks (thank you @boboldehampsink for the PR [#79](https://github.com/MutationDigitale/craft3-translate/pull/79))
+
 ## 4.2.1 - 2025-06-30
 
 - Add support for multiple template paths (thank you @marknotton-yello for the PR [#71](https://github.com/MutationDigitale/craft3-translate/pull/71))
