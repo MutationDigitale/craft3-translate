@@ -3,6 +3,7 @@
 ## 4.2.2 - Unreleased
 
 - Add request check when adding missing translations to support testing frameworks (thank you @boboldehampsink for the PR [#79](https://github.com/MutationDigitale/craft3-translate/pull/79))
+- Change permission check from 'addTranslations' to 'saveTranslations' for save button (thank you @boboldehampsink for the PR [#81](https://github.com/MutationDigitale/craft3-translate/pull/81))
 
 ## 4.2.1 - 2025-06-30
 
