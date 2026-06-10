@@ -1,5 +1,9 @@
 # Changelog
 
+## 4.2.3 - 2026-06-10
+
+- Update NodeJS packages for css/js assets
+
 ## 4.2.2 - 2026-01-27
 
 - Add request check when adding missing translations to support testing frameworks (thank you @boboldehampsink for the PR [#79](https://github.com/MutationDigitale/craft3-translate/pull/79))
