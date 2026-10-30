@@ -188,6 +188,18 @@ class ControllersTest extends TestCase
         $this->runAction('translations-admin/settings/save', ['settings' => 'x']);
     }
 
+    public function testPluginNameIsRequired(): void
+    {
+        $this->loginAs([Controller::ACCESS_PLUGIN_PERMISSION, Translate::CHANGE_TRANSLATIONS_SETTINGS_PERMISSION]);
+        $storedName = Craft::$app->getProjectConfig()->get('plugins.translations-admin.settings.pluginName');
+
+        $this->assertNull($this->runAction('translations-admin/settings/save', [
+            'settings' => ['pluginName' => ' ', 'categories' => [['category' => 'site']]],
+        ]));
+        $this->assertTrue($this->plugin()->getSettings()->hasErrors('pluginName'));
+        $this->assertSame($storedName, Craft::$app->getProjectConfig()->get('plugins.translations-admin.settings.pluginName'), 'Nothing is saved');
+    }
+
     public function testSettingsAreReadOnlyWithoutAdminChanges(): void
     {
         $this->loginAs([Controller::ACCESS_PLUGIN_PERMISSION, Translate::CHANGE_TRANSLATIONS_SETTINGS_PERMISSION]);
@@ -267,12 +279,13 @@ class ControllersTest extends TestCase
         $this->assertSame('Hello!', $this->storedTranslation('Hello', 'en-US'), 'The valid translations are still saved');
     }
 
-    public function testBlankAndDuplicateCategoriesAreIgnored(): void
+    public function testCategoriesAreNormalized(): void
     {
         $this->loginAs([Controller::ACCESS_PLUGIN_PERMISSION, Translate::CHANGE_TRANSLATIONS_SETTINGS_PERMISSION]);
 
+        // Blank and duplicate categories are ignored, and the spaces around them are removed
         $this->runAction('translations-admin/settings/save', [
-            'settings' => ['categories' => [['category' => 'site'], ['category' => '  '], ['category' => 'other'], ['category' => 'site']]],
+            'settings' => ['categories' => [['category' => 'site'], ['category' => '  '], ['category' => ' other '], ['category' => 'site ']]],
         ]);
         $this->assertSame(['site', 'other'], Craft::$app->getProjectConfig()->get('plugins.translations-admin.settings.categories'));
         $this->assertSame(['site', 'other'], $this->plugin()->getSettings()->getCategories());
@@ -282,7 +295,7 @@ class ControllersTest extends TestCase
         ]), 'At least one category is required');
         $this->assertTrue($this->plugin()->getSettings()->hasErrors('categories'));
 
-        $this->plugin()->getSettings()->categories = [['category' => ''], ['category' => 'other'], ['category' => 'other']];
+        $this->plugin()->getSettings()->categories = [['category' => ''], ['category' => 'other'], ['category' => ' other ']];
         $this->assertSame(['other'], $this->plugin()->getSettings()->getCategories(), 'Also when not validated (e.g. set in the config file)');
     }
 

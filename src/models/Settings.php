@@ -23,9 +23,9 @@ class Settings extends Model
     public function defineRules(): array
     {
         return [
-            // An empty source language means the primary site language
             [['categories'], 'filter', 'filter' => fn($categories) => self::normalizeCategories($categories)],
-            [['categories'], 'required'],
+            // An empty source language means the primary site language
+            [['pluginName', 'categories'], 'required'],
             [['categories'], function($attribute) {
                 foreach ($this->$attribute as $category) {
                     if (!self::isFileNameCategory($category)) {
@@ -64,7 +64,21 @@ class Settings extends Model
     }
 
     /**
-     * Returns the categories as a list, without the empty rows nor the duplicates.
+     * Returns the excluded message pattern that a message contains, or null if it shouldn't be excluded.
+     */
+    public function getExcludedMessagePattern(string $message): ?string
+    {
+        foreach ($this->getExcludedMessages() as $pattern) {
+            if (str_contains($message, (string)$pattern)) {
+                return (string)$pattern;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Returns the categories as a list, trimmed, without the empty rows nor the duplicates.
      *
      * @return string[]
      */
@@ -74,8 +88,8 @@ class Settings extends Model
             return [];
         }
         return collect($categories)->flatten()
-            ->map(fn($category) => (string)$category)
-            ->filter(fn($category) => trim($category) !== '')
+            ->map(fn($category) => trim((string)$category))
+            ->filter(fn($category) => $category !== '')
             ->unique()
             ->values()
             ->toArray();

@@ -44,6 +44,23 @@ class TemplateParserTest extends TestCase
         $this->assertSame('Déjà traduit', $this->storedTranslation('Parse default', 'fr-CA'));
     }
 
+    public function testExcludedMessagesAreSkipped(): void
+    {
+        $settings = $this->plugin()->getSettings();
+        // Like the missing translations added when the pages are visited, a part of the message is enough
+        $settings->excludedMessages = [['message' => 'Parse pos'], ['message' => 'default']];
+
+        try {
+            $this->assertSame(8, $this->plugin()->template->parseTemplates());
+        } finally {
+            $settings->excludedMessages = [];
+        }
+
+        $this->assertSame([], $this->sourceMessageIds('Parse positional', 'other'));
+        $this->assertSame([], $this->sourceMessageIds('Parse default'));
+        $this->assertCount(1, $this->sourceMessageIds('Parse named', 'other'));
+    }
+
     public function testTemplatePathsSetting(): void
     {
         $path = Craft::$app->getPath()->getTempPath() . '/translations-template-paths';

@@ -16,12 +16,14 @@ class SourceMessageService extends Component
 {
     public function getSourceMessagesArrayByCategory($category)
     {
+        $sourceMessages = $this->filterExactCategories($this->getSourceMessagesWithTranslations(['s.category' => $category]), [$category]);
+
         return array_map(fn($sourceMessage) => [
             'id' => $sourceMessage['id'],
             'dateCreated' => $sourceMessage['dateCreated'],
             'message' => $sourceMessage['message'],
             'languages' => $sourceMessage['languages'],
-        ], $this->getSourceMessagesWithTranslations(['s.category' => $category]));
+        ], $sourceMessages);
     }
 
     public function getAllSourceMessages()
@@ -49,12 +51,12 @@ class SourceMessageService extends Component
         $queriedLanguages = array_merge($languages, [$sourceLanguage]);
         $fallbackLanguages = array_map(fn($language) => substr($language, 0, 2), $queriedLanguages);
 
-        $sourceMessages = (new Query())
+        $sourceMessages = $this->filterExactCategories((new Query())
             ->select(['id', 'message', 'category', 'dateCreated'])
             ->from(SourceMessage::tableName())
             ->where(['category' => $categories])
             ->orderBy(['id' => SORT_ASC])
-            ->all();
+            ->all(), $categories);
 
         $translations = $this->getTranslations([
             's.category' => $categories,
@@ -229,6 +231,18 @@ class SourceMessageService extends Component
         }
 
         return array_values($sourceMessages);
+    }
+
+    /**
+     * Keeps the source messages of the exact categories: MySQL and MariaDB compare the categories case and accent
+     * insensitively (e.g. `Site` matches `site`), unlike the rest of the plugin (e.g. the save and delete actions).
+     *
+     * @param array<int, array<string, mixed>> $sourceMessages The source messages, with their category
+     * @param string[] $categories
+     */
+    private function filterExactCategories(array $sourceMessages, array $categories): array
+    {
+        return array_values(array_filter($sourceMessages, fn($sourceMessage) => in_array($sourceMessage['category'], $categories, true)));
     }
 
     /**

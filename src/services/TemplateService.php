@@ -36,7 +36,7 @@ class TemplateService extends Component
     private bool $hasUnknownVariables = false;
 
     /**
-     * Parses the site templates and adds the missing messages to the database.
+     * Parses the site templates and adds the missing messages of the configured categories to the database, except the excluded ones.
      *
      * @return int The number of messages added
      */
@@ -72,12 +72,14 @@ class TemplateService extends Component
             $view->setTemplateMode($oldTemplateMode);
         }
 
-        $categories = Translate::getInstance()->settings->getCategories();
+        $settings = Translate::getInstance()->settings;
+        $categories = $settings->getCategories();
         $sourceMessageService = Translate::getInstance()->sourceMessage;
         $count = 0;
 
         foreach ($messages as $message) {
-            if (!in_array($message['category'], $categories, true)) {
+            // Like the missing translations added when the pages are visited
+            if (!in_array($message['category'], $categories, true) || $settings->getExcludedMessagePattern($message['value']) !== null) {
                 continue;
             }
 

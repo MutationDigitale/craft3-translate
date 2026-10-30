@@ -30,6 +30,18 @@ class SourceMessageServiceTest extends TestCase
         $this->assertCount(7, $byHash);
     }
 
+    public function testCategoriesAreExactMatches(): void
+    {
+        $this->plugin()->messages->addMessage('Exact category', 'site');
+        // E.g. left by a previous configuration: MySQL and MariaDB compare the categories case-insensitively
+        $this->insertRaw('Site', 'Other case category', ['en-US' => 'Other case']);
+
+        $this->assertSame(['Exact category'], array_column($this->plugin()->sourceMessage->getSourceMessagesArrayByCategory('site'), 'message'));
+        $this->assertStringNotContainsString('Other case category', $this->plugin()->export->exportCsv('site'));
+        $rows = StaticMessageResolver::resolve(null, ['language' => ['en-US'], 'category' => ['site']]);
+        $this->assertSame(['Exact category'], array_column($rows, 'key'));
+    }
+
     public function testCreateSourceMessage(): void
     {
         $service = $this->plugin()->sourceMessage;
