@@ -133,11 +133,15 @@ class MessagesController extends Controller
         $this->requirePermission(Translate::DELETE_TRANSLATIONS_PERMISSION);
 
         $ids = array_map('intval', (array)$this->request->getRequiredBodyParam('sourceMessageId'));
-        $sourceMessageIds = $this->getAllowedIds($this->getSourceMessageCategories($ids));
+        $categories = $this->getSourceMessageCategories($ids);
+        $sourceMessageIds = $this->getAllowedIds($categories);
+
+        // Like the save action, the messages deleted in the meantime are ignored, only the ones of other categories are a failure
+        $hasForbiddenIds = count($sourceMessageIds) < count($categories);
 
         Translate::getInstance()->messages->deleteMessages($sourceMessageIds);
 
-        return $this->asJson(['success' => true]);
+        return $this->asJson(['success' => !$hasForbiddenIds]);
     }
 
     public function actionSave()

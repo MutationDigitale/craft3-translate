@@ -24,6 +24,7 @@
 - Convert the tables to the database charset (utf8mb4) on MySQL and MariaDB, so translations can contain any character (e.g. emojis)
 - Imports, saves and deletions are now done in a database transaction, so they're not partly applied when they fail (category by category for the PHP translations import)
 - The CSV export now includes a BOM so spreadsheet apps open it as UTF-8, and values that could be run as formulas are escaped (the escaping is removed on import)
+- The CSV import now only accepts `.csv`, `.tsv` and `.txt` files (e.g. Excel's tab-delimited "Unicode Text" format)
 - Parsing the templates now only adds the messages of the configured categories that aren't excluded by the "Excluded messages" setting, and reports the number of messages added
 - GraphQL now translates the static messages like the site: all the messages of the configured categories are returned, falling back to the base language (e.g. `fr` for `fr-CA`), to the source language for the categories other than `site`, and to the key instead of `null`
 - The source language can now be left empty in the settings, to follow the primary site language (saving the settings used to store the language of the primary site, which then didn't follow its changes)
@@ -50,13 +51,15 @@
 - Fix CSV imports evaluating the values starting with `=` as formulas, keys included (e.g. `=1+1` was imported as `2`), and changing some numbers (e.g. `1.50` to `1.5`)
 - Fix the PHP translations import failing with an error when a file is invalid, storing the arrays of a file as JSON and ignoring its numbers (the arrays are now skipped with a warning)
 - Fix the template parser adding the messages to the `site` category when the category is the first argument (e.g. `'Hello'|t('other')`), and ignoring the messages, categories and params set in variables with `{% set %}`. A variable is only used when the template sets it once to a text or an array, and doesn't define it another way (e.g. as a loop variable or a macro argument): otherwise, and when the first argument is a variable that isn't set in the template (e.g. `'Hello'|t(category)` or `'Hello {name}'|t(params)`), the message is skipped, since its category can't be known
+- Fix the "Parse templates" utility ignoring the messages in `{% embed %}` blocks
+- Fix the "Parse templates" utility failing when a template path doesn't exist (e.g. an alias that isn't defined): it's now skipped with a warning
 - Fix the GraphQL caches not being cleared by the imports, the utilities and the missing translations added automatically
 - Fix the "Excluded messages" setting excluding every message when it has an empty row, and its instructions: messages are excluded when they contain the text, not only when they start with it
 - Fix the settings saving an empty plugin name, and the empty, duplicate and padded categories (e.g. `site ` was a different category than `site`)
 - Fix changes made while the translations were being saved being shown as saved, although they weren't
 - Fix some changes not being saved after adding, pasting or deleting messages (the translations were compared with the ones of other messages), and the search and filters being reset by these actions
 - Fix the changes that only add or remove spaces at the start or end of a translation not being saved
-- Fix pasting messages in another category saving "null" as the translation of the languages without one and "0" translations as empty, and losing the copied translations when pasting failed
+- Fix pasting messages in another category saving "null" as the translation of the languages without one and "0" translations as empty, and losing the copied translations when the request failed (e.g. a network error)
 - Fix adding, pasting, saving and deleting translations after changing category when the control panel URLs don't start with the CP trigger (e.g. without clean URLs)
 - Fix the messages of the previous category being shown when changing category while they were loading, and messages added or pasted during a category change being listed in the new one
 - Fix the messages without any translation row (e.g. inserted outside the plugin) not being listed in the control panel nor exported to PHP files
@@ -64,7 +67,7 @@
 - Fix the "Export DB translations to PHP" utility exporting the languages that don't have a site anymore
 - Fix the categories with regex characters in the control panel URLs: e.g. `site.forms` also matched `site-forms`, and the messages page of `c++` failed with an error
 - Fix an error when deleting a message that doesn't exist anymore
-- Fix the pagination starting at 0
+- Fix the pagination starting at 0, and the last page button going to an empty page when no messages match the search or filters
 - Fix the Utilities breadcrumb link
 - Fix the config file example of the README using the `app` category, which replaces Craft's own translations with the database ones (remove `app` from your categories if you copied it)
 

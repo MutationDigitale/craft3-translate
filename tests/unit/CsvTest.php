@@ -130,7 +130,7 @@ class CsvTest extends TestCase
     /**
      * @dataProvider formatProvider
      */
-    public function testSpreadsheetFormats(string $delimiter, string $encoding, bool $bom, string $lineEnding): void
+    public function testSpreadsheetFormats(string $delimiter, string $encoding, bool $bom, string $lineEnding, string $extension = 'csv'): void
     {
         $translation = 'Accents éàçÉ « guillemets » €';
         $content = $this->csv([['Key', 'en-US', 'fr-CA'], ['Translated', 'Translated EN', $translation]], $delimiter, $lineEnding);
@@ -140,7 +140,7 @@ class CsvTest extends TestCase
             default => mb_convert_encoding($content, $encoding, 'UTF-8'),
         };
 
-        $this->import($content);
+        $this->import($content, extension: $extension);
 
         $this->assertSame($translation, $this->storedTranslation('Translated', 'fr-CA'));
         $this->assertSame('Translated EN', $this->storedTranslation('Translated', 'en-US'));
@@ -153,9 +153,11 @@ class CsvTest extends TestCase
             'UTF-8 without BOM, LF (Google Sheets, Numbers)' => [',', 'UTF-8', false, "\n"],
             'semicolons (Excel in French)' => [';', 'UTF-8', true, "\r\n"],
             'tabs' => ["\t", 'UTF-8', false, "\n"],
+            'tabs in a .tsv file (Google Sheets)' => ["\t", 'UTF-8', false, "\n", 'tsv'],
             'Windows-1252 (Excel "CSV (Comma delimited)")' => [',', 'Windows-1252', false, "\r\n"],
             'Windows-1252 with semicolons' => [';', 'Windows-1252', false, "\r\n"],
-            'UTF-16 with tabs (Excel "Unicode Text")' => ["\t", 'UTF-16LE', true, "\r\n"],
+            // The reader checks the MIME type of the files that aren't .csv or .tsv
+            'UTF-16 with tabs in a .txt file (Excel "Unicode Text")' => ["\t", 'UTF-16LE', true, "\r\n", 'txt'],
         ];
     }
 
@@ -207,9 +209,9 @@ class CsvTest extends TestCase
         $this->plugin()->import->importCsv(Craft::getAlias('@storage') . '/does-not-exist.csv', 'site');
     }
 
-    private function import(string $content, string $category = 'site'): array
+    private function import(string $content, string $category = 'site', string $extension = 'csv'): array
     {
-        $file = Craft::$app->getPath()->getTempPath() . '/' . uniqid('import-', true) . '.csv';
+        $file = Craft::$app->getPath()->getTempPath() . '/' . uniqid('import-', true) . '.' . $extension;
         file_put_contents($file, $content);
         $this->files[] = $file;
 

@@ -128,9 +128,12 @@ class ControllersTest extends TestCase
         $legacy = $this->insertRaw('legacy', 'Legacy category');
 
         $this->loginAs([Controller::ACCESS_PLUGIN_PERMISSION, Translate::DELETE_TRANSLATIONS_PERMISSION]);
-        $this->assertSame(['success' => true], $this->runAction('translations-admin/messages/delete', ['sourceMessageId' => [$allowed, $legacy, 999999, 'abc']])->data);
+        $this->assertSame(['success' => false], $this->runAction('translations-admin/messages/delete', ['sourceMessageId' => [$allowed, $legacy]])->data);
         $this->assertSame([], $this->sourceMessageIds('Allowed'));
         $this->assertSame([$legacy], $this->sourceMessageIds('Legacy category', 'legacy'));
+
+        // Like the save action, a message deleted in the meantime (e.g. by another user) isn't a failure
+        $this->assertSame(['success' => true], $this->runAction('translations-admin/messages/delete', ['sourceMessageId' => [$allowed, 999999, 'abc']])->data);
 
         $this->loginAs([Translate::DELETE_TRANSLATIONS_PERMISSION]);
         $this->expectException(ForbiddenHttpException::class);

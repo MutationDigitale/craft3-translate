@@ -35,13 +35,14 @@ class ImportController extends Controller
         $category = $this->getRequiredCategoryParam();
         $csvFile = UploadedFile::getInstanceByName('file');
 
-        if (!$csvFile || !in_array(strtolower($csvFile->getExtension()), ['csv', 'txt'], true)) {
+        // Spreadsheet apps save tab-delimited files as .tsv (e.g. Google Sheets) or .txt (e.g. Excel's "Unicode Text")
+        if (!$csvFile || !in_array(strtolower($csvFile->getExtension()), ['csv', 'tsv', 'txt'], true)) {
             $this->setFailFlash(Craft::t('translations-admin', 'No csv file uploaded.'));
             return null;
         }
 
-        // The temp file keeps the uploaded file name: the reader trusts the .csv extension, otherwise it checks the MIME
-        // type, which can reject valid files (e.g. UTF-16)
+        // The temp file keeps the uploaded file name: the reader trusts the .csv and .tsv extensions, otherwise it checks
+        // the MIME type, which can reject valid files (e.g. UTF-16)
         $tempPath = $csvFile->saveAsTempFile();
         if ($tempPath === false) {
             $this->setFailFlash(Craft::t('translations-admin', 'No csv file uploaded.'));

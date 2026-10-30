@@ -67,7 +67,8 @@ class TemplateParserTest extends TestCase
         FileHelper::writeToFile("{$path}/extra.twig", "{{ 'Parse extra path'|t }}");
         Craft::setAlias('@translationsExtra', $path);
         $settings = $this->plugin()->getSettings();
-        $settings->templatePaths = ['@translationsExtra', ''];
+        // The paths that aren't directories (e.g. an alias that isn't defined) are skipped, the other ones are still parsed
+        $settings->templatePaths = ['@translationsExtra', '', '@translationsUndefined/templates', "{$path}/missing"];
 
         try {
             $this->plugin()->template->parseTemplates();
@@ -76,6 +77,32 @@ class TemplateParserTest extends TestCase
             $settings->templatePaths = [];
             FileHelper::removeDirectory($path);
         }
+    }
+
+    public function testEmbeddedTemplatesAreParsed(): void
+    {
+        $path = Craft::$app->getPath()->getTempPath() . '/translations-template-embeds';
+        // Twig keeps the templates of the embed tags apart from the other nodes of the template
+        FileHelper::writeToFile("{$path}/embeds.twig", implode("\n", [
+            "{% embed '_card' %}{% block body %}{{ 'Parse embed block'|t }}{% endblock %}{% endembed %}",
+            "{% embed '_card' %}{% block body %}{% embed '_card' %}{% block body %}{{ 'Parse nested embed'|t('other') }}{% endblock %}{% endembed %}{% endblock %}{% endembed %}",
+            "{% set embedCategory = 'other' %}{% embed '_card' %}{% block body %}{{ 'Parse embed outer variable'|t(embedCategory) }}{% endblock %}{% endembed %}",
+            "{% embed '_card' %}{% block body %}{% set embedMessage = 'Parse embed inner variable' %}{{ embedMessage|t }}{% endblock %}{% endembed %}",
+        ]));
+        $settings = $this->plugin()->getSettings();
+        $settings->templatePaths = [$path];
+
+        try {
+            $this->plugin()->template->parseTemplates();
+        } finally {
+            $settings->templatePaths = [];
+            FileHelper::removeDirectory($path);
+        }
+
+        $this->assertCount(1, $this->sourceMessageIds('Parse embed block'));
+        $this->assertCount(1, $this->sourceMessageIds('Parse nested embed', 'other'));
+        $this->assertCount(1, $this->sourceMessageIds('Parse embed outer variable', 'other'), 'A variable set outside the embed is known');
+        $this->assertCount(1, $this->sourceMessageIds('Parse embed inner variable'), 'A variable set in the embed is known');
     }
 
     public function testCategoriesThatCantBeKnownAreSkipped(): void
@@ -117,12 +144,16 @@ class TemplateParserTest extends TestCase
             "{% set loopCategory = 'other' %}{% for loopCategory in ['site'] %}{{ 'Parse loop variable'|t(loopCategory) }}{% endfor %}",
             "{% set macroCategory = 'other' %}{% macro m(macroCategory) %}{{ 'Parse macro argument'|t(macroCategory) }}{% endmacro %}",
             "{% set withCategory = 'other' %}{% with {withCategory: 'site'} %}{{ 'Parse with variable'|t(withCategory) }}{% endwith %}",
+            "{% set embedCategory = 'other' %}{% embed '_card' with {embedCategory: 'site'} %}{% block body %}{{ 'Parse embed with variable'|t(embedCategory) }}{% endblock %}{% endembed %}",
             "{% set arrowCategory = 'other' %}{{ ['site']|map(arrowCategory => 'Parse arrow argument'|t(arrowCategory))|join }}",
             "{% if x %}{% set ifCategory = 'other' %}{% else %}{% set ifCategory = 'site' %}{% endif %}{{ 'Parse set twice'|t(ifCategory) }}",
             "{% set message = 'Parse set message' %}{% set category = 'other' %}{{ message|t(category) }}",
         ]));
         // Any variable can be defined by a `with` without a literal
         FileHelper::writeToFile("{$path}/with.twig", "{% set category = 'other' %}{% with vars %}{{ 'Parse unknown with'|t(category) }}{% endwith %}");
+        FileHelper::writeToFile("{$path}/embed-with.twig", "{% set category = 'other' %}{% embed '_card' with vars %}{% block body %}{{ 'Parse unknown embed with'|t(category) }}{% endblock %}{% endembed %}");
+        // A `with` without variables only limits the scope of the variables set inside it
+        FileHelper::writeToFile("{$path}/scoped-with.twig", "{% with %}{% set scopedCategory = 'other' %}{{ 'Parse with without variables'|t(scopedCategory) }}{% endwith %}");
         $settings = $this->plugin()->getSettings();
         $settings->templatePaths = [$path];
 
@@ -133,11 +164,12 @@ class TemplateParserTest extends TestCase
             FileHelper::removeDirectory($path);
         }
 
-        foreach (['Parse loop variable', 'Parse macro argument', 'Parse with variable', 'Parse arrow argument', 'Parse set twice', 'Parse unknown with'] as $message) {
+        foreach (['Parse loop variable', 'Parse macro argument', 'Parse with variable', 'Parse embed with variable', 'Parse arrow argument', 'Parse set twice', 'Parse unknown with', 'Parse unknown embed with'] as $message) {
             $this->assertSame([], $this->sourceMessageIds($message), $message);
             $this->assertSame([], $this->sourceMessageIds($message, 'other'), $message);
         }
         $this->assertContains('Parse set message', $this->messages('other'), 'Variables set once are still known');
+        $this->assertContains('Parse with without variables', $this->messages('other'), 'A with tag without variables is parsed');
     }
 
     private function messages(string $category): array

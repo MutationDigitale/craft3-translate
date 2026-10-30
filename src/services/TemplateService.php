@@ -7,6 +7,7 @@ use craft\helpers\FileHelper;
 use mutation\translate\Translate;
 use Throwable;
 use Twig\Node\CheckToStringNode;
+use Twig\Node\EmbedNode;
 use Twig\Node\Expression\AbstractExpression;
 use Twig\Node\Expression\ArrayExpression;
 use Twig\Node\Expression\AssignNameExpression;
@@ -15,6 +16,7 @@ use Twig\Node\Expression\FilterExpression;
 use Twig\Node\Expression\NameExpression;
 use Twig\Node\Expression\TempNameExpression;
 use Twig\Node\MacroNode;
+use Twig\Node\ModuleNode;
 use Twig\Node\Node;
 use Twig\Node\SetNode;
 use Twig\Node\WithNode;
@@ -126,9 +128,18 @@ class TemplateService extends Component
             (array)($legacyConfig['templatePaths'] ?? [])
         );
         foreach ($templatePaths as $path) {
-            if (is_string($path) && trim($path) !== '') {
-                $paths[] = Craft::getAlias($path);
+            if (!is_string($path) || trim($path) === '') {
+                continue;
             }
+
+            // Skipped instead of failing, so the other templates are still parsed (e.g. an alias that isn't defined)
+            $directory = Craft::getAlias($path, false);
+            if ($directory === false || !is_dir($directory)) {
+                Craft::warning("Skipped the \"{$path}\" template path, it isn't a directory.", __METHOD__);
+                continue;
+            }
+
+            $paths[] = $directory;
         }
 
         // Add default templates path
@@ -147,7 +158,7 @@ class TemplateService extends Component
             }
         }
 
-        foreach ($node as $child) {
+        foreach ($this->getChildNodes($node) as $child) {
             $this->listFunctionCalls($child, $list);
         }
     }
@@ -157,7 +168,7 @@ class TemplateService extends Component
      *
      * The template isn't run, so the scopes and the order of the statements aren't known: a variable is only known when the
      * template sets it once to a constant or an array (e.g. `{% set message = 'Hello' %}` or `{% set params = {count: 2} %}`),
-     * and isn't defined any other way (e.g. a loop variable, a macro argument or `{% with %}`).
+     * and isn't defined any other way (e.g. a loop variable, a macro argument, `{% with %}` or `{% embed ... with %}`).
      */
     private function collectVariables(Node $node): void
     {
@@ -186,7 +197,8 @@ class TemplateService extends Component
                     $this->addVariable($name, null);
                 }
             }
-        } elseif ($node instanceof WithNode) {
+        } elseif (($node instanceof WithNode || $node instanceof EmbedNode) && $node->hasNode('variables')) {
+            // The variables are optional (e.g. `{% with %}` only limits the scope of the variables set inside it)
             $variables = $node->getNode('variables');
             if ($variables instanceof ArrayExpression) {
                 foreach ($variables->getKeyValuePairs() as $pair) {
@@ -199,7 +211,7 @@ class TemplateService extends Component
             }
         }
 
-        foreach ($node as $child) {
+        foreach ($this->getChildNodes($node) as $child) {
             $this->collectVariables($child);
         }
     }
@@ -220,6 +232,25 @@ class TemplateService extends Component
     private function getExpressions(Node $node): array
     {
         return $node instanceof AbstractExpression ? [$node] : iterator_to_array($node, false);
+    }
+
+    /**
+     * Returns the child nodes of a node, and the templates of the `{% embed %}` tags, which Twig keeps in an attribute of the
+     * template instead.
+     *
+     * @return Node[]
+     */
+    private function getChildNodes(Node $node): array
+    {
+        $children = iterator_to_array($node, false);
+
+        if ($node instanceof ModuleNode) {
+            foreach ($node->getAttribute('embedded_templates') as $embeddedTemplate) {
+                $children[] = $embeddedTemplate;
+            }
+        }
+
+        return $children;
     }
 
     private function unwrap(Node $node): Node

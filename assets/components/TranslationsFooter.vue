@@ -21,12 +21,12 @@
       </div>
 
       <div class="page-link next-page" :title="t('Next Page')"
-           :class="{'disabled': page === pages.length}"
-           @click="page < pages.length ? setPage(page+1) : null"></div>
+           :class="{'disabled': page >= lastPage}"
+           @click="page < lastPage ? setPage(page+1) : null"></div>
 
       <div class="page-link page-last" :title="t('Last Page')"
-           :class="{'disabled': page === pages.length}"
-           @click="setPage(pages.length)">
+           :class="{'disabled': page >= lastPage}"
+           @click="setPage(lastPage)">
         <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 16 16">
           <path fill-rule="evenodd" d="M3.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L9.293 8 3.646 2.354a.5.5 0 0 1 0-.708z"/>
           <path fill-rule="evenodd" d="M7.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L13.293 8 7.646 2.354a.5.5 0 0 1 0-.708z"/>
@@ -94,6 +94,10 @@ export default {
     };
   },
   computed: {
+    // The first page is shown even when no message matches the filters
+    lastPage() {
+      return Math.max(this.pages.length, 1);
+    },
     ...mapState({
       page: state => state.page,
       perPage: state => state.perPage,
@@ -121,8 +125,8 @@ export default {
       for (let index = 1; index <= numberOfPages; index++) {
         this.pages.push(index);
       }
-      if (this.page > this.pages.length && this.pages.length > 0) {
-        this.setPage(this.pages.length);
+      if (this.page > this.lastPage) {
+        this.setPage(this.lastPage);
       }
     },
     t(str) {
@@ -198,14 +202,15 @@ export default {
             if (category === this.category) {
               this.addSourceMessages(response.data.sourceMessages);
             }
-            this.copiedMessages = [];
-            this.copiedMessagesCategory = '';
           } else {
-            // The copied messages are kept, to try again
             this.emitter.emit('translations-pasted-error');
           }
+          // Pasting them again would give the same result (e.g. when they're all in the category already)
+          this.copiedMessages = [];
+          this.copiedMessagesCategory = '';
         })
         .catch(() => {
+          // The copied messages are kept, to try again
           this.emitter.emit('translations-pasted-error');
         })
         .finally(() => {

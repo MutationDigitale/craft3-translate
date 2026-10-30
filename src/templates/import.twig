@@ -5,7 +5,7 @@
 {% import "_includes/forms" as forms %}
 
 {% macro uploadFile(name) %}
-    <input type="file" name="{{ name }}" accept=".csv,text/csv">
+    <input type="file" name="{{ name }}" accept=".csv,.tsv,.txt,text/csv">
 {% endmacro %}
 
 {% block actionButton %}

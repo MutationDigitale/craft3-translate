@@ -57,7 +57,7 @@ You can either go the **settings page** or create a file `translations-admin.php
 - **Add missing translations from templates only**: Controls whether missing translations are only added when they are translated in a template with the `t` filter (disabled by default). When disabled, the messages translated in PHP code are also added, including the names Craft translates itself in the `site` category (e.g. sites, sections and fields).
 - **Enable caching**: Controls whether the translations are cached (disabled by default). The cache is cleared automatically when translations are changed with the plugin. If they are changed another way (e.g. by importing a database), clear the data caches.
 - **Excluded Messages**: Messages that should not be added to the database, identified by a part of the string (basic matching, no regex — see example).
-- **Template paths** (config file only): Other directories parsed by the "Parse templates" utility, besides the site templates. Aliases are supported (e.g. `@root/modules/templates`).
+- **Template paths** (config file only): Other directories parsed by the "Parse templates" utility, besides the site templates. Aliases are supported (e.g. `@root/modules/templates`). The paths that aren't directories are skipped, with a warning in the logs.
 
 Config file example:
 ```PHP
@@ -88,7 +88,7 @@ return [
 
 The exported CSV files have the key in the first column, followed by a column for each language, with the language ID as the header (e.g. `fr-CA`). The files are imported back by matching the headers to the site languages, so the order of the columns doesn't matter. A header can be the language ID (`fr-CA`), the language alone when only one site uses it (`fr`), or the language name (`French (Canada)` or `français (Canada)`, used by the files exported with previous versions). The other columns are ignored and listed after the import, and a file without any language column is rejected.
 
-Files saved by spreadsheet apps can be imported as is: the delimiter (comma, semicolon or tab) and the encoding (UTF-8, UTF-16 or Windows-1252) are detected automatically. An empty cell clears the translation, and when a key is in the file more than once, its last row wins.
+Files saved by spreadsheet apps can be imported as is (`.csv`, `.tsv` or `.txt`): the delimiter (comma, semicolon or tab) and the encoding (UTF-8, UTF-16 or Windows-1252) are detected automatically. An empty cell clears the translation, and when a key is in the file more than once, its last row wins.
 
 Values starting with `=`, `+`, `-`, `@`, a tab or a carriage return are prefixed with a single quote in the exported files to prevent spreadsheet apps from running them as formulas. The quote is removed when the file is imported.
 
