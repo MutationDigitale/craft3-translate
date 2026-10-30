@@ -5,7 +5,7 @@ namespace mutation\translate\migrations;
 use craft\db\Migration;
 
 /**
- * m191016_152459_init migration.
+ * Install migration.
  */
 class Install extends Migration
 {
@@ -14,12 +14,6 @@ class Install extends Migration
      */
     public function safeUp()
     {
-        $tableOptions = null;
-        if ($this->db->driverName === 'mysql') {
-            // http://stackoverflow.com/questions/766809/whats-the-difference-between-utf8-general-ci-and-utf8-unicode-ci
-            $tableOptions = 'CHARACTER SET utf8 COLLATE utf8_unicode_ci ENGINE=InnoDB';
-        }
-
         $this->createTable(
             '{{%source_message}}',
             [
@@ -30,8 +24,9 @@ class Install extends Migration
 
                 'category' => $this->string(),
                 'message' => $this->text(),
-            ],
-            $tableOptions
+                // Computed by the database, see SourceMessage::hash()
+                'messageHash' => 'CHAR(32) GENERATED ALWAYS AS (MD5([[message]])) STORED',
+            ]
         );
 
         $this->createTable(
@@ -46,8 +41,7 @@ class Install extends Migration
                 'translation' => $this->text(),
 
                 'PRIMARY KEY([[id]], [[language]])',
-            ],
-            $tableOptions
+            ]
         );
 
         $this->addForeignKey(
@@ -60,6 +54,7 @@ class Install extends Migration
             'RESTRICT'
         );
         $this->createIndex('idx_source_message_category', '{{%source_message}}', 'category');
+        $this->createIndex('idx_source_message_category_hash', '{{%source_message}}', ['category', 'messageHash'], true);
         $this->createIndex('idx_message_language', '{{%message}}', 'language');
     }
 

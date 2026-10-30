@@ -5,7 +5,7 @@
 {% import "_includes/forms" as forms %}
 
 {% macro uploadFile(name) %}
-    <input type="file" name="{{ name }}" accept="text/csv">
+    <input type="file" name="{{ name }}" accept=".csv,text/csv">
 {% endmacro %}
 
 {% block actionButton %}
@@ -15,7 +15,7 @@
 {% endblock %}
 
 {% block content %}
-    <p class="warning">{{ "The first column must be the key followed by a column for each language in order. It should follow the same format as the exported CSV from the export section." | t('translations-admin')  }}</p>
+    <p class="warning">{{ "The first column must be the key, followed by a column for each language with the language ID as the header (e.g. fr-CA). It should follow the same format as the exported CSV from the export section." | t('translations-admin')  }}</p>
 
     {{ actionInput('translations-admin/import/import') }}
 
@@ -31,6 +31,6 @@
 
     {{ forms.field({
         label: "Upload your CSV file" | t('translations-admin'),
-        instructions: "One column for the key and one column for each site is needed"
+        instructions: "One column for the key and one column for each language is needed" | t('translations-admin')
     }, _self.uploadFile('file')) }}
 {% endblock %}

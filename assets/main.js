@@ -14,9 +14,18 @@ const app = createApp({
   computed: {
     ...mapState({
       category: state => state.category,
+      modifiedMessagesKeys: state => state.modifiedMessagesKeys,
     })
   },
   created() {
+    // Warn before leaving the page with unsaved changes
+    window.addEventListener('beforeunload', (event) => {
+      if (this.modifiedMessagesKeys.length > 0) {
+        event.preventDefault();
+        event.returnValue = '';
+      }
+    });
+
     this.emitter.on('translations-saved', () => {
       this.$craft.cp.displayNotice(this.$craft.t('translations-admin', 'Translations saved'));
     });
@@ -65,7 +74,7 @@ const app = createApp({
     category() {
       if (document.querySelector('#selected-sidebar-item-label')) {
         document.body.classList.remove('showing-sidebar');
-        document.querySelector('#selected-sidebar-item-label').innerHTML = this.category;
+        document.querySelector('#selected-sidebar-item-label').textContent = this.category;
       }
     }
   },

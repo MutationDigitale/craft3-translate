@@ -9,7 +9,14 @@ return static function(ECSConfig $ecsConfig): void {
     $ecsConfig->parallel();
     $ecsConfig->paths([
         __DIR__ . '/src',
+        __DIR__ . '/tests',
         __FILE__,
+    ]);
+
+    $ecsConfig->skip([
+        __DIR__ . '/tests/_support/_generated',
+        __DIR__ . '/tests/_craft/storage',
+        __DIR__ . '/tests/_output',
     ]);
 
     $ecsConfig->sets([SetList::CRAFT_CMS_4]);

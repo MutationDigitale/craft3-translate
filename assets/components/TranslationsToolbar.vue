@@ -22,7 +22,7 @@
       </div>
     </div>
     <div class="flex-grow texticon search icon search-container">
-      <input class="text fullwidth" type="text" autocomplete="off" placeholder="Search"
+      <input class="text fullwidth" type="text" autocomplete="off" :placeholder="t('Search')"
              v-model="search">
     </div>
     <div>
@@ -96,7 +96,6 @@ export default {
       languages: state => state.languages,
       columns: state => state.columns,
       category: state => state.category,
-      sourceMessages: state => state.sourceMessages,
       emptyMessages: state => state.emptyMessages,
       checkedSourceMessages: state => state.checkedSourceMessages
     })
@@ -125,14 +124,17 @@ export default {
       formData.append('message', this.messageToAdd);
       formData.append('category', this.category);
 
+      const category = this.category;
+
       axios
         .post('', formData)
         .then((response) => {
           if (response.data.success) {
             this.emitter.emit('translation-added');
-            const sourceMessages = this.sourceMessages;
-            sourceMessages.push(response.data.sourceMessage);
-            this.updateSourceMessages(sourceMessages);
+            // Not in the list of another category, if it was changed during the request
+            if (category === this.category) {
+              this.addSourceMessages([response.data.sourceMessage]);
+            }
           } else {
             this.emitter.emit('translation-added-error');
           }
@@ -154,14 +156,14 @@ export default {
     ...mapActions({
       updateLanguages: 'updateLanguages',
       updateColumns: 'updateColumns',
-      updateSourceMessages: 'updateSourceMessages'
+      addSourceMessages: 'addSourceMessages'
     })
   }
 };
 </script>
 
 <style lang="scss" scoped>
-@import "~craftcms-sass/mixins";
+@use "craftcms-sass/mixins" as *;
 
 #translations-toolbar {
   flex-wrap: wrap;

@@ -3,9 +3,7 @@
 namespace mutation\translate\controllers;
 
 use Craft;
-use craft\helpers\UrlHelper;
-use craft\web\Controller;
-use mutation\translate\models\SourceMessage;
+use mutation\translate\base\Controller;
 use mutation\translate\Translate;
 
 class UtilitiesController extends Controller
@@ -14,28 +12,15 @@ class UtilitiesController extends Controller
     {
         $this->requirePermission(Translate::TRANSLATIONS_UTILITIES_PERMISSION);
 
-        $settings = Translate::getInstance()->settings;
-
-        $pluginName = $settings->pluginName;
-        $templateTitle = Craft::t('translations-admin', 'Utilities');
-
-        $variables = [];
-        $variables['fullPageForm'] = false;
-        $variables['title'] = $templateTitle;
-        $variables['crumbs'] = [
+        return $this->renderCpPage(
+            'translations-admin/utilities',
+            Craft::t('translations-admin', 'Utilities'),
+            'translations-admin/translations-utilities',
+            'utilities',
             [
-                'label' => $pluginName,
-                'url' => UrlHelper::cpUrl('translations-admin'),
-            ],
-            [
-                'label' => $templateTitle,
-                'url' => UrlHelper::cpUrl('translations-admin/export-messages'),
-            ],
-        ];
-        $variables['docTitle'] = "{$pluginName} - {$templateTitle}";
-        $variables['selectedSubnavItem'] = 'utilities';
-
-        $this->renderTemplate('translations-admin/utilities', $variables);
+                'fullPageForm' => false,
+            ]
+        );
     }
 
     public function actionMissing()
@@ -45,13 +30,11 @@ class UtilitiesController extends Controller
 
         $translationsImported = Translate::getInstance()->template->parseTemplates();
 
-        Craft::$app->getSession()->setNotice(
-            Craft::t(
-                'translations-admin',
-                '{count} translation(s) imported.',
-                ['count' => $translationsImported]
-            )
-        );
+        $this->setSuccessFlash(Craft::t(
+            'translations-admin',
+            '{count} translation(s) imported.',
+            ['count' => $translationsImported]
+        ));
 
         return $this->redirectToPostedUrl();
     }
@@ -64,20 +47,13 @@ class UtilitiesController extends Controller
         $translationsImported = Translate::getInstance()->import->importPhpTranslationsToDatabase();
 
         if (is_int($translationsImported)) {
-            Craft::$app->getSession()->setNotice(
-                Craft::t(
-                    'translations-admin',
-                    '{count} translation(s) imported to the database.',
-                    ['count' => $translationsImported]
-                )
-            );
+            $this->setSuccessFlash(Craft::t(
+                'translations-admin',
+                '{count} translation(s) imported to the database.',
+                ['count' => $translationsImported]
+            ));
         } else {
-            Craft::$app->getSession()->setError(
-                Craft::t(
-                    'translations-admin',
-                    'Translations couldn’t be imported to the database.'
-                )
-            );
+            $this->setFailFlash(Craft::t('translations-admin', 'Translations couldn’t be imported to the database.'));
         }
 
         return $this->redirectToPostedUrl();
@@ -91,20 +67,13 @@ class UtilitiesController extends Controller
         $translationsExported = Translate::getInstance()->export->exportDatabaseTranslationsToPhp();
 
         if (is_int($translationsExported)) {
-            Craft::$app->getSession()->setNotice(
-                Craft::t(
-                    'translations-admin',
-                    '{count} translation(s) exported to PHP files.',
-                    ['count' => $translationsExported]
-                )
-            );
+            $this->setSuccessFlash(Craft::t(
+                'translations-admin',
+                '{count} translation(s) exported to PHP files.',
+                ['count' => $translationsExported]
+            ));
         } else {
-            Craft::$app->getSession()->setError(
-                Craft::t(
-                    'translations-admin',
-                    'Translations couldn’t be exported to PHP files.'
-                )
-            );
+            $this->setFailFlash(Craft::t('translations-admin', 'Translations couldn’t be exported to PHP files.'));
         }
 
         return $this->redirectToPostedUrl();
@@ -115,11 +84,10 @@ class UtilitiesController extends Controller
         $this->requirePermission(Translate::TRANSLATIONS_UTILITIES_PERMISSION);
         $this->requirePostRequest();
 
-        SourceMessage::deleteAll();
+        Translate::getInstance()->messages->deleteAllMessages();
 
-        Craft::$app->getSession()->setNotice(
-            Craft::t('translations-admin', 'All translations deleted.')
-        );
+        $this->setSuccessFlash(Craft::t('translations-admin', 'All translations deleted.'));
+
         return $this->redirectToPostedUrl();
     }
 }

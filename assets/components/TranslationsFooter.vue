@@ -34,7 +34,7 @@
       </div>
 
       <div class="page-info">
-        {{ (page - 1) * perPage }}-{{ ((page - 1) * perPage) + displayedSourceMessages.length }} {{ t('of') }}
+        {{ displayedSourceMessages.length > 0 ? ((page - 1) * perPage) + 1 : 0 }}-{{ ((page - 1) * perPage) + displayedSourceMessages.length }} {{ t('of') }}
         {{ filteredSourceMessages.length }} {{ t('translations') }}
       </div>
     </div>
@@ -47,7 +47,7 @@
             @click="pasteMessages()">
       <span class="inline-flex gap-xs">
         <span class="cp-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" focusable="false" aria-hidden="true"><path d="M0 130h64v92H0v-92zM130 64V0h92v64h-92zM64 98V64h34V0H64C28.7 0 0 28.7 0 64v34M254 64h34v64h64V64c0-35.3-28.7-64-64-64h-34M128 288H64v-34H0v34c0 35.3 28.7 64 64 64h64M448 160H224c-35.3 0-64 28.7-64 64v224c0 35.3 28.7 64 64 64h224c35.3 0 64-28.7 64-64V224c0-35.3-28.7-64-64-64zm0 259v29H224V224h224v195z"></path></svg></span>
-        <span class="label">Paste translations</span>
+        <span class="label">{{ t('Paste translations') }}</span>
       </span>
     </button>
     <button v-show="checkedSourceMessages.length > 0"
@@ -64,7 +64,7 @@
             @click="copyMessages()">
       <span class="inline-flex gap-xs">
         <span class="cp-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" focusable="false" aria-hidden="true"><path d="M0 130h64v92H0v-92zM130 64V0h92v64h-92zM64 98V64h34V0H64C28.7 0 0 28.7 0 64v34M254 64h34v64h64V64c0-35.3-28.7-64-64-64h-34M128 288H64v-34H0v34c0 35.3 28.7 64 64 64h64M448 160H224c-35.3 0-64 28.7-64 64v224c0 35.3 28.7 64 64 64h224c35.3 0 64-28.7 64-64V224c0-35.3-28.7-64-64-64zm0 259v29H224V224h224v195z"></path></svg></span>
-        <span class="label">Copy translations</span>
+        <span class="label">{{ t('Copy translations') }}</span>
       </span>
     </button>
   </div>
@@ -125,9 +125,6 @@ export default {
         this.setPage(this.pages.length);
       }
     },
-    setPage(nb) {
-      this.setPage(nb);
-    },
     t(str) {
       return this.$craft.t('translations-admin', str);
     },
@@ -152,10 +149,9 @@ export default {
         .then((response) => {
           if (response.data.success) {
             this.emitter.emit('translation-deleted');
-            const sourceMessages = this.sourceMessages.filter((sourceMessage) => {
-              return this.checkedSourceMessages.indexOf(sourceMessage.id) === -1;
-            });
-            this.updateSourceMessages(sourceMessages);
+            this.removeSourceMessages(this.checkedSourceMessages);
+            // The changes of the deleted messages can't be saved anymore
+            this.forgetModifiedMessages({ sourceMessageIds: this.checkedSourceMessages });
             this.setCheckedSourceMessages([]);
           } else {
             this.emitter.emit('translation-deleted-error');
@@ -183,10 +179,13 @@ export default {
 
       formData.append('category', this.category);
 
+      const category = this.category;
+
       for (const sourceMessageId in this.copiedMessages) {
         formData.append('sourceMessages[' + sourceMessageId + '][message]', this.copiedMessages[sourceMessageId]["message"]);
         for (const language in this.copiedMessages[sourceMessageId]["languages"]) {
-          formData.append('sourceMessages[' + sourceMessageId + '][languages][' + language + ']', this.copiedMessages[sourceMessageId]["languages"][language]);
+          // FormData would send null as the "null" string
+          formData.append('sourceMessages[' + sourceMessageId + '][languages][' + language + ']', this.copiedMessages[sourceMessageId]["languages"][language] ?? '');
         }
       }
 
@@ -195,12 +194,14 @@ export default {
         .then((response) => {
           if (response.data.success) {
             this.emitter.emit('translations-pasted');
-            const sourceMessages = this.sourceMessages;
-            response.data.sourceMessages.forEach(sourceMessage => {
-              sourceMessages.push(sourceMessage);
-            });
-            this.updateSourceMessages(sourceMessages);
+            // Not in the list of another category, if it was changed during the request
+            if (category === this.category) {
+              this.addSourceMessages(response.data.sourceMessages);
+            }
+            this.copiedMessages = [];
+            this.copiedMessagesCategory = '';
           } else {
+            // The copied messages are kept, to try again
             this.emitter.emit('translations-pasted-error');
           }
         })
@@ -209,8 +210,6 @@ export default {
         })
         .finally(() => {
           this.setIsAdding(false);
-          this.copiedMessages = [];
-          this.copiedMessagesCategory = '';
         });
     },
     exportMessages() {
@@ -249,14 +248,16 @@ export default {
       setPage: 'setPage',
     }),
     ...mapActions({
-      updateSourceMessages: 'updateSourceMessages'
+      addSourceMessages: 'addSourceMessages',
+      removeSourceMessages: 'removeSourceMessages',
+      forgetModifiedMessages: 'forgetModifiedMessages'
     })
   }
 };
 </script>
 
 <style lang="scss" scoped>
-@import "~craftcms-sass/mixins";
+@use "craftcms-sass/mixins" as *;
 
 .page-number.active {
   pointer-events: none;

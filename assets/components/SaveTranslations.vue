@@ -10,6 +10,7 @@
 
 <script>
 import axios from 'axios';
+import { clone } from '../helpers';
 import {mapState} from 'vuex';
 
 export default {
@@ -52,9 +53,11 @@ export default {
       formData.append(this.$csrfTokenName, this.$csrfTokenValue);
       formData.append('action', 'translations-admin/messages/save');
 
-      for (const languageId in this.modifiedMessages) {
-        for (const sourceMessageId in this.modifiedMessages[languageId]) {
-          const message = this.modifiedMessages[languageId][sourceMessageId];
+      // Copy the sent translations, they can still be changed during the request
+      const savedMessages = clone(this.modifiedMessages);
+      for (const languageId in savedMessages) {
+        for (const sourceMessageId in savedMessages[languageId]) {
+          const message = savedMessages[languageId][sourceMessageId];
           formData.append('translations[' + languageId + '][' + sourceMessageId + ']', message);
         }
       }
@@ -63,7 +66,7 @@ export default {
         .post('', formData)
         .then((response) => {
           if (response.data.success) {
-            this.emitter.emit('translations-saved');
+            this.emitter.emit('translations-saved', savedMessages);
           } else {
             this.emitter.emit('translations-saved-error');
           }

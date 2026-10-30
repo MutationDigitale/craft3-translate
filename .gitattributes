@@ -1,0 +1,5 @@
+# Development files, not included in the package installed by Composer
+/.ddev export-ignore
+/.github export-ignore
+/tests export-ignore
+/codeception.yml export-ignore

@@ -3,39 +3,40 @@
 namespace mutation\translate\controllers;
 
 use Craft;
-use craft\web\Controller;
+use mutation\translate\base\Controller;
 use mutation\translate\bundles\TranslateBundle;
+use mutation\translate\helpers\LocaleHelper;
+use mutation\translate\models\SourceMessage;
 use mutation\translate\Translate;
+use yii\web\BadRequestHttpException;
+use yii\web\NotFoundHttpException;
 
 class MessagesController extends Controller
 {
     public function actionIndex($category = null)
     {
+        $categories = Translate::getInstance()->settings->getCategories();
+        if ($category !== null && !in_array($category, $categories, true)) {
+            throw new NotFoundHttpException(Craft::t('translations-admin', 'Invalid category.'));
+        }
+
         $this->view->registerAssetBundle(TranslateBundle::class);
 
-        $settings = Translate::getInstance()->settings;
-
-        $pluginName = $settings->pluginName;
+        $pluginName = Translate::getInstance()->settings->pluginName;
         $templateTitle = Craft::t('translations-admin', 'Messages');
 
-        $categories = Translate::getInstance()->settings->getCategories();
-
-        $variables = [];
-        $variables['title'] = $templateTitle;
-        $variables['docTitle'] = "{$pluginName} - {$templateTitle}";
-        $variables['selectedSubnavItem'] = 'translations';
-        $variables['categories'] = $categories;
-        $variables['category'] = $category ?? $categories[0];
-
-        $this->renderTemplate('translations-admin/index', $variables);
+        return $this->renderTemplate('translations-admin/index', [
+            'title' => $templateTitle,
+            'docTitle' => "{$pluginName} - {$templateTitle}",
+            'selectedSubnavItem' => 'translations',
+            'categories' => $categories,
+            'category' => $category ?? $categories[0],
+        ]);
     }
 
     public function actionGetTranslations()
     {
-        $category = Craft::$app->request->getParam('category');
-
-        $siteLocales = Craft::$app->i18n->getSiteLocales();
-        sort($siteLocales);
+        $category = $this->getRequiredCategoryParam();
 
         $sourceMessages = Translate::getInstance()->sourceMessage->getSourceMessagesArrayByCategory($category);
 
@@ -50,7 +51,7 @@ class MessagesController extends Controller
                             : false,
                     ];
                 },
-                $siteLocales
+                LocaleHelper::getSiteLocales()
             ),
             'sourceMessages' => $sourceMessages,
         ]);
@@ -61,8 +62,11 @@ class MessagesController extends Controller
         $this->requirePostRequest();
         $this->requirePermission(Translate::ADD_TRANSLATIONS_PERMISSION);
 
-        $message = Craft::$app->request->getRequiredBodyParam('message');
-        $category = Craft::$app->request->getRequiredBodyParam('category');
+        $message = $this->request->getRequiredBodyParam('message');
+        if (!is_string($message)) {
+            throw new BadRequestHttpException('Invalid message.');
+        }
+        $category = $this->getRequiredCategoryParam();
 
         $sourceMessage = Translate::getInstance()->messages->addMessage($message, $category);
 
@@ -70,19 +74,12 @@ class MessagesController extends Controller
             return $this->asJson(['success' => false]);
         }
 
-        $languages = [];
-        foreach (Craft::$app->i18n->getSiteLocales() as $one) {
-            $languages[$one->id] = '';
-        }
-
-        Craft::$app->getGql()->invalidateCaches();
-
         return $this->asJson([
-            'success' => $sourceMessage,
+            'success' => true,
             'sourceMessage' => [
                 'id' => $sourceMessage->id,
                 'message' => $sourceMessage->message,
-                'languages' => $languages,
+                'languages' => array_fill_keys(LocaleHelper::getSiteLocaleIds(), ''),
                 'dateCreated' => $sourceMessage->dateCreated,
             ],
         ]);
@@ -93,29 +90,40 @@ class MessagesController extends Controller
         $this->requirePostRequest();
         $this->requirePermission(Translate::ADD_TRANSLATIONS_PERMISSION);
 
-        $sourceMessages = Craft::$app->request->getRequiredBodyParam('sourceMessages');
-        $category = Craft::$app->request->getRequiredBodyParam('category');
+        $sourceMessages = $this->request->getRequiredBodyParam('sourceMessages');
+        if (!is_array($sourceMessages)) {
+            throw new BadRequestHttpException('Invalid source messages.');
+        }
+        $category = $this->getRequiredCategoryParam();
 
         $addedSourceMessages = [];
 
         foreach ($sourceMessages as $sourceMessage) {
-            if ($addedSourceMessage = Translate::getInstance()->messages->addMessage($sourceMessage["message"], $category, $sourceMessage["languages"])) {
+            if (!is_array($sourceMessage) || !isset($sourceMessage['message']) || !is_string($sourceMessage['message'])) {
+                continue;
+            }
+            $languages = isset($sourceMessage['languages']) && is_array($sourceMessage['languages'])
+                ? array_filter($sourceMessage['languages'], 'is_string')
+                : null;
+            if ($addedSourceMessage = Translate::getInstance()->messages->addMessage($sourceMessage['message'], $category, $languages)) {
                 $addedSourceMessages[] = $addedSourceMessage;
             }
         }
 
-        Craft::$app->getGql()->invalidateCaches();
-
         return $this->asJson([
             'success' => count($addedSourceMessages) > 0,
-            'sourceMessages' => collect($addedSourceMessages)->map(function($sourceMessage) {
+            'sourceMessages' => array_map(function($sourceMessage) {
                 return [
                     'id' => $sourceMessage->id,
                     'message' => $sourceMessage->message,
-                    'languages' => $sourceMessage->getTranslations(),
+                    // Like the add action, the languages without a translation are empty strings
+                    'languages' => array_merge(
+                        array_fill_keys(LocaleHelper::getSiteLocaleIds(), ''),
+                        array_map(fn($translation) => $translation ?? '', $sourceMessage->getTranslations())
+                    ),
                     'dateCreated' => $sourceMessage->dateCreated,
                 ];
-            }),
+            }, $addedSourceMessages),
         ]);
     }
 
@@ -124,11 +132,10 @@ class MessagesController extends Controller
         $this->requirePostRequest();
         $this->requirePermission(Translate::DELETE_TRANSLATIONS_PERMISSION);
 
-        $sourceMessageIds = Craft::$app->request->getRequiredBodyParam('sourceMessageId');
+        $ids = array_map('intval', (array)$this->request->getRequiredBodyParam('sourceMessageId'));
+        $sourceMessageIds = $this->getAllowedIds($this->getSourceMessageCategories($ids));
 
         Translate::getInstance()->messages->deleteMessages($sourceMessageIds);
-
-        Craft::$app->getGql()->invalidateCaches();
 
         return $this->asJson(['success' => true]);
     }
@@ -138,12 +145,54 @@ class MessagesController extends Controller
         $this->requirePostRequest();
         $this->requirePermission(Translate::SAVE_TRANSLATIONS_PERMISSION);
 
-        $translations = Craft::$app->request->getRequiredBodyParam('translations');
+        $translations = (array)$this->request->getRequiredBodyParam('translations');
 
-        $messages = Translate::getInstance()->messages->saveMessages($translations);
+        $ids = [];
+        foreach ($translations as $items) {
+            foreach (array_keys((array)$items) as $id) {
+                $ids[] = (int)$id;
+            }
+        }
+        $categories = $this->getSourceMessageCategories($ids);
+        $allowedIds = array_flip($this->getAllowedIds($categories));
+        $allowedTranslations = array_map(fn($items) => array_intersect_key((array)$items, $allowedIds), $translations);
 
-        Craft::$app->getGql()->invalidateCaches();
+        // The messages deleted in the meantime are ignored, only the ones of other categories are a failure
+        $hasForbiddenIds = count($allowedIds) < count($categories);
 
-        return $this->asJson(['success' => true, 'messages' => $messages]);
+        $success = Translate::getInstance()->messages->saveMessages($allowedTranslations);
+
+        return $this->asJson(['success' => $success && !$hasForbiddenIds]);
+    }
+
+    /**
+     * Returns the categories of the source messages that exist, indexed by ID.
+     *
+     * @return array<int, string|null>
+     */
+    private function getSourceMessageCategories(array $ids): array
+    {
+        if (count($ids) === 0) {
+            return [];
+        }
+
+        return SourceMessage::find()
+            ->select(['category'])
+            ->where(['id' => array_unique($ids)])
+            ->indexBy('id')
+            ->column();
+    }
+
+    /**
+     * Returns the IDs of the source messages that are in the categories of the settings.
+     *
+     * @param array<int, string|null> $categories The categories, indexed by source message ID
+     * @return int[]
+     */
+    private function getAllowedIds(array $categories): array
+    {
+        $allowedCategories = Translate::getInstance()->settings->getCategories();
+
+        return array_keys(array_filter($categories, fn($category) => in_array($category, $allowedCategories, true)));
     }
 }

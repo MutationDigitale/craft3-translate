@@ -1,0 +1,10 @@
+{{ 'Parse default'|t }}
+{{ 'Parse positional'|t('other') }}
+{{ 'Parse named'|t(category='other') }}
+{{ 'Parse translate filter'|translate }}
+{% set message = 'Parse set variable' %}{{ message|t }}
+{{ 'Parse params'|t({count: 2}) }}
+{{ 'Parse category and params'|t('site', {count: 2}) }}
+{{ 'Parse unconfigured category'|t('notconfigured') }}
+{{ 'Not translated'|upper }}
+{% for i in 1..2 %}{% if i == 1 %}{{ 'Parse in a loop'|t }}{% endif %}{% endfor %}

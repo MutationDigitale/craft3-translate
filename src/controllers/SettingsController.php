@@ -3,11 +3,10 @@
 namespace mutation\translate\controllers;
 
 use Craft;
-use craft\helpers\UrlHelper;
-use craft\web\Controller;
+use mutation\translate\base\Controller;
 use mutation\translate\Translate;
+use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
-use yii\web\NotFoundHttpException;
 
 class SettingsController extends Controller
 {
@@ -17,29 +16,18 @@ class SettingsController extends Controller
 
         $settings = Translate::getInstance()->settings;
 
-        $pluginName = $settings->pluginName;
-        $templateTitle = Craft::t('translations-admin', 'Settings');
-
-        $variables = [];
-        $variables['readOnly'] = !Craft::$app->getConfig()->getGeneral()->allowAdminChanges;
-        $variables['fullPageForm'] = true;
-        $variables['pluginName'] = $pluginName;
-        $variables['title'] = $templateTitle;
-        $variables['crumbs'] = [
+        return $this->renderCpPage(
+            'translations-admin/settings',
+            Craft::t('translations-admin', 'Settings'),
+            'translations-admin/plugin-settings',
+            'settings',
             [
-                'label' => $pluginName,
-                'url' => UrlHelper::cpUrl('translations-admin'),
-            ],
-            [
-                'label' => $templateTitle,
-                'url' => UrlHelper::cpUrl('translations-admin/plugin-settings'),
-            ],
-        ];
-        $variables['docTitle'] = "{$pluginName} - {$templateTitle}";
-        $variables['selectedSubnavItem'] = 'settings';
-        $variables['settings'] = $settings;
-
-        return $this->renderTemplate('translations-admin/settings', $variables);
+                'readOnly' => !Craft::$app->getConfig()->getGeneral()->allowAdminChanges,
+                'fullPageForm' => true,
+                'pluginName' => $settings->pluginName,
+                'settings' => $settings,
+            ]
+        );
     }
 
     public function actionSave()
@@ -49,21 +37,24 @@ class SettingsController extends Controller
         }
 
         $this->requirePermission(Translate::CHANGE_TRANSLATIONS_SETTINGS_PERMISSION);
-
         $this->requirePostRequest();
-        $pluginHandle = Craft::$app->getRequest()->getRequiredBodyParam('pluginHandle');
-        $settings = Craft::$app->getRequest()->getBodyParam('settings', []);
-        $plugin = Craft::$app->getPlugins()->getPlugin($pluginHandle);
-        if ($plugin === null) {
-            throw new NotFoundHttpException('Plugin not found');
+
+        // Only this plugin settings can be saved, regardless of the request params
+        $plugin = Translate::getInstance();
+        $settings = $this->request->getBodyParam('settings', []);
+        if (!is_array($settings)) {
+            throw new BadRequestHttpException('Invalid settings.');
         }
+        // Only set in the config file: the "Parse templates" utility reads every file of these folders
+        unset($settings['templatePaths']);
+
         if (!Craft::$app->getPlugins()->savePluginSettings($plugin, $settings)) {
-            Craft::$app->getSession()->setError(Craft::t('app', "Couldn't save plugin settings."));
-            // Send the plugin back to the template
-            Craft::$app->getUrlManager()->setRouteParams(['plugin' => $plugin]);
+            $this->setFailFlash(Craft::t('app', "Couldn't save plugin settings."));
+            // Send the settings back to the template, with their errors
             return null;
         }
-        Craft::$app->getSession()->setNotice(Craft::t('app', 'Plugin settings saved.'));
+
+        $this->setSuccessFlash(Craft::t('app', 'Plugin settings saved.'));
         return $this->redirectToPostedUrl();
     }
 }

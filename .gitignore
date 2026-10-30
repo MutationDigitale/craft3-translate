@@ -3,3 +3,11 @@
 /vendor
 /composer.lock
 /node_modules
+
+# Tests
+/tests/.env
+/tests/_support/_generated
+/tests/_craft/config/project
+/tests/_craft/config/license.key
+# Published by the tests that render control panel pages
+/cpresources

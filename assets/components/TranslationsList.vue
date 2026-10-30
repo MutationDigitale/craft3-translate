@@ -87,7 +87,9 @@ export default {
   },
   data () {
     return {
-      lastCheckbox: null
+      lastCheckbox: null,
+      // Identifies the last load, the responses of the previous ones are ignored (e.g. after changing category)
+      loadRequest: 0
     };
   },
   computed: {
@@ -123,7 +125,6 @@ export default {
       sourceMessages: state => state.sourceMessages,
       filteredSourceMessages: state => state.filteredSourceMessages,
       page: state => state.page,
-      displayedSourceMessages: state => state.displayedSourceMessages,
       modifiedMessages: state => state.modifiedMessages,
       emptyMessages: state => state.emptyMessages,
       search: state => state.search,
@@ -138,16 +139,23 @@ export default {
   created () {
     this.setCategory(this.currentCategory);
 
-    this.emitter.on('translations-saved', () => {
-      this.setOriginalSourceMessages(this.copyObj(this.sourceMessages));
-      this.updateModifiedMessages({});
-      const sourceMessagesLength = this.sourceMessages.length;
-      for (let i = 0; i < sourceMessagesLength; i++) {
-        this.sourceMessages[i].isModified = null;
-      }
+    this.emitter.on('translations-saved', (savedMessages) => {
+      // Only the sent translations are saved, the ones changed during the request stay modified
+      this.sourceMessages.forEach((sourceMessage, index) => {
+        for (const languageId in savedMessages) {
+          if (sourceMessage.id in savedMessages[languageId]) {
+            this.originalSourceMessages[index].languages[languageId] = savedMessages[languageId][sourceMessage.id];
+            this.change(sourceMessage, { id: languageId });
+          }
+        }
+      });
     });
   },
   watch: {
+    // Keeps the search and filters when messages are loaded, added or deleted
+    sourceMessages () {
+      this.filterSourceMessages();
+    },
     search () {
       this.filterSourceMessages();
     },
@@ -180,11 +188,15 @@ export default {
       this.loadColumns();
     },
     loadSourceMessages () {
+      const loadRequest = ++this.loadRequest;
       this.setIsLoading(true);
 
       axios
         .get(this.$craft.getActionUrl('translations-admin/messages/get-translations', { category: this.category }))
         .then((response) => {
+          if (loadRequest !== this.loadRequest) {
+            return;
+          }
           const localStorageLanguages = localStorage.getItem('admin-translations-languages');
           let localStorageLanguagesObjects = null;
           try {
@@ -204,9 +216,14 @@ export default {
           this.updateSourceMessages(response.data.sourceMessages);
         })
         .catch(() => {
+          if (loadRequest === this.loadRequest) {
+            this.$craft.cp.displayError(this.t('Translations could not be loaded'));
+          }
         })
         .finally(() => {
-          this.setIsLoading(false);
+          if (loadRequest === this.loadRequest) {
+            this.setIsLoading(false);
+          }
         });
     },
     loadColumns () {
@@ -253,28 +270,19 @@ export default {
         sourceMessage.isModified = {};
       }
 
-      const modifiedMessages = this.modifiedMessages;
-
       if (this.isModified(sourceMessage, language)) {
         sourceMessage.isModified[language.id] = true;
-        if (!(language.id in modifiedMessages)) {
-          modifiedMessages[language.id] = {};
-        }
-        modifiedMessages[language.id][sourceMessage.id] = sourceMessage.languages[language.id]
-          ? sourceMessage.languages[language.id]
-          : '';
+        this.updateModifiedMessages({
+          ...this.modifiedMessages,
+          [language.id]: {
+            ...this.modifiedMessages[language.id],
+            [sourceMessage.id]: sourceMessage.languages[language.id] || ''
+          }
+        });
       } else {
         sourceMessage.isModified[language.id] = false;
-        if (language.id in modifiedMessages && sourceMessage.id in modifiedMessages[language.id]) {
-          delete modifiedMessages[language.id][sourceMessage.id];
-
-          if (Object.keys(modifiedMessages[language.id]).length === 0) {
-            delete modifiedMessages[language.id];
-          }
-        }
+        this.forgetModifiedMessages({ sourceMessageIds: [sourceMessage.id], languageId: language.id });
       }
-
-      this.updateModifiedMessages(modifiedMessages);
     },
     isModified (sourceMessage, language) {
       let originalSourceMessage = this.originalSourceMessages[this.sourceMessages.indexOf(sourceMessage)];
@@ -290,9 +298,6 @@ export default {
         }
       }
       this.setCheckedSourceMessages(checkedSourceMessages);
-    },
-    copyObj (obj) {
-      return JSON.parse(JSON.stringify(obj));
     },
     t (str) {
       return this.$craft.t('translations-admin', str);
@@ -313,8 +318,9 @@ export default {
 
       return element.clientWidth - padding;
     },
+    // Like the server, a blank translation is empty, but the other ones are saved as is (e.g. with a trailing space)
     normalizeStringValue (value) {
-      return this.isNullOrUndefined(value) ? '' : value.trim();
+      return this.isNullOrUndefined(value) || value.trim() === '' ? '' : value;
     },
     isNullOrUndefined (value) {
       return typeof value === 'undefined' || value === null;
@@ -370,14 +376,15 @@ export default {
     ...mapActions({
       updateLanguages: 'updateLanguages',
       updateSourceMessages: 'updateSourceMessages',
-      updateModifiedMessages: 'updateModifiedMessages'
+      updateModifiedMessages: 'updateModifiedMessages',
+      forgetModifiedMessages: 'forgetModifiedMessages'
     })
   }
 };
 </script>
 
 <style lang="scss" scoped>
-@import "~craftcms-sass/mixins";
+@use "craftcms-sass/mixins" as *;
 
 .translate-table {
   table-layout: fixed;

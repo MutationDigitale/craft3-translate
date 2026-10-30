@@ -17,7 +17,7 @@ class StaticMessageArguments
             'category' => [
                 'name' => 'category',
                 'type' => Type::listOf(Type::string()),
-                'description' => 'Determines which category(ies) the static messages should be queried in. Defaults to the site category.',
+                'description' => 'Determines which category(ies) the static messages should be queried in, among the categories of the plugin settings. Defaults to the site category.',
             ],
         ];
     }
