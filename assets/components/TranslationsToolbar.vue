@@ -58,7 +58,7 @@
     </div>
     <div v-if="addPermission">
       <button class="btn" type="button" @click="addMessage()"
-              :disabled="messageToAdd === null || messageToAdd.trim() === ''">
+              :disabled="isAdding || messageToAdd === null || messageToAdd.trim() === ''">
         {{ t('Add') }}
       </button>
     </div>
@@ -67,7 +67,7 @@
 
 <script>
 import {mapActions, mapMutations, mapState} from 'vuex';
-import axios from 'axios';
+import { postAction } from '../helpers';
 
 export default {
   props: {
@@ -117,26 +117,24 @@ export default {
     addMessage() {
       this.setIsAdding(true);
 
-      const formData = new FormData();
-
-      formData.append(this.$csrfTokenName, this.$csrfTokenValue);
-      formData.append('action', 'translations-admin/messages/add');
-      formData.append('message', this.messageToAdd);
-      formData.append('category', this.category);
-
+      const message = this.messageToAdd;
       const category = this.category;
 
-      axios
-        .post('', formData)
+      postAction(this, 'translations-admin/messages/add', { message, category })
         .then((response) => {
           if (response.data.success) {
             this.emitter.emit('translation-added');
+            // Kept when it was changed during the request
+            if (this.messageToAdd === message) {
+              this.messageToAdd = '';
+            }
             // Not in the list of another category, if it was changed during the request
             if (category === this.category) {
               this.addSourceMessages([response.data.sourceMessage]);
             }
           } else {
-            this.emitter.emit('translation-added-error');
+            // The message is kept, to change it or try again
+            this.emitter.emit('translation-added-error', response.data.error);
           }
         })
         .catch(() => {
@@ -144,7 +142,6 @@ export default {
         })
         .finally(() => {
           this.setIsAdding(false);
-          this.messageToAdd = '';
         });
     },
     ...mapMutations({

@@ -4,6 +4,7 @@ namespace mutation\translate\controllers;
 
 use Craft;
 use craft\helpers\FileHelper;
+use craft\helpers\UrlHelper;
 use craft\web\UploadedFile;
 use mutation\translate\base\Controller;
 use mutation\translate\Translate;
@@ -33,11 +34,16 @@ class ImportController extends Controller
         $this->requirePostRequest();
 
         $category = $this->getRequiredCategoryParam();
-        $csvFile = UploadedFile::getInstanceByName('file');
+        $csvFile = $this->getUploadedFile();
+
+        if (!$csvFile) {
+            $this->setFailFlash(Craft::t('translations-admin', 'No csv file uploaded.'));
+            return null;
+        }
 
         // Spreadsheet apps save tab-delimited files as .tsv (e.g. Google Sheets) or .txt (e.g. Excel's "Unicode Text")
-        if (!$csvFile || !in_array(strtolower($csvFile->getExtension()), ['csv', 'tsv', 'txt'], true)) {
-            $this->setFailFlash(Craft::t('translations-admin', 'No csv file uploaded.'));
+        if (!in_array(strtolower($csvFile->getExtension()), ['csv', 'tsv', 'txt'], true)) {
+            $this->setFailFlash(Craft::t('translations-admin', 'Only .csv, .tsv and .txt files can be imported.'));
             return null;
         }
 
@@ -60,11 +66,11 @@ class ImportController extends Controller
 
         $notice = Craft::t(
             'translations-admin',
-            '{added} translations added. {updated} translations updated.',
+            '{added, plural, =1{# translation} other{# translations}} added. {updated, plural, =1{# translation} other{# translations}} updated.',
             ['added' => $result['added'], 'updated' => $result['updated']]
         );
         if ($result['created'] > 0) {
-            $notice .= ' ' . Craft::t('translations-admin', '{created} keys created.', ['created' => $result['created']]);
+            $notice .= ' ' . Craft::t('translations-admin', '{created, plural, =1{# key} other{# keys}} created.', ['created' => $result['created']]);
         }
         if (count($result['ignoredColumns']) > 0) {
             $notice .= ' ' . Craft::t('translations-admin', 'Ignored columns: {columns}.', [
@@ -73,6 +79,15 @@ class ImportController extends Controller
         }
         $this->setSuccessFlash($notice);
 
-        return $this->redirectToPostedUrl();
+        // The category stays selected, to import other files in it
+        return $this->redirectToPostedUrl(null, UrlHelper::cpUrl('translations-admin/import-messages', ['category' => $category]));
+    }
+
+    /**
+     * Returns the uploaded CSV file (the tests can't upload one: it must come from an HTTP upload).
+     */
+    protected function getUploadedFile(): ?UploadedFile
+    {
+        return UploadedFile::getInstanceByName('file');
     }
 }

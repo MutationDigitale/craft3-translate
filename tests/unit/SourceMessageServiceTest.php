@@ -158,6 +158,33 @@ class SourceMessageServiceTest extends TestCase
         $this->assertSame(['Configured'], array_column($rows, 'key'));
     }
 
+    public function testGraphqlOnlyReturnsTheSiteLanguages(): void
+    {
+        $this->plugin()->messages->addMessage('Translated', 'site', ['fr-CA' => 'Traduit']);
+
+        // Each language would add every message to the results
+        $rows = StaticMessageResolver::resolve(null, ['language' => ['fr-CA', 'xx-YY', '', 'fr', 'FR-ca', 'fr-CA'], 'category' => ['site']]);
+
+        $this->assertSame([['Translated', 'Traduit', 'fr-CA']], array_map(fn($row) => [$row['key'], $row['message'], $row['language']], $rows));
+    }
+
+    public function testGraphqlDefaultArguments(): void
+    {
+        $this->plugin()->messages->addMessage('Translated', 'site', ['fr-CA' => 'Traduit']);
+        $this->plugin()->messages->addMessage('Other category', 'other', ['fr-CA' => 'Autre']);
+        $language = Craft::$app->language;
+        Craft::$app->language = 'fr-CA';
+
+        try {
+            $rows = StaticMessageResolver::resolve(null, []);
+        } finally {
+            Craft::$app->language = $language;
+        }
+
+        // The current language and the site category
+        $this->assertSame([['Translated', 'Traduit', 'fr-CA', 'site']], array_map(fn($row) => [$row['key'], $row['message'], $row['language'], $row['category']], $rows));
+    }
+
     public function testGraphqlTranslatesLikeTheSite(): void
     {
         $this->insertRaw('site', 'Base language', ['fr' => 'Langue de base']);

@@ -86,7 +86,9 @@ return [
 
 ## Import and export
 
-The exported CSV files have the key in the first column, followed by a column for each language, with the language ID as the header (e.g. `fr-CA`). The files are imported back by matching the headers to the site languages, so the order of the columns doesn't matter. A header can be the language ID (`fr-CA`), the language alone when only one site uses it (`fr`), or the language name (`French (Canada)` or `français (Canada)`, used by the files exported with previous versions). The other columns are ignored and listed after the import, and a file without any language column is rejected.
+The exported CSV files have the key in the first column, followed by a column for each language, with the language ID as the header (e.g. `fr-CA`). The files are imported back by matching the headers to the site languages, so the order of the language columns doesn't matter, but the key must stay in the first column: a file whose first column is a language is rejected. A header can be the language ID (`fr-CA`), the language alone when only one site uses it (`fr`), or the language name (`French (Canada)` or `français (Canada)`, used by the files exported with previous versions). The other columns are ignored and listed after the import, and a file without any language column is rejected.
+
+The Export button of the messages page exports the selected messages, or the ones matching the search and filters, in the displayed order. The Export page exports a whole category.
 
 Files saved by spreadsheet apps can be imported as is (`.csv`, `.tsv` or `.txt`): the delimiter (comma, semicolon or tab) and the encoding (UTF-8, UTF-16 or Windows-1252) are detected automatically. An empty cell clears the translation, and when a key is in the file more than once, its last row wins.
 
@@ -115,6 +117,8 @@ Query static messages this way:
   }
 }
 ```
+
+The languages are the ones of the sites (the other ones are ignored), and default to the current language. The categories are the ones of the settings, and default to `site`.
 
 ## Events
 
@@ -149,5 +153,11 @@ ddev composer test
 ```
 
 Without DDEV, copy `tests/.env.example` to `tests/.env`, point it to an empty MySQL, MariaDB or PostgreSQL database, then run `composer test`.
+
+The control panel interface (`assets`) has its own tests, with [Vitest](https://vitest.dev/):
+```
+npm install
+npm test
+```
 
 The tests run on GitHub Actions for the pushes to `master` and the pull requests, with PHP 8.2 and 8.4 on MySQL, MariaDB and PostgreSQL.

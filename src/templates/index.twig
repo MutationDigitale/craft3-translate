@@ -30,9 +30,13 @@
     "Paste translations",
     "Translations copied",
     "Translations pasted",
+    "Translations pasted, except {count, plural, =1{one message} other{# messages}} already in the category.",
     "Translations not pasted",
+    "Translations not pasted, the messages are already in the category.",
     "Translations could not be loaded",
-    "Are you sure you want to delete the selected translations?",
+    "Translations could not be exported",
+    "Some messages were deleted in the meantime, their translations were not saved.",
+    "Are you sure you want to delete {count, plural, =1{the selected translation} other{the # selected translations}}?",
     "You have unsaved changes. Are you sure you want to leave?"
 ]) %}
 
@@ -55,7 +59,8 @@
 
 {% block content %}
     <div class="main">
-        <translations-list current-category="{{ category }}"></translations-list>
+        <translations-list current-category="{{ category }}"
+          :save-permission="{{ craft.app.user.checkPermission('saveTranslations') ? 'true' : 'false' }}"></translations-list>
     </div>
 {% endblock %}
 

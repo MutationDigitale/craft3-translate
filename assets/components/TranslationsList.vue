@@ -6,14 +6,11 @@
         <thead>
         <tr>
           <th class="checkbox-cell selectallcontainer" role="checkbox" tabindex="0"
-              :aria-checked="ariaChecked" style="width: 4%" @click="toggleCheckedSourceMessages()">
+              :aria-checked="ariaChecked" style="width: 4%" @click="toggleCheckedSourceMessages()"
+              @keydown.space.prevent="toggleCheckedSourceMessages()"
+              @keydown.enter.prevent="toggleCheckedSourceMessages()">
             <div class="checkbox"
-                 :class="{
-                    'checked': checkedSourceMessages.length > 0 &&
-                        checkedSourceMessages.length === displayedSourceMessages.length,
-                    'indeterminate': checkedSourceMessages.length > 0 &&
-                        checkedSourceMessages.length !== displayedSourceMessages.length
-                 }"></div>
+                 :class="{'checked': ariaChecked === 'true', 'indeterminate': ariaChecked === 'mixed'}"></div>
           </th>
           <th class="orderable" :class="[{'ordered': sortProperty === 'message'}, sortDirection]">
             <button type="button" @click="changeSort('message')">{{ t('Key') }}</button>
@@ -57,10 +54,11 @@
               <span class="light" v-if="language.nativeName"> – {{ language.nativeName }}</span>
             </div>
             <div class="message-text">
+              <!-- Not keyup: the translations can be changed without the keyboard (e.g. pasted with the mouse or corrected by the spell checker) -->
               <textarea class="text nicetext fullwidth"
                         v-model="sourceMessage.languages[language.id]"
-                        @change="change(sourceMessage, language)"
-                        @keyup="change(sourceMessage, language)"
+                        @input="change(sourceMessage, language)"
+                        :readonly="!savePermission"
                         :rows="getNumberOfLines(sourceMessage.languages[language.id])"
                         autocomplete="off"></textarea>
               <div class="language-label">{{ language.id }}</div>
@@ -83,7 +81,8 @@ import { mapActions, mapGetters, mapMutations, mapState } from 'vuex';
 
 export default {
   props: {
-    currentCategory: String
+    currentCategory: String,
+    savePermission: Boolean,
   },
   data () {
     return {
@@ -96,13 +95,14 @@ export default {
     ariaChecked: function () {
       if (this.checkedSourceMessages.length === 0) {
         return 'false';
-      } else {
-        if (this.checkedSourceMessages.length === this.displayedSourceMessages.length) {
-          return 'true';
-        } else {
-          return 'mixed';
-        }
       }
+      return this.displayedSourceMessages.every(sourceMessage => this.checkedSourceMessages.includes(sourceMessage.id))
+        ? 'true'
+        : 'mixed';
+    },
+    // The saved translations, indexed by source message ID
+    originalSourceMessagesById: function () {
+      return new Map(this.originalSourceMessages.map(sourceMessage => [sourceMessage.id, sourceMessage]));
     },
     checkedSourceMessages: {
       get () {
@@ -141,14 +141,14 @@ export default {
 
     this.emitter.on('translations-saved', (savedMessages) => {
       // Only the sent translations are saved, the ones changed during the request stay modified
-      this.sourceMessages.forEach((sourceMessage, index) => {
+      for (const sourceMessage of this.sourceMessages) {
         for (const languageId in savedMessages) {
           if (sourceMessage.id in savedMessages[languageId]) {
-            this.originalSourceMessages[index].languages[languageId] = savedMessages[languageId][sourceMessage.id];
+            this.originalSourceMessagesById.get(sourceMessage.id).languages[languageId] = savedMessages[languageId][sourceMessage.id];
             this.change(sourceMessage, { id: languageId });
           }
         }
-      });
+      }
     });
   },
   watch: {
@@ -158,9 +158,20 @@ export default {
     },
     search () {
       this.filterSourceMessages();
+      this.setPage(1);
     },
     emptyMessages () {
       this.filterSourceMessages();
+      this.setPage(1);
+    },
+    // The actions only apply to the selected messages that are displayed, not to the ones of other pages or hidden by the
+    // search and filters, which the user can't see
+    displayedSourceMessages (displayedSourceMessages) {
+      const displayedIds = new Set(displayedSourceMessages.map(sourceMessage => sourceMessage.id));
+      const checkedSourceMessages = this.checkedSourceMessages.filter(id => displayedIds.has(id));
+      if (checkedSourceMessages.length < this.checkedSourceMessages.length) {
+        this.setCheckedSourceMessages(checkedSourceMessages);
+      }
     },
     languages: {
       handler () {
@@ -183,6 +194,7 @@ export default {
       this.setFilteredSourceMessages([]);
       this.setEmptyMessages(false);
       this.setCheckedSourceMessages([]);
+      this.setPage(1);
       this.updateModifiedMessages({});
       this.loadSourceMessages();
       this.loadColumns();
@@ -239,18 +251,18 @@ export default {
       }
     },
     filterSourceMessages () {
+      const search = this.normalizeSearchValue(this.search ?? '').trim();
       let sourceMessages = this.sourceMessages.filter((sourceMessage) => {
-        if (this.isNullOrUndefined(sourceMessage.message) || this.isNullOrUndefined(this.search)) {
+        if (search === '' || this.isNullOrUndefined(sourceMessage.message)) {
           return true;
         }
-        const search = this.search.toLowerCase().trim();
         for (const language of this.checkedLanguages) {
-          if (sourceMessage.languages[language.id] &&
-            sourceMessage.languages[language.id].toLowerCase().trim().includes(search)) {
+          const translation = sourceMessage.languages[language.id];
+          if (translation && this.normalizeSearchValue(translation).includes(search)) {
             return true;
           }
         }
-        return sourceMessage.message.toLowerCase().trim().includes(search);
+        return this.normalizeSearchValue(sourceMessage.message).includes(search);
       });
       if (this.emptyMessages) {
         sourceMessages = sourceMessages.filter((sourceMessage) => {
@@ -285,7 +297,7 @@ export default {
       }
     },
     isModified (sourceMessage, language) {
-      let originalSourceMessage = this.originalSourceMessages[this.sourceMessages.indexOf(sourceMessage)];
+      let originalSourceMessage = this.originalSourceMessagesById.get(sourceMessage.id);
       let originalValue = this.normalizeStringValue(originalSourceMessage.languages[language.id]);
       let newValue = this.normalizeStringValue(sourceMessage.languages[language.id]);
       return originalValue !== newValue;
@@ -318,9 +330,14 @@ export default {
 
       return element.clientWidth - padding;
     },
-    // Like the server, a blank translation is empty, but the other ones are saved as is (e.g. with a trailing space)
+    // Like the server, a blank translation is empty, but the other ones are saved as is (e.g. with a trailing space). The
+    // line breaks are compared as \n: the textareas always give them as \n, even when they were saved as \r\n.
     normalizeStringValue (value) {
-      return this.isNullOrUndefined(value) || value.trim() === '' ? '' : value;
+      return this.isNullOrUndefined(value) || value.trim() === '' ? '' : value.replace(/\r\n?/g, '\n');
+    },
+    // Case and accent insensitive (e.g. "element" finds "Élément")
+    normalizeSearchValue (value) {
+      return value.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
     },
     isNullOrUndefined (value) {
       return typeof value === 'undefined' || value === null;
@@ -332,6 +349,7 @@ export default {
       } else {
         this.setSortDirection(this.sortDirection === 'asc' ? 'desc' : 'asc');
       }
+      this.setPage(1);
     },
     onSourceMessageCheckboxClick (event) {
       const checkboxes = Array.from(this.$refs["translateTable"].querySelectorAll('.source-message-checkbox'));
@@ -372,6 +390,7 @@ export default {
       setSortProperty: 'setSortProperty',
       setSortDirection: 'setSortDirection',
       setColumns: 'setColumns',
+      setPage: 'setPage',
     }),
     ...mapActions({
       updateLanguages: 'updateLanguages',
@@ -494,6 +513,12 @@ table.data.translate-table th.checkbox-cell input.checkbox + label {
   .translate-table td {
     width: 100%;
     border: 0;
+  }
+
+  // Craft limits the width and height of the table cells, the content of a row would overlap the next one
+  .tableview table.data.translate-table td {
+    max-width: none;
+    height: auto;
   }
 
   table.data.translate-table td.checkbox-cell {

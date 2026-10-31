@@ -113,6 +113,26 @@ class MessagesServiceTest extends TestCase
         $this->assertSame(['created' => 0, 'added' => 0, 'updated' => 0], $again);
     }
 
+    public function testImportOfMoreMessagesThanALookupBatch(): void
+    {
+        $messages = $this->plugin()->messages;
+        // The existing messages are looked up 1000 at a time: one in each batch
+        $messages->addMessage('Message 0005', 'site', ['fr-CA' => 'Ancien']);
+        $messages->addMessage('Message 1205', 'site', ['fr-CA' => 'Ancien']);
+
+        $rows = [];
+        for ($i = 1; $i <= 1500; $i++) {
+            $rows[] = ['message' => sprintf('Message %04d', $i), 'languages' => ['fr-CA' => "Nouveau $i"]];
+        }
+        $result = $messages->importMessages('site', $rows);
+
+        $this->assertSame(['created' => 1498, 'added' => 1498, 'updated' => 2], $result);
+        $this->assertSame(1500, $this->countSourceMessages());
+        foreach (['0005' => 'Nouveau 5', '1205' => 'Nouveau 1205', '1500' => 'Nouveau 1500'] as $number => $translation) {
+            $this->assertSame($translation, $this->storedTranslation("Message $number", 'fr-CA'));
+        }
+    }
+
     public function testDeleteMessages(): void
     {
         $messages = $this->plugin()->messages;

@@ -32,6 +32,10 @@ class Settings extends Model
                         $this->addError($attribute, Craft::t('translations-admin', 'The category “{category}” can’t contain slashes.', ['category' => $category]));
                     }
                 }
+                // The size of the category column of the source messages
+                if (max(array_map('mb_strlen', $this->$attribute) ?: [0]) > 255) {
+                    $this->addError($attribute, Craft::t('translations-admin', 'The categories can’t be longer than 255 characters.'));
+                }
             }],
         ];
     }

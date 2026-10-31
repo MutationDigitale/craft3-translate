@@ -90,6 +90,32 @@ class MessageSourceTest extends TestCase
         $this->assertSame([], $this->sourceMessageIds('Disabled'));
     }
 
+    public function testZeroIsAMessage(): void
+    {
+        $settings = $this->plugin()->getSettings();
+        $settings->addMissingTranslations = true;
+        $settings->addMissingSiteRequestOnly = false;
+
+        $this->translateInTemplate('0', 'fr-CA');
+
+        $this->assertCount(1, $this->sourceMessageIds('0'));
+    }
+
+    public function testExcludedMessagesOfTheConfigFile(): void
+    {
+        $settings = $this->plugin()->getSettings();
+        $settings->addMissingTranslations = true;
+        $settings->addMissingSiteRequestOnly = false;
+        // The format of the config file example in the README, unlike the rows of the settings page
+        $settings->excludedMessages = ['Submission triggered for', 'Submission marked as spam'];
+
+        $this->translateInTemplate('Submission marked as spam: 42', 'fr-CA');
+        $this->translateInTemplate('Not excluded', 'fr-CA');
+
+        $this->assertSame([], $this->sourceMessageIds('Submission marked as spam: 42'));
+        $this->assertCount(1, $this->sourceMessageIds('Not excluded'));
+    }
+
     public function testMissingTranslationsAreAddedOnSiteRequestsOnly(): void
     {
         $settings = $this->plugin()->getSettings();

@@ -98,7 +98,16 @@ class ImportService extends Component
         }
 
         $headers = array_map(fn($header) => trim(CsvHelper::removeBom((string)$header)), array_shift($rows) ?? []);
-        $columns = $this->getLanguageColumns($headers);
+        $languageNames = $this->getLanguageNames();
+
+        // The key column is missing (e.g. moved, since the order of the other columns doesn't matter): the translations would be added as keys
+        if (isset($headers[0], $languageNames[mb_strtolower($headers[0])])) {
+            throw new InvalidArgumentException(Craft::t('translations-admin', 'The first column must be the key, but its header is a language ({header}).', [
+                'header' => $headers[0],
+            ]));
+        }
+
+        $columns = $this->getLanguageColumns($headers, $languageNames);
 
         if (count($columns) === 0) {
             throw new InvalidArgumentException(Craft::t('translations-admin', 'No language column could be found in the CSV file. The column headers must be the language IDs: {languages}.', [
@@ -129,13 +138,13 @@ class ImportService extends Component
     }
 
     /**
-     * Maps the CSV columns to the site locales, by locale ID (e.g. `fr-CA`), by language ID when only one site uses that language
-     * (e.g. `fr`) or by display name, native (e.g. `français (Canada)`, used by the files exported with older versions of the
-     * plugin) or in the current language (e.g. `French (Canada)`).
+     * Returns the headers that match the site locales: the locale ID (e.g. `fr-CA`), the language ID when only one site uses that
+     * language (e.g. `fr`) or the display name, native (e.g. `français (Canada)`, used by the files exported with older versions
+     * of the plugin) or in the current language (e.g. `French (Canada)`).
      *
-     * @return array<int, string> The locale IDs, indexed by column
+     * @return array<string, string> The locale IDs, indexed by lowercase header
      */
-    private function getLanguageColumns(array $headers): array
+    private function getLanguageNames(): array
     {
         $names = [];
         $siteLocales = LocaleHelper::getSiteLocales();
@@ -149,9 +158,20 @@ class ImportService extends Component
             }
         }
 
+        return $names;
+    }
+
+    /**
+     * Maps the CSV columns to the site locales, by header (see {@see getLanguageNames()}).
+     *
+     * @param array<string, string> $languageNames
+     * @return array<int, string> The locale IDs, indexed by column
+     */
+    private function getLanguageColumns(array $headers, array $languageNames): array
+    {
         $columns = [];
         foreach (array_slice($headers, 1, null, true) as $index => $header) {
-            $locale = $names[mb_strtolower($header)] ?? null;
+            $locale = $languageNames[mb_strtolower($header)] ?? null;
             if ($locale !== null && !in_array($locale, $columns, true)) {
                 $columns[$index] = $locale;
             }

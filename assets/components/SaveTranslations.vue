@@ -9,9 +9,8 @@
 </template>
 
 <script>
-import axios from 'axios';
-import { clone } from '../helpers';
-import {mapState} from 'vuex';
+import { clone, postAction } from '../helpers';
+import { mapActions, mapState } from 'vuex';
 
 export default {
   data() {
@@ -35,38 +34,38 @@ export default {
     }
   },
   mounted() {
-    window.addEventListener('keydown', (event) => {
-      if ((event.ctrlKey || event.metaKey) && event.key === 's') {
+    window.addEventListener('keydown', this.onKeydown);
+  },
+  beforeUnmount() {
+    window.removeEventListener('keydown', this.onKeydown);
+  },
+  methods: {
+    onKeydown: function (event) {
+      // The key is "S" with caps lock, but the shortcuts with Shift are left to the browser
+      if ((event.ctrlKey || event.metaKey) && !event.shiftKey && !event.altKey && event.key?.toLowerCase() === 's') {
         if (this.isModified && !this.isSaving) {
           this.save();
         }
         event.preventDefault();
       }
-    });
-  },
-  methods: {
+    },
     save: function () {
       this.isSaving = true;
 
-      const formData = new FormData();
-
-      formData.append(this.$csrfTokenName, this.$csrfTokenValue);
-      formData.append('action', 'translations-admin/messages/save');
-
       // Copy the sent translations, they can still be changed during the request
       const savedMessages = clone(this.modifiedMessages);
-      for (const languageId in savedMessages) {
-        for (const sourceMessageId in savedMessages[languageId]) {
-          const message = savedMessages[languageId][sourceMessageId];
-          formData.append('translations[' + languageId + '][' + sourceMessageId + ']', message);
-        }
-      }
 
-      axios
-        .post('', formData)
+      postAction(this, 'translations-admin/messages/save', { translations: savedMessages })
         .then((response) => {
           if (response.data.success) {
             this.emitter.emit('translations-saved', savedMessages);
+            // Deleted in the meantime (e.g. by another user), their translations couldn't be saved
+            const deletedIds = response.data.deletedIds ?? [];
+            if (deletedIds.length > 0) {
+              this.removeSourceMessages(deletedIds);
+              this.forgetModifiedMessages({ sourceMessageIds: deletedIds });
+              this.emitter.emit('messages-deleted-meanwhile');
+            }
           } else {
             this.emitter.emit('translations-saved-error');
           }
@@ -80,7 +79,11 @@ export default {
     },
     t: function (str) {
       return this.$craft.t('translations-admin', str);
-    }
+    },
+    ...mapActions({
+      removeSourceMessages: 'removeSourceMessages',
+      forgetModifiedMessages: 'forgetModifiedMessages',
+    })
   }
 };
 </script>

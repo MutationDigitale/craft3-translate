@@ -79,6 +79,55 @@ class TemplateParserTest extends TestCase
         }
     }
 
+    public function testTemplatePathsOfTheLegacyConfigFile(): void
+    {
+        $path = Craft::$app->getPath()->getTempPath() . '/translations-legacy-template-paths';
+        FileHelper::writeToFile("{$path}/legacy.twig", "{{ 'Parse legacy path'|t }}");
+        // The config/translations.php file used by the previous versions
+        $configFile = Craft::$app->getConfig()->configDir . '/translations.php';
+        FileHelper::writeToFile($configFile, '<?php return ' . var_export(['templatePaths' => [$path]], true) . ';');
+
+        try {
+            $this->plugin()->template->parseTemplates();
+        } finally {
+            unlink($configFile);
+            FileHelper::removeDirectory($path);
+        }
+
+        $this->assertCount(1, $this->sourceMessageIds('Parse legacy path'));
+    }
+
+    public function testCapturedVariablesAndNamedArguments(): void
+    {
+        $path = Craft::$app->getPath()->getTempPath() . '/translations-template-arguments';
+        FileHelper::writeToFile("{$path}/arguments.twig", implode("\n", [
+            // Twig turns the captured texts into constants, but not the captured expressions
+            "{% set captured %}Parse captured text{% endset %}{{ captured|t }}",
+            "{% set capturedCategory %}other{% endset %}{{ 'Parse captured category'|t(capturedCategory) }}",
+            "{% set capturedExpression %}Parse {{ 'captured expression' }}{% endset %}{{ capturedExpression|t }}",
+            "{{ 'Parse named params'|t(params={count: 2}) }}",
+            "{{ 'Parse named language'|t(language='fr') }}",
+            "{{ 'Parse named arguments'|t(language='fr', params={}, category='other') }}",
+        ]));
+        $settings = $this->plugin()->getSettings();
+        $settings->templatePaths = [$path];
+
+        try {
+            $this->plugin()->template->parseTemplates();
+        } finally {
+            $settings->templatePaths = [];
+            FileHelper::removeDirectory($path);
+        }
+
+        $this->assertCount(1, $this->sourceMessageIds('Parse captured text'));
+        $this->assertCount(1, $this->sourceMessageIds('Parse captured category', 'other'));
+        $this->assertSame([], $this->sourceMessageIds('Parse captured expression'));
+        $this->assertSame(0, $this->countSourceMessages(['like', 'message', 'captured expression']), 'Its value is only known when rendering');
+        $this->assertCount(1, $this->sourceMessageIds('Parse named params'));
+        $this->assertCount(1, $this->sourceMessageIds('Parse named language'));
+        $this->assertCount(1, $this->sourceMessageIds('Parse named arguments', 'other'));
+    }
+
     public function testEmbeddedTemplatesAreParsed(): void
     {
         $path = Craft::$app->getPath()->getTempPath() . '/translations-template-embeds';

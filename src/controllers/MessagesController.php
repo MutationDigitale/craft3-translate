@@ -68,6 +68,13 @@ class MessagesController extends Controller
         }
         $category = $this->getRequiredCategoryParam();
 
+        if (Translate::getInstance()->sourceMessage->getSourceMessageId($category, $message) !== null) {
+            return $this->asJson([
+                'success' => false,
+                'error' => Craft::t('translations-admin', 'This message already exists in the category.'),
+            ]);
+        }
+
         $sourceMessage = Translate::getInstance()->messages->addMessage($message, $category);
 
         if (!$sourceMessage) {
@@ -166,7 +173,11 @@ class MessagesController extends Controller
 
         $success = Translate::getInstance()->messages->saveMessages($allowedTranslations);
 
-        return $this->asJson(['success' => $success && !$hasForbiddenIds]);
+        return $this->asJson([
+            'success' => $success && !$hasForbiddenIds,
+            // So the control panel can remove them from the list
+            'deletedIds' => array_values(array_diff(array_unique($ids), array_keys($categories))),
+        ]);
     }
 
     /**

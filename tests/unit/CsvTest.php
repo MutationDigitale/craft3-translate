@@ -3,6 +3,7 @@
 namespace mutation\translate\tests\unit;
 
 use Craft;
+use craft\models\Site;
 use mutation\translate\helpers\CsvHelper;
 use yii\base\InvalidArgumentException;
 
@@ -193,6 +194,54 @@ class CsvTest extends TestCase
         $this->expectExceptionMessage('en-US, fr-CA');
 
         $this->import($this->csv([['Key', 'English', 'Français'], ['Translated', 'a', 'b']]));
+    }
+
+    public function testTheFirstColumnMustBeTheKey(): void
+    {
+        // E.g. the key column was moved: the translations would be added as keys
+        foreach (['fr-CA', 'FR-ca', 'fr', 'français (Canada)'] as $header) {
+            try {
+                $this->import($this->csv([[$header, 'en-US'], ['Accueil', 'Home']]));
+                $this->fail("A first column named $header was imported");
+            } catch (InvalidArgumentException $e) {
+                $this->assertStringContainsString("({$header})", $e->getMessage());
+            }
+        }
+
+        $this->assertSame([], $this->sourceMessageIds('Accueil'));
+    }
+
+    public function testTheFirstColumnOfALanguageIsUsed(): void
+    {
+        $result = $this->import($this->csv([['Key', 'fr-CA', 'fr'], ['Twice', 'Premier', 'Second']]));
+
+        $this->assertSame('Premier', $this->storedTranslation('Twice', 'fr-CA'));
+        $this->assertSame(['fr'], $result['ignoredColumns']);
+    }
+
+    public function testTheLanguageOfSeveralSitesMustBeTheLocale(): void
+    {
+        $sites = Craft::$app->getSites();
+        $site = new Site([
+            'groupId' => $sites->getPrimarySite()->groupId,
+            'name' => 'France',
+            'handle' => 'france',
+            'language' => 'fr-FR',
+            'hasUrls' => true,
+            'baseUrl' => 'https://test.craftcms.test/fr-fr',
+        ]);
+        $this->assertTrue($sites->saveSite($site), implode(', ', $site->getErrorSummary(true)));
+
+        try {
+            // "fr" could be either French site
+            $result = $this->import($this->csv([['Key', 'fr', 'fr-FR'], ['Ambiguous', 'Lequel ?', 'France']]));
+
+            $this->assertSame(['fr'], $result['ignoredColumns']);
+            $this->assertNull($this->storedTranslation('Ambiguous', 'fr-CA'));
+            $this->assertSame('France', $this->storedTranslation('Ambiguous', 'fr-FR'));
+        } finally {
+            $sites->deleteSite($site);
+        }
     }
 
     public function testCodeLikeContentIsStillACsvFile(): void

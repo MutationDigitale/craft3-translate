@@ -19,13 +19,14 @@
 
     {{ actionInput('translations-admin/import/import') }}
 
+    {# The category stays selected after an import, or after an import that failed #}
     {{ forms.selectField({
         first: true,
         label: "Category" | t('translations-admin'),
         instructions: "Choose which category to import your translations" | t('translations-admin'),
         id: 'category',
         name: 'category',
-        value: '',
+        value: craft.app.request.getParam('category') ?? '',
         options: categories
     }) }}
 

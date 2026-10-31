@@ -35,8 +35,8 @@ const app = createApp({
     this.emitter.on('translation-added', () => {
       this.$craft.cp.displayNotice(this.$craft.t('translations-admin', 'Translation added'));
     });
-    this.emitter.on('translation-added-error', () => {
-      this.$craft.cp.displayError(this.$craft.t('translations-admin', 'Translation not added'));
+    this.emitter.on('translation-added-error', (error) => {
+      this.$craft.cp.displayError(error || this.$craft.t('translations-admin', 'Translation not added'));
     });
     this.emitter.on('translation-deleted', () => {
       this.$craft.cp.displayNotice(this.$craft.t('translations-admin', 'Translation deleted'));
@@ -47,11 +47,19 @@ const app = createApp({
     this.emitter.on('translations-copied', () => {
       this.$craft.cp.displayNotice(this.$craft.t('translations-admin', 'Translations copied'));
     });
-    this.emitter.on('translations-pasted', () => {
-      this.$craft.cp.displayNotice(this.$craft.t('translations-admin', 'Translations pasted'));
+    this.emitter.on('translations-pasted', (skipped) => {
+      this.$craft.cp.displayNotice(skipped > 0
+        ? this.$craft.t('translations-admin', 'Translations pasted, except {count, plural, =1{one message} other{# messages}} already in the category.', { count: skipped })
+        : this.$craft.t('translations-admin', 'Translations pasted'));
     });
-    this.emitter.on('translations-pasted-error', () => {
-      this.$craft.cp.displayError(this.$craft.t('translations-admin', 'Translations not pasted'));
+    this.emitter.on('translations-pasted-error', (error) => {
+      this.$craft.cp.displayError(error || this.$craft.t('translations-admin', 'Translations not pasted'));
+    });
+    this.emitter.on('translations-exported-error', () => {
+      this.$craft.cp.displayError(this.$craft.t('translations-admin', 'Translations could not be exported'));
+    });
+    this.emitter.on('messages-deleted-meanwhile', () => {
+      this.$craft.cp.displayError(this.$craft.t('translations-admin', 'Some messages were deleted in the meantime, their translations were not saved.'));
     });
   },
   mounted() {
@@ -64,17 +72,27 @@ const app = createApp({
     this.$craft.cp.$sidebar = this.$jquery('#sidebar');
     this.$craft.cp.$contentContainer = this.$jquery('#content-container');
 
-    if (document.querySelector('#sidebar-toggle')) {
-      document.querySelector('#sidebar-toggle').addEventListener('click', () => {
-        document.body.classList.toggle('showing-sidebar');
-      });
-    }
+    // The sidebar toggle of small screens was replaced by Vue, without the listener of Craft
+    this.$craft.cp.$sidebarToggle = this.$jquery('#sidebar-toggle');
+    this.$craft.cp.$sidebarToggle.on('click', () => {
+      this.toggleSidebar();
+    });
   },
   watch: {
     category() {
-      if (document.querySelector('#selected-sidebar-item-label')) {
-        document.body.classList.remove('showing-sidebar');
-        document.querySelector('#selected-sidebar-item-label').textContent = this.category;
+      // Once a category is chosen in the sidebar of small screens
+      if (document.body.classList.contains('showing-sidebar')) {
+        this.toggleSidebar();
+      }
+    }
+  },
+  methods: {
+    toggleSidebar() {
+      if (typeof this.$craft.cp.toggleSidebar === 'function') {
+        // Also updates the state of the toggle
+        this.$craft.cp.toggleSidebar();
+      } else {
+        document.body.classList.toggle('showing-sidebar');
       }
     }
   },

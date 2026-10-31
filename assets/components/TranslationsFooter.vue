@@ -1,37 +1,36 @@
 <template>
   <div id="count-container" class="light">
     <div class="flex pagination">
-      <div class="page-link page-first" :title="t('First Page')" :class="{'disabled': page === 1}"
-           @click="setPage(1)">
-        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 16 16">
+      <button type="button" class="page-link page-first" :title="t('First Page')" :aria-label="t('First Page')"
+              :class="{'disabled': page === 1}" :disabled="page === 1" @click="setPage(1)">
+        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
           <path fill-rule="evenodd" d="M8.354 1.646a.5.5 0 0 1 0 .708L2.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0z"/>
           <path fill-rule="evenodd" d="M12.354 1.646a.5.5 0 0 1 0 .708L6.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0z"/>
         </svg>
-      </div>
+      </button>
 
-      <div class="page-link prev-page" :title="t('Previous Page')"
-           :class="{'disabled': page === 1}" @click="page > 1 ? setPage(page-1) : null"></div>
+      <button type="button" class="page-link prev-page" :title="t('Previous Page')" :aria-label="t('Previous Page')"
+              :class="{'disabled': page === 1}" :disabled="page === 1" @click="setPage(page - 1)"></button>
 
-      <div class="page-link page-number"
-           :class="{'active': pageNumber === page}"
-           v-for="pageNumber in pages.slice(page < 3 ? 0 : page - 3, page + 3)"
-           v-bind:key="pageNumber"
-           @click="setPage(pageNumber)">
+      <button type="button" class="page-link page-number"
+              :class="{'active': pageNumber === page}"
+              :aria-current="pageNumber === page ? 'page' : null"
+              v-for="pageNumber in visiblePages"
+              v-bind:key="pageNumber"
+              @click="setPage(pageNumber)">
         {{ pageNumber }}
-      </div>
+      </button>
 
-      <div class="page-link next-page" :title="t('Next Page')"
-           :class="{'disabled': page >= lastPage}"
-           @click="page < lastPage ? setPage(page+1) : null"></div>
+      <button type="button" class="page-link next-page" :title="t('Next Page')" :aria-label="t('Next Page')"
+              :class="{'disabled': page >= lastPage}" :disabled="page >= lastPage" @click="setPage(page + 1)"></button>
 
-      <div class="page-link page-last" :title="t('Last Page')"
-           :class="{'disabled': page >= lastPage}"
-           @click="setPage(lastPage)">
-        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 16 16">
+      <button type="button" class="page-link page-last" :title="t('Last Page')" :aria-label="t('Last Page')"
+              :class="{'disabled': page >= lastPage}" :disabled="page >= lastPage" @click="setPage(lastPage)">
+        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
           <path fill-rule="evenodd" d="M3.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L9.293 8 3.646 2.354a.5.5 0 0 1 0-.708z"/>
           <path fill-rule="evenodd" d="M7.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L13.293 8 7.646 2.354a.5.5 0 0 1 0-.708z"/>
         </svg>
-      </div>
+      </button>
 
       <div class="page-info">
         {{ displayedSourceMessages.length > 0 ? ((page - 1) * perPage) + 1 : 0 }}-{{ ((page - 1) * perPage) + displayedSourceMessages.length }} {{ t('of') }}
@@ -69,7 +68,9 @@
     </button>
   </div>
   <div>
-    <button v-if="exportPermission" class="btn" type="button" @click="exportMessages()" :disabled="isExporting">
+    <!-- Nothing to export when no message matches the search and filters -->
+    <button v-if="exportPermission" class="btn" type="button" @click="exportMessages()"
+            :disabled="isExporting || (sourceMessages.length > 0 && filteredSourceMessages.length === 0)">
       {{ t('Export') }}
     </button>
   </div>
@@ -78,6 +79,7 @@
 <script>
 import { mapActions, mapGetters, mapMutations, mapState } from 'vuex';
 import axios from 'axios';
+import { clone, postAction } from '../helpers';
 
 export default {
   props: {
@@ -89,73 +91,65 @@ export default {
     return {
       copiedMessages: [],
       copiedMessagesCategory: '',
-      pages: [],
       isExporting: false,
     };
   },
   computed: {
+    pageCount() {
+      return Math.ceil(this.filteredSourceMessages.length / this.perPage);
+    },
     // The first page is shown even when no message matches the filters
     lastPage() {
-      return Math.max(this.pages.length, 1);
+      return Math.max(this.pageCount, 1);
+    },
+    // The 2 pages before the current one and the 3 after it
+    visiblePages() {
+      const pages = [];
+      for (let pageNumber = Math.max(this.page - 2, 1); pageNumber <= Math.min(this.page + 3, this.pageCount); pageNumber++) {
+        pages.push(pageNumber);
+      }
+      return pages;
     },
     ...mapState({
       page: state => state.page,
       perPage: state => state.perPage,
       sourceMessages: state => state.sourceMessages,
+      originalSourceMessages: state => state.originalSourceMessages,
       filteredSourceMessages: state => state.filteredSourceMessages,
       checkedSourceMessages: state => state.checkedSourceMessages,
       category: state => state.category
     }),
     ...mapGetters({
+      sortedSourceMessages: 'sortedSourceMessages',
       displayedSourceMessages: 'displayedSourceMessages'
     })
   },
   watch: {
-    filteredSourceMessages: {
-      handler() {
-        this.setPages();
-      },
-      deep: true
-    }
-  },
-  methods: {
-    setPages() {
-      let numberOfPages = Math.ceil(this.filteredSourceMessages.length / this.perPage);
-      this.pages = [];
-      for (let index = 1; index <= numberOfPages; index++) {
-        this.pages.push(index);
-      }
+    lastPage() {
       if (this.page > this.lastPage) {
         this.setPage(this.lastPage);
       }
-    },
-    t(str) {
-      return this.$craft.t('translations-admin', str);
+    }
+  },
+  methods: {
+    t(str, params = {}) {
+      return this.$craft.t('translations-admin', str, params);
     },
     deleteMessages() {
-      if (!confirm(this.t('Are you sure you want to delete the selected translations?'))) {
+      const sourceMessageIds = [...this.checkedSourceMessages];
+      if (!confirm(this.t('Are you sure you want to delete {count, plural, =1{the selected translation} other{the # selected translations}}?', { count: sourceMessageIds.length }))) {
         return;
       }
 
       this.setIsDeleting(true);
 
-      const formData = new FormData();
-
-      formData.append(this.$csrfTokenName, this.$csrfTokenValue);
-      formData.append('action', 'translations-admin/messages/delete');
-
-      for (const sourceMessageId of this.checkedSourceMessages) {
-        formData.append('sourceMessageId[]', sourceMessageId);
-      }
-
-      axios
-        .post('', formData)
+      postAction(this, 'translations-admin/messages/delete', { sourceMessageId: sourceMessageIds })
         .then((response) => {
           if (response.data.success) {
             this.emitter.emit('translation-deleted');
-            this.removeSourceMessages(this.checkedSourceMessages);
+            this.removeSourceMessages(sourceMessageIds);
             // The changes of the deleted messages can't be saved anymore
-            this.forgetModifiedMessages({ sourceMessageIds: this.checkedSourceMessages });
+            this.forgetModifiedMessages({ sourceMessageIds });
             this.setCheckedSourceMessages([]);
           } else {
             this.emitter.emit('translation-deleted-error');
@@ -169,41 +163,29 @@ export default {
         });
     },
     copyMessages() {
-      this.copiedMessages = this.sourceMessages.filter(s => this.checkedSourceMessages.includes(s.id));
+      // The saved translations: the unsaved changes can still be discarded (e.g. by changing category)
+      const checkedIds = new Set(this.checkedSourceMessages);
+      this.copiedMessages = clone(this.originalSourceMessages.filter(s => checkedIds.has(s.id)));
       this.copiedMessagesCategory = this.category;
       this.emitter.emit('translations-copied');
     },
     pasteMessages() {
       this.setIsAdding(true);
 
-      const formData = new FormData();
-
-      formData.append(this.$csrfTokenName, this.$csrfTokenValue);
-      formData.append('action', 'translations-admin/messages/add-multiple');
-
-      formData.append('category', this.category);
-
       const category = this.category;
+      const sourceMessages = this.copiedMessages.map(s => ({ message: s.message, languages: s.languages }));
 
-      for (const sourceMessageId in this.copiedMessages) {
-        formData.append('sourceMessages[' + sourceMessageId + '][message]', this.copiedMessages[sourceMessageId]["message"]);
-        for (const language in this.copiedMessages[sourceMessageId]["languages"]) {
-          // FormData would send null as the "null" string
-          formData.append('sourceMessages[' + sourceMessageId + '][languages][' + language + ']', this.copiedMessages[sourceMessageId]["languages"][language] ?? '');
-        }
-      }
-
-      axios
-        .post('', formData)
+      postAction(this, 'translations-admin/messages/add-multiple', { category, sourceMessages })
         .then((response) => {
           if (response.data.success) {
-            this.emitter.emit('translations-pasted');
+            // The messages already in the category are skipped
+            this.emitter.emit('translations-pasted', sourceMessages.length - response.data.sourceMessages.length);
             // Not in the list of another category, if it was changed during the request
             if (category === this.category) {
               this.addSourceMessages(response.data.sourceMessages);
             }
           } else {
-            this.emitter.emit('translations-pasted-error');
+            this.emitter.emit('translations-pasted-error', this.t('Translations not pasted, the messages are already in the category.'));
           }
           // Pasting them again would give the same result (e.g. when they're all in the category already)
           this.copiedMessages = [];
@@ -225,11 +207,13 @@ export default {
       formData[this.$csrfTokenName] = this.$csrfTokenValue;
       formData['category'] = this.category;
 
-      if (this.checkedSourceMessages && this.checkedSourceMessages.length > 0) {
-        formData['sourceMessageId'] = [];
-        for (const sourceMessageId of this.checkedSourceMessages) {
-          formData['sourceMessageId'].push(sourceMessageId);
-        }
+      // The selected messages, or the ones matching the search and filters, in the displayed order. Without IDs, the whole
+      // category is exported.
+      if (this.checkedSourceMessages.length > 0) {
+        const checkedIds = new Set(this.checkedSourceMessages);
+        formData['sourceMessageId'] = this.sortedSourceMessages.filter(s => checkedIds.has(s.id)).map(s => s.id);
+      } else if (this.filteredSourceMessages.length < this.sourceMessages.length) {
+        formData['sourceMessageId'] = this.sortedSourceMessages.map(s => s.id);
       }
 
       this.$craft.downloadFromUrl(
@@ -238,9 +222,9 @@ export default {
         formData
       )
         .catch((e) => {
-            if (!axios.isCancel(e)) {
-              // Error
-            }
+          if (!axios.isCancel(e)) {
+            this.emitter.emit('translations-exported-error');
+          }
         })
         .finally(() => {
           this.isExporting = false;

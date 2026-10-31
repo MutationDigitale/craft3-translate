@@ -226,7 +226,8 @@ class Translate extends Plugin
                     return;
                 }
 
-                if (!$event->message) {
+                // Not empty(): "0" is a message
+                if ((string)$event->message === '') {
                     return;
                 }
 

@@ -25,11 +25,14 @@
 - Imports, saves and deletions are now done in a database transaction, so they're not partly applied when they fail (category by category for the PHP translations import)
 - The CSV export now includes a BOM so spreadsheet apps open it as UTF-8, and values that could be run as formulas are escaped (the escaping is removed on import)
 - The CSV import now only accepts `.csv`, `.tsv` and `.txt` files (e.g. Excel's tab-delimited "Unicode Text" format)
+- The CSV import now rejects the files whose first column is a language (e.g. when the key column was moved), instead of adding their translations as keys
+- The Export button of the messages page now exports the messages matching the search and filters when none are selected, in the displayed order
+- The keys are now sorted by their numbers (e.g. `Item 2` before `Item 10`), and the search ignores the accents
 - Parsing the templates now only adds the messages of the configured categories that aren't excluded by the "Excluded messages" setting, and reports the number of messages added
-- GraphQL now translates the static messages like the site: all the messages of the configured categories are returned, falling back to the base language (e.g. `fr` for `fr-CA`), to the source language for the categories other than `site`, and to the key instead of `null`
+- GraphQL now translates the static messages like the site: all the messages of the configured categories are returned, falling back to the base language (e.g. `fr` for `fr-CA`), to the source language for the categories other than `site`, and to the key instead of `null`. Only the languages of the sites are returned
 - The source language can now be left empty in the settings, to follow the primary site language (saving the settings used to store the language of the primary site, which then didn't follow its changes)
 - The `afterSaveMessages` and `afterDeleteMessages` events are now also triggered by the imports and the "Delete all" utility
-- `MessagesService::saveMessages()` now returns whether all the translations were saved, and the save action doesn't return the `messages` key anymore
+- `MessagesService::saveMessages()` now returns whether all the translations were saved, and the save action doesn't return the `messages` key anymore, but the IDs of the messages deleted in the meantime (`deletedIds`)
 - The console commands now return an error exit code on failure
 - Errors when importing or exporting PHP translations are now logged
 - The control panel navigation, permissions and the remaining interface labels can now be translated
@@ -69,6 +72,23 @@
 - Fix an error when deleting a message that doesn't exist anymore
 - Fix the pagination starting at 0, and the last page button going to an empty page when no messages match the search or filters
 - Fix the Utilities breadcrumb link
+- Fix the translations changed without the keyboard (e.g. pasted with the mouse or corrected by the spell checker) not being detected until the field lost the focus: the Save button stayed disabled, Ctrl+S did nothing, and leaving the page didn't warn about them
+- Fix the line breaks being saved as `\r\n` in the control panel: the multi-line keys added in the control panel never matched the ones of the templates, and the multi-line translations stayed modified after an edit that didn't change them
+- Fix the selected messages staying selected when they weren't displayed anymore (e.g. on another page or hidden by the search), so they were also deleted, copied or exported. The deletion confirmation now tells how many messages are deleted
+- Fix the search, filters, sort and category changes not going back to the first page
+- Fix the messages page on small screens, where the rows overlapped, and the category sidebar staying open after choosing a category
+- Fix the users without the "Save translations" permission being able to change the translations, which they couldn't save (they're now read-only)
+- Fix the message to add being lost when it couldn't be added, and tell when it already exists in the category
+- Fix copying messages with unsaved changes, which were pasted even after the changes were discarded: the saved translations are copied
+- Fix pasting and saving not telling about the messages that were skipped: the ones already in the category, and the ones deleted in the meantime (they're now removed from the list)
+- Fix the `0` message not being added when missing translations are added
+- Fix the settings accepting categories longer than 255 characters, whose messages couldn't be added
+- Fix the import page saying that no file was uploaded when the file isn't a CSV file, and selecting the first category again after an import
+- Fix the plugin name error not being shown in the settings
+- Fix the export errors not being shown in the messages page
+- Fix Ctrl+S not saving with caps lock
+- Fix the select all checkbox and the pagination not being usable with the keyboard
+- Fix the translations being slower to edit in the categories with a lot of messages
 - Fix the config file example of the README using the `app` category, which replaces Craft's own translations with the database ones (remove `app` from your categories if you copied it)
 
 ## 4.2.3 - 2026-06-10

@@ -75,6 +75,26 @@ class PhpFilesTest extends TestCase
         $this->assertSame([], $this->sourceMessageIds('Nested'));
     }
 
+    public function testImportSkipsTheFilesThatArentArrays(): void
+    {
+        FileHelper::writeToFile($this->path('fr-CA', 'site'), "<?php return 'Not an array';");
+        $this->writeFile('fr-CA', 'other', ['Kept' => 'Gardé']);
+
+        $this->assertSame(1, $this->plugin()->import->importPhpTranslationsToDatabase());
+        $this->assertSame(1, $this->countSourceMessages());
+        $this->assertSame('Gardé', $this->storedTranslation('Kept', 'fr-CA', 'other'));
+    }
+
+    public function testExportSkipsTheCategoriesThatArentInTheSettings(): void
+    {
+        $this->plugin()->messages->addMessage('Configured', 'site', ['fr-CA' => 'Configuré']);
+        $this->insertRaw('legacy', 'Removed from the settings', ['fr-CA' => 'Retiré']);
+
+        $this->assertSame(2, $this->plugin()->export->exportDatabaseTranslationsToPhp());
+        $this->assertFileExists($this->path('fr-CA', 'site'));
+        $this->assertFileDoesNotExist($this->path('fr-CA', 'legacy'));
+    }
+
     public function testImportFailsCleanlyOnAnInvalidFile(): void
     {
         FileHelper::writeToFile($this->path('fr-CA', 'site'), '<?php return [ broken');

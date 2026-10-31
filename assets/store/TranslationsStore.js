@@ -1,6 +1,9 @@
 import { createStore } from 'vuex';
 import { clone } from '../helpers';
 
+// Compares the numbers by value (e.g. "Item 2" before "Item 10"). A single collator is much faster than localeCompare().
+const collator = new Intl.Collator(undefined, { numeric: true });
+
 export const store = createStore({
   state: {
     isLoading: false,
@@ -25,20 +28,20 @@ export const store = createStore({
     sortDirection: 'asc'
   },
   getters: {
-    displayedSourceMessages: state => {
-      let page = state.page;
-      let perPage = state.perPage;
-      let from = (page * perPage) - perPage;
-      let to = (page * perPage);
+    // The messages matching the search and filters, in the displayed order
+    sortedSourceMessages: state => {
       // Sort a copy, getters must not mutate the state
       return [...state.filteredSourceMessages]
         .sort((a, b) => {
           const valueA = a[state.sortProperty];
           const valueB = b[state.sortProperty];
-          const result = String(valueA ?? '').localeCompare(String(valueB ?? ''));
+          const result = collator.compare(String(valueA ?? ''), String(valueB ?? ''));
           return state.sortDirection === 'asc' ? result : -result;
-        })
-        .slice(from, to);
+        });
+    },
+    displayedSourceMessages: (state, getters) => {
+      const from = (state.page - 1) * state.perPage;
+      return getters.sortedSourceMessages.slice(from, from + state.perPage);
     }
   },
   mutations: {
