@@ -8,87 +8,54 @@
 > The update merges the messages that were added more than once in the same category (see below). The translations that are dropped are listed in the migration output and the logs. On MySQL and MariaDB, the update stops without merging anything if the same message is in categories that only differ by case (e.g. `site` and `Site`): the messages are listed in the error, so they can be deleted or moved to the right category before updating again.
 
 ### Added
-- Add an "Add missing translations from templates only" setting (disabled by default), so the names Craft translates itself in the `site` category (e.g. sites, sections and fields) aren't added as missing translations ([#75](https://github.com/MutationDigitale/craft3-translate/issues/75)). When it's enabled, only the messages translated in a template with the `t` or `translate` filter are added, not the ones translated in PHP code
+- Add an "Add missing translations from templates only" setting (disabled by default), so the names Craft translates itself in the `site` category (e.g. sites, sections and fields) aren't added as missing translations ([#75](https://github.com/MutationDigitale/craft3-translate/issues/75))
 - Add an "Enable caching" setting (disabled by default). The cache is cleared automatically when translations are changed with the plugin
-- Add a `templatePaths` setting, to parse other template directories with the "Parse templates" utility (the `templatePaths` of the `config/translations.php` file used by previous versions still work)
+- Add a `templatePaths` setting, to parse other template directories with the "Parse templates" utility (the `templatePaths` of the `config/translations.php` file still work)
 - Add the `translations-admin/utilities/missing` command, to parse the site templates like the Utilities page
-- Add a confirmation before deleting all translations, in the Utilities page and the `translations-admin/utilities/delete` command (skipped with `--interactive=0` or when not run in a terminal)
-- Add a warning when leaving the page or changing category with unsaved changes
-- Show an error when the translations couldn't be loaded
-- The CSV import now accepts the language alone as a header when only one site uses it (e.g. `fr`) or the language name, and lists the columns it ignored
-- Add `MessagesService::importMessages()`, `deleteAllMessages()` and `invalidateCaches()`, `ImportService::importCsv()`, `ExportService::exportCsv()`, `SourceMessageService::getSourceMessageId()`, `getOrCreateSourceMessageId()`, `createSourceMessage()`, `getSourceMessageIdsByCategory()` and `getTranslationsByCategory()`, `Message::normalizeTranslation()`, `SourceMessage::hash()`, `Settings::getExcludedMessagePattern()` and `isFileNameCategory()`, `DbMessageSource::invalidateCache()` and `isTranslatedByTemplate()`, `Translate::canAddMissingTranslations()`, and the `mutation\translate\helpers\LocaleHelper` and `CsvHelper` classes
+- Add confirmations before deleting all translations (also in the `delete` command, skipped with `--interactive=0` or without a terminal) and before leaving the page or changing category with unsaved changes, and an error when the translations can't be loaded
+- Add `MessagesService::importMessages()`, `deleteAllMessages()` and `invalidateCaches()`, `ImportService::importCsv()`, `ExportService::exportCsv()`, `SourceMessageService::getSourceMessageId()`, `getOrCreateSourceMessageId()`, `createSourceMessage()`, `getSourceMessageIdsByCategory()` and `getTranslationsByCategory()`, `Message::normalizeTranslation()`, `SourceMessage::hash()`, `Settings::getExcludedMessagePattern()` and `isFileNameCategory()`, `DbMessageSource::invalidateCache()` and `isTranslatedByTemplate()`, `Translate::canAddMissingTranslations()`, and the `LocaleHelper` and `CsvHelper` helpers
 
 ### Changed
-- The same message can't be added twice to a category anymore. The existing duplicates are merged into the oldest one: for each language, the most recently updated translation that isn't empty is kept
-- Source messages are now looked up by a hash of the message, with an index, which is much faster on sites with a lot of translations
-- Convert the tables to the database charset (utf8mb4) on MySQL and MariaDB, so translations can contain any character (e.g. emojis)
-- Imports, saves and deletions are now done in a database transaction, so they're not partly applied when they fail (category by category for the PHP translations import)
-- The CSV export now includes a BOM so spreadsheet apps open it as UTF-8, and values that could be run as formulas are escaped (the escaping is removed on import)
-- The CSV import now only accepts `.csv`, `.tsv` and `.txt` files (e.g. Excel's tab-delimited "Unicode Text" format)
-- The CSV import now rejects the files whose first column is a language (e.g. when the key column was moved), instead of adding their translations as keys
-- The Export button of the messages page now exports the messages matching the search and filters when none are selected, in the displayed order
-- The keys are now sorted by their numbers (e.g. `Item 2` before `Item 10`), and the search ignores the accents
-- Parsing the templates now only adds the messages of the configured categories that aren't excluded by the "Excluded messages" setting, and reports the number of messages added
-- GraphQL now translates the static messages like the site: all the messages of the configured categories are returned, falling back to the base language (e.g. `fr` for `fr-CA`), to the source language for the categories other than `site`, and to the key instead of `null`. Only the languages of the sites are returned
-- The source language can now be left empty in the settings, to follow the primary site language (saving the settings used to store the language of the primary site, which then didn't follow its changes)
-- The `afterSaveMessages` and `afterDeleteMessages` events are now also triggered by the imports and the "Delete all" utility
-- `MessagesService::saveMessages()` now returns whether all the translations were saved, and the save action doesn't return the `messages` key anymore, but the IDs of the messages deleted in the meantime (`deletedIds`)
-- The console commands now return an error exit code on failure
-- Errors when importing or exporting PHP translations are now logged
-- The control panel navigation, permissions and the remaining interface labels can now be translated
+- The same message can't be added twice to a category anymore, and the existing duplicates are merged into the oldest one: for each language, the most recently updated translation that isn't empty is kept
+- Source messages are looked up by a hash of the message, which is much faster on sites with a lot of translations
+- The tables are converted to utf8mb4 on MySQL and MariaDB, so translations can contain any character (e.g. emojis)
+- Imports, saves and deletions are done in a database transaction, so they're not partly applied when they fail
+- CSV files: the export includes a BOM and escapes the values that could be run as formulas, and the import accepts `.csv`, `.tsv` and `.txt` files, matches the columns by language ID, language or language name, lists the ignored columns, and rejects the files whose first column is a language
+- The Export button of the messages page exports the messages matching the search and filters when none are selected, in the displayed order
+- The keys are sorted by their numbers (e.g. `Item 2` before `Item 10`), and the search ignores the accents
+- Parsing the templates only adds the messages of the configured categories that aren't excluded, and reports how many were added
+- GraphQL translates the static messages like the site: every message of the configured categories is returned in the site languages, with the same fallbacks (base language, source language, then the key instead of `null`)
+- The source language can be left empty in the settings, to follow the primary site language
+- The `afterSaveMessages` and `afterDeleteMessages` events are also triggered by the imports and the "Delete all" utility
+- `MessagesService::saveMessages()` returns whether all the translations were saved, and the save action returns the IDs of the messages deleted in the meantime (`deletedIds`) instead of `messages`
+- The console commands return an error exit code on failure, the PHP translations import and export errors are logged, and the remaining interface labels can be translated
 - Update NodeJS packages for css/js assets
 
 ### Removed
-- Remove `mutation\translate\helpers\DbHelper` (use `SourceMessageService::getSourceMessageId()` to find a message)
-- Remove the `languages` property of the `SourceMessage` model, which saved its translations with the model (use `MessagesService::addMessage()` and `saveMessages()`)
+- Remove `mutation\translate\helpers\DbHelper` (use `SourceMessageService::getSourceMessageId()`) and the `languages` property of the `SourceMessage` model (use `MessagesService::addMessage()` and `saveMessages()`)
 - Remove the front-end `translations-admin/utilities/missing` URL rule (use the new console command, or the action with the `actions/` URLs)
 
 ### Fixed
 - Fix a security issue where users with the "Change translations settings" permission could save the settings of other plugins
+- Fix users without the plugin access permission being able to use every action of the plugin with the `actions/` URLs, and the actions accepting the messages of categories that aren't in the settings
 - Fix the PHP translations utilities writing and including files outside the translations folder when a category contains slashes
-- Fix users without the plugin access permission being able to get, add, save, delete, export and import translations, use the utilities and change the settings with the `actions/` URLs, and the actions accepting and changing the messages of categories that aren't in the settings
 - Fix the same message being added more than once when several requests added it at the same time
-- Fix the pages translating a new message with emojis failing on MySQL and MariaDB when missing translations are added, or adding the message again on every request without strict mode, and the "Parse templates" utility failing on such messages ([#73](https://github.com/MutationDigitale/craft3-translate/issues/73))
-- Fix CSV imports putting translations in the wrong language, and failing with an error, when the sites changed since the export
-- Fix CSV imports garbling accented characters when the file isn't saved as UTF-8 (e.g. Excel's "CSV (Comma delimited)" format)
-- Fix CSV imports evaluating the values starting with `=` as formulas, keys included (e.g. `=1+1` was imported as `2`), and changing some numbers (e.g. `1.50` to `1.5`)
-- Fix the PHP translations import failing with an error when a file is invalid, storing the arrays of a file as JSON and ignoring its numbers (the arrays are now skipped with a warning)
-- Fix the template parser adding the messages to the `site` category when the category is the first argument (e.g. `'Hello'|t('other')`), and ignoring the messages, categories and params set in variables with `{% set %}`. A variable is only used when the template sets it once to a text or an array, and doesn't define it another way (e.g. as a loop variable or a macro argument): otherwise, and when the first argument is a variable that isn't set in the template (e.g. `'Hello'|t(category)` or `'Hello {name}'|t(params)`), the message is skipped, since its category can't be known
-- Fix the "Parse templates" utility ignoring the messages in `{% embed %}` blocks
-- Fix the "Parse templates" utility failing when a template path doesn't exist (e.g. an alias that isn't defined): it's now skipped with a warning
-- Fix the GraphQL caches not being cleared by the imports, the utilities and the missing translations added automatically
-- Fix the "Excluded messages" setting excluding every message when it has an empty row, and its instructions: messages are excluded when they contain the text, not only when they start with it
-- Fix the settings saving an empty plugin name, and the empty, duplicate and padded categories (e.g. `site ` was a different category than `site`)
-- Fix changes made while the translations were being saved being shown as saved, although they weren't
-- Fix some changes not being saved after adding, pasting or deleting messages (the translations were compared with the ones of other messages), and the search and filters being reset by these actions
-- Fix the changes that only add or remove spaces at the start or end of a translation not being saved
-- Fix pasting messages in another category saving "null" as the translation of the languages without one and "0" translations as empty, and losing the copied translations when the request failed (e.g. a network error)
-- Fix adding, pasting, saving and deleting translations after changing category when the control panel URLs don't start with the CP trigger (e.g. without clean URLs)
-- Fix the messages of the previous category being shown when changing category while they were loading, and messages added or pasted during a category change being listed in the new one
-- Fix the messages without any translation row (e.g. inserted outside the plugin) not being listed in the control panel nor exported to PHP files
+- Fix the pages translating a new message with emojis failing on MySQL and MariaDB, or adding it again on every request ([#73](https://github.com/MutationDigitale/craft3-translate/issues/73))
+- Fix the selected messages that weren't displayed anymore (e.g. on another page or hidden by the search) being deleted, copied or exported with the displayed ones. The deletion confirmation now tells how many messages are deleted
+- Fix the translations changed without the keyboard (e.g. pasted with the mouse or corrected by the spell checker) not being saved by the Save button and Ctrl+S, nor warned about when leaving the page, until the field lost the focus
+- Fix the line breaks being saved as `\r\n` in the control panel, so the multi-line keys added there never matched the ones of the templates
 - Fix the messages of the categories that only differ by case or accents (e.g. `Site` and `site`) being listed together in the control panel, the CSV exports and GraphQL on MySQL and MariaDB
-- Fix the "Export DB translations to PHP" utility exporting the languages that don't have a site anymore
-- Fix the categories with regex characters in the control panel URLs: e.g. `site.forms` also matched `site-forms`, and the messages page of `c++` failed with an error
-- Fix an error when deleting a message that doesn't exist anymore
-- Fix the pagination starting at 0, and the last page button going to an empty page when no messages match the search or filters
-- Fix the Utilities breadcrumb link
-- Fix the translations changed without the keyboard (e.g. pasted with the mouse or corrected by the spell checker) not being detected until the field lost the focus: the Save button stayed disabled, Ctrl+S did nothing, and leaving the page didn't warn about them
-- Fix the line breaks being saved as `\r\n` in the control panel: the multi-line keys added in the control panel never matched the ones of the templates, and the multi-line translations stayed modified after an edit that didn't change them
-- Fix the selected messages staying selected when they weren't displayed anymore (e.g. on another page or hidden by the search), so they were also deleted, copied or exported. The deletion confirmation now tells how many messages are deleted
-- Fix the search, filters, sort and category changes not going back to the first page
-- Fix the messages page on small screens, where the rows overlapped, and the category sidebar staying open after choosing a category
-- Fix the users without the "Save translations" permission being able to change the translations, which they couldn't save (they're now read-only)
-- Fix the message to add being lost when it couldn't be added, and tell when it already exists in the category
-- Fix copying messages with unsaved changes, which were pasted even after the changes were discarded: the saved translations are copied
-- Fix pasting and saving not telling about the messages that were skipped: the ones already in the category, and the ones deleted in the meantime (they're now removed from the list)
-- Fix the `0` message not being added when missing translations are added
-- Fix the settings accepting categories longer than 255 characters, whose messages couldn't be added
-- Fix the import page saying that no file was uploaded when the file isn't a CSV file, and selecting the first category again after an import
-- Fix the plugin name error not being shown in the settings
-- Fix the export errors not being shown in the messages page
-- Fix Ctrl+S not saving with caps lock
-- Fix the select all checkbox and the pagination not being usable with the keyboard
-- Fix the translations being slower to edit in the categories with a lot of messages
+- Fix several issues of the CSV import: translations put in the wrong language when the sites changed since the export, accented characters garbled when the file isn't UTF-8, values starting with `=` evaluated as formulas, and some numbers changed (e.g. `1.50` to `1.5`)
+- Fix several issues of the "Parse templates" utility: the category passed as the first argument (e.g. `'Hello'|t('other')`), the messages, categories and params set with `{% set %}`, the `{% embed %}` blocks, and the template paths that don't exist. A message whose category can't be known (e.g. `'Hello'|t(category)`) is skipped
+- Fix several issues of the messages page:
+  - changes made while saving being shown as saved, changes lost after adding, pasting or deleting messages, and changes that only add or remove spaces not being saved
+  - the messages of the previous category shown after a quick category change, and the actions failing after changing category without clean URLs
+  - pasting saving `null` and `0` translations wrongly, and copying unsaved changes that were then discarded
+  - the message to add being lost when it couldn't be added, and the skipped messages not being reported when pasting and saving
+  - the pagination starting at 0 or going to an empty page, and not going back to the first page after a search, filter, sort or category change
+  - the layout on small screens, the read-only users being able to edit the translations, Ctrl+S with caps lock, and the keyboard access of the select all checkbox and the pagination
+  - the slowness of large categories, and the export errors not being shown
+- Fix miscellaneous issues: the PHP translations import failing on an invalid file or storing arrays, the messages without translation rows being ignored, the PHP export including languages without a site, the GraphQL caches not being cleared, the `0` message not being added, the regex characters of the categories in the URLs (e.g. `site.forms` matching `site-forms`), the "Excluded messages" setting excluding everything with an empty row, the settings accepting empty plugin names and invalid categories, the plugin name error not being shown, the import page errors and category, deleting a message that doesn't exist anymore, and the Utilities breadcrumb
 - Fix the config file example of the README using the `app` category, which replaces Craft's own translations with the database ones (remove `app` from your categories if you copied it)
 
 ## 4.2.3 - 2026-06-10
