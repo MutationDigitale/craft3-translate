@@ -16,7 +16,7 @@
 - Add a warning when leaving the page or changing category with unsaved changes
 - Show an error when the translations couldn't be loaded
 - The CSV import now accepts the language alone as a header when only one site uses it (e.g. `fr`) or the language name, and lists the columns it ignored
-- Add `MessagesService::importMessages()`, `deleteAllMessages()` and `invalidateCaches()`, `ImportService::importCsv()`, `ExportService::exportCsv()`, `SourceMessageService::getSourceMessageId()`, `getOrCreateSourceMessageId()`, `createSourceMessage()`, `getSourceMessageIdsByCategory()` and `getTranslationsByCategory()`, `Message::normalizeTranslation()` and `Translate::canAddMissingTranslations()`
+- Add `MessagesService::importMessages()`, `deleteAllMessages()` and `invalidateCaches()`, `ImportService::importCsv()`, `ExportService::exportCsv()`, `SourceMessageService::getSourceMessageId()`, `getOrCreateSourceMessageId()`, `createSourceMessage()`, `getSourceMessageIdsByCategory()` and `getTranslationsByCategory()`, `Message::normalizeTranslation()`, `SourceMessage::hash()`, `Settings::getExcludedMessagePattern()` and `isFileNameCategory()`, `DbMessageSource::invalidateCache()` and `isTranslatedByTemplate()`, `Translate::canAddMissingTranslations()`, and the `mutation\translate\helpers\LocaleHelper` and `CsvHelper` classes
 
 ### Changed
 - The same message can't be added twice to a category anymore. The existing duplicates are merged into the oldest one: for each language, the most recently updated translation that isn't empty is kept
