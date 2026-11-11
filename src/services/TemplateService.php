@@ -3,62 +3,93 @@
 namespace mutation\translate\services;
 
 use Craft;
-use Exception;
-use mutation\translate\helpers\DbHelper;
-use mutation\translate\models\SourceMessage;
+use craft\helpers\FileHelper;
+use mutation\translate\Translate;
+use Throwable;
+use Twig\Node\CheckToStringNode;
+use Twig\Node\Expression\ArrayExpression;
 use Twig\Node\Expression\ConstantExpression;
 use Twig\Node\Expression\FilterExpression;
-use Twig\Node\Expression\TempNameExpression;
-use Twig\Node\SetNode;
+use Twig\Node\ModuleNode;
+use Twig\Node\Node;
 use Twig\Source;
 use yii\base\Component;
 
 class TemplateService extends Component
 {
-    private $setNodes = [];
+    private const TRANSLATE_FILTERS = ['t', 'translate'];
 
+    /**
+     * Parses the site templates and adds the missing messages of the configured categories to the database, except the excluded ones.
+     *
+     * @return int The number of messages added
+     */
     public function parseTemplates(): int
     {
         $view = Craft::$app->getView();
+        $oldTemplateMode = $view->getTemplateMode();
         $view->setTemplateMode('site');
         $twig = $view->getTwig();
 
-        // Get template paths from config or use default
-        $templatePaths = $this->getTemplatePaths();
         $messages = [];
 
-        foreach ($templatePaths as $templatesPath) {
-            $templateFiles = $this->getDirContents($templatesPath);
-
-            foreach ($templateFiles as $file) {
-                $templateStr = file_get_contents($file);
-                $twigSource = new Source($templateStr, basename($file));
+        try {
+            foreach ($this->getTemplateFiles() as $file) {
+                $contents = file_get_contents($file);
+                if ($contents === false || str_contains($contents, "\0")) {
+                    // Not a template (e.g. an image)
+                    continue;
+                }
 
                 try {
-                    $token_stream = $twig->tokenize($twigSource);
-                    $tree = $twig->parse($token_stream);
-                    $this->listFunctionCalls($tree, $tree, $messages);
-                } catch (Exception $e) {
-                    // Log error if needed
-                    Craft::warning("Failed to parse template: {$file}", __METHOD__);
+                    $twigSource = new Source($contents, basename($file), $file);
+                    $this->listFunctionCalls($twig->parse($twig->tokenize($twigSource)), $messages);
+                } catch (Throwable $e) {
+                    Craft::warning("Failed to parse template: {$file} ({$e->getMessage()})", __METHOD__);
                 }
             }
+        } finally {
+            $view->setTemplateMode($oldTemplateMode);
         }
 
-        foreach ($messages as $message) {
-            $sourceMessage = SourceMessage::find()
-                ->where([DbHelper::caseSensitiveComparisonString('message') => $message['value'], 'category' => $message['category']])
-                ->one();
+        $settings = Translate::getInstance()->settings;
+        $categories = $settings->getCategories();
+        $sourceMessageService = Translate::getInstance()->sourceMessage;
+        $count = 0;
 
-            if (!$sourceMessage) {
-                $sourceMessage = new SourceMessage();
-                $sourceMessage->category = $message['category'];
-                $sourceMessage->message = $message['value'];
-                $sourceMessage->save();
+        foreach ($messages as $message) {
+            // Like the missing translations added when the pages are visited
+            if (!in_array($message['category'], $categories, true) || $settings->getExcludedMessagePattern($message['value']) !== null) {
+                continue;
+            }
+
+            $sourceMessageService->getOrCreateSourceMessageId($message['category'], $message['value'], $created);
+            if ($created) {
+                $count++;
             }
         }
 
-        return count($messages);
+        if ($count > 0) {
+            Translate::getInstance()->messages->invalidateCaches();
+        }
+
+        return $count;
+    }
+
+    /**
+     * @return string[]
+     */
+    private function getTemplateFiles(): array
+    {
+        $files = [];
+
+        foreach ($this->getTemplatePaths() as $path) {
+            if (is_dir($path)) {
+                $files = array_merge($files, FileHelper::findFiles($path));
+            }
+        }
+
+        return array_unique($files);
     }
 
     private function getTemplatePaths(): array
@@ -66,86 +97,121 @@ class TemplateService extends Component
         $view = Craft::$app->getView();
 
         // Get template roots from registered site templates
-        $paths = array_column($view->getSiteTemplateRoots(), 0);
+        $paths = array_merge(...array_values($view->getSiteTemplateRoots()));
 
-        // Get additional paths from config
-        $config = Craft::$app->config->getConfigFromFile('translations');
-        if (isset($config['templatePaths']) && is_array($config['templatePaths'])) {
-            // Convert config paths to absolute using Craft::getAlias()
-            $configPaths = array_map(function($path) {
-                return Craft::getAlias($path);
-            }, $config['templatePaths']);
+        // Get additional paths from the `config/translations.php` file
+        $config = Craft::$app->getConfig()->getConfigFromFile('translations');
+        foreach ((array)($config['templatePaths'] ?? []) as $path) {
+            if (!is_string($path) || trim($path) === '') {
+                continue;
+            }
 
-            // Merge with existing paths
-            $paths = array_merge($paths, $configPaths);
+            // Skipped instead of failing, so the other templates are still parsed (e.g. an alias that isn't defined)
+            $directory = Craft::getAlias($path, false);
+            if ($directory === false || !is_dir($directory)) {
+                Craft::warning("Skipped the \"{$path}\" template path, it isn't a directory.", __METHOD__);
+                continue;
+            }
+
+            $paths[] = $directory;
         }
 
-        // Add default templates path if not present
-        $defaultPath = Craft::getAlias('@templates');
-        if (!in_array($defaultPath, $paths)) {
-            $paths[] = $defaultPath;
-        }
+        // Add default templates path
+        $paths[] = Craft::getAlias('@templates');
 
-        // Remove duplicates
-        return array_unique($paths);
+        return array_unique(array_map(fn($path) => FileHelper::normalizePath($path), $paths));
     }
 
-    private function listFunctionCalls($tree, $node, array &$list): void
+    private function listFunctionCalls(Node $node, array &$list): void
     {
-        if ($node instanceof SetNode) {
-            try {
-                $this->setNodes[$node->getNode('names')->getAttribute('name')] = $node->getNode('values')->getAttribute(
-                    'value'
-                );
-            } catch (Exception $e) {
+        if ($node instanceof FilterExpression && in_array($this->getFilterName($node), self::TRANSLATE_FILTERS, true)) {
+            $message = $this->getMessage($this->unwrap($node->getNode('node')));
+            $category = $this->getCategory($node->getNode('arguments'));
+            if ($message !== null && $category !== null) {
+                $list[] = ['value' => $message, 'category' => $category];
             }
         }
-        if ($node instanceof FilterExpression) {
-            try {
-                $name = $node->getNode('filter')->getAttribute('value');
-                if ($name === 't') {
-                    $valueNode = $node->getNode('node');
-                    $argumentNode = $node->getNode('arguments');
-                    $category = 'site';
-                    if ($argumentNode->getIterator()->count() > 0) {
-                        foreach ($argumentNode->getIterator() as $key => $value) {
-                            if ($key === 'category') {
-                                $category = $value->getAttribute('value');
-                            }
-                        }
-                    }
-                    if ($valueNode instanceof ConstantExpression) {
-                        $value = $valueNode->getAttribute('value');
-                        $list[] = ['value' => $value, 'category' => $category];
-                    }
-                    if ($valueNode instanceof TempNameExpression) {
-                        $tempName = $valueNode->getAttribute('name');
-                        if (isset($this->setNodes[$tempName])) {
-                            $list[] = ['value' => $this->setNodes[$tempName], 'category' => $category];
-                        }
-                    }
-                }
-            } catch (Exception $e) {
-            }
-        }
-        if ($node) {
-            foreach ($node as $child) {
-                $this->listFunctionCalls($tree, $child, $list);
-            }
+
+        foreach ($this->getChildNodes($node) as $child) {
+            $this->listFunctionCalls($child, $list);
         }
     }
 
-    private function getDirContents($dir, &$results = array())
+    /**
+     * Returns the child nodes of a node, and the templates of the `{% embed %}` tags, which Twig keeps in an attribute of the
+     * template instead.
+     *
+     * @return Node[]
+     */
+    private function getChildNodes(Node $node): array
     {
-        foreach (scandir($dir) as $value) {
-            $path = realpath($dir . DIRECTORY_SEPARATOR . $value);
-            if (!is_dir($path)) {
-                $results[] = $path;
-            } elseif ($value !== '.' && $value !== '..') {
-                $this->getDirContents($path, $results);
+        $children = iterator_to_array($node, false);
+
+        if ($node instanceof ModuleNode) {
+            foreach ($node->getAttribute('embedded_templates') as $embeddedTemplate) {
+                $children[] = $embeddedTemplate;
             }
         }
 
-        return $results;
+        return $children;
+    }
+
+    private function unwrap(Node $node): Node
+    {
+        while ($node instanceof CheckToStringNode) {
+            $node = $node->getNode('expr');
+        }
+
+        return $node;
+    }
+
+    private function getFilterName(FilterExpression $node): ?string
+    {
+        return $node->hasAttribute('name') ? $node->getAttribute('name') : null;
+    }
+
+    /**
+     * Returns the message of a filter, when it's a text (not a variable or an expression, which can't be known by parsing).
+     */
+    private function getMessage(Node $valueNode): ?string
+    {
+        if ($valueNode instanceof ConstantExpression) {
+            $value = $valueNode->getAttribute('value');
+            return is_string($value) ? $value : null;
+        }
+
+        return null;
+    }
+
+    /**
+     * Returns the category passed to the filter, either as the first argument or as the `category` named argument.
+     *
+     * Like the filter, the category is `site` when it's omitted or when the first argument is the params. Returns null
+     * when it can't be known by parsing (e.g. a variable).
+     */
+    private function getCategory(Node $argumentsNode): ?string
+    {
+        foreach ($argumentsNode as $key => $argument) {
+            if ($key !== 0 && $key !== 'category') {
+                continue;
+            }
+
+            $argument = $this->unwrap($argument);
+            if ($key === 0 && $argument instanceof ArrayExpression) {
+                return 'site';
+            }
+            if ($argument instanceof ConstantExpression) {
+                $category = $argument->getAttribute('value');
+                return match (true) {
+                    is_string($category) => $category,
+                    $category === null => 'site',
+                    default => null,
+                };
+            }
+
+            return null;
+        }
+
+        return 'site';
     }
 }

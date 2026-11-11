@@ -46,14 +46,15 @@ const config = {
         use: [
           MiniCssExtractPlugin.loader,
           'css-loader',
-          'sass-loader',
-        ],
-      },
-      {
-        test: /\.(png|jpg|gif)$/i,
-        include: srcDir,
-        use: [
-          'url-loader',
+          {
+            loader: 'sass-loader',
+            options: {
+              sassOptions: {
+                // Don't show the deprecation warnings of craftcms-sass
+                quietDeps: true,
+              },
+            },
+          },
         ],
       },
     ],

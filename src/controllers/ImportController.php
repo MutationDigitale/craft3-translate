@@ -3,14 +3,12 @@
 namespace mutation\translate\controllers;
 
 use Craft;
+use craft\helpers\FileHelper;
 use craft\helpers\UrlHelper;
-use craft\web\Controller;
 use craft\web\UploadedFile;
-use mutation\translate\helpers\DbHelper;
-use mutation\translate\models\Message;
-use mutation\translate\models\SourceMessage;
+use mutation\translate\base\Controller;
 use mutation\translate\Translate;
-use PhpOffice\PhpSpreadsheet\Reader\Csv;
+use yii\base\InvalidArgumentException;
 
 class ImportController extends Controller
 {
@@ -18,131 +16,78 @@ class ImportController extends Controller
     {
         $this->requirePermission(Translate::IMPORT_TRANSLATIONS_PERMISSION);
 
-        $categories = Translate::getInstance()->settings->getCategories();
-        $categoriesSelect = [];
-        foreach ($categories as $category) {
-            $categoriesSelect[] = [
-                'value' => $category,
-                'label' => $category,
-            ];
-        }
-
-        $settings = Translate::getInstance()->settings;
-
-        $pluginName = $settings->pluginName;
-        $templateTitle = Craft::t('translations-admin', 'Import');
-
-        $variables = [];
-        $variables['fullPageForm'] = true;
-        $variables['title'] = $templateTitle;
-        $variables['crumbs'] = [
+        return $this->renderCpPage(
+            'translations-admin/import',
+            Craft::t('translations-admin', 'Import'),
+            'translations-admin/import-messages',
+            'import',
             [
-                'label' => $pluginName,
-                'url' => UrlHelper::cpUrl('translations-admin'),
-            ],
-            [
-                'label' => $templateTitle,
-                'url' => UrlHelper::cpUrl('translations-admin/import-messages'),
-            ],
-        ];
-        $variables['docTitle'] = "{$pluginName} - {$templateTitle}";
-        $variables['selectedSubnavItem'] = 'import';
-        $variables['categories'] = $categoriesSelect;
-
-        $this->renderTemplate('translations-admin/import', $variables);
+                'fullPageForm' => true,
+                'categories' => $this->getCategoryOptions(),
+                'languageHeaders' => Translate::getInstance()->import->getLanguageHeaders(),
+            ]
+        );
     }
 
     public function actionImport()
     {
         $this->requirePermission(Translate::IMPORT_TRANSLATIONS_PERMISSION);
-
         $this->requirePostRequest();
 
-        $category = Craft::$app->request->getRequiredBodyParam('category');
+        $category = $this->getRequiredCategoryParam();
+        $csvFile = $this->getUploadedFile();
 
-        $csvFile = UploadedFile::getInstanceByName('file');
-
-        $siteLocales = Craft::$app->i18n->getSiteLocales();
-        sort($siteLocales);
-
-        if ($csvFile) {
-            $tempPath = $csvFile->saveAsTempFile();
-
-            $reader = new Csv();
-            $reader->setReadDataOnly(true);
-
-            $spreadsheet = $reader->load($tempPath);
-            $rows = $spreadsheet->getActiveSheet()->toArray();
-            $headers = $rows[0];
-            array_shift($rows);
-
-            $updated = 0;
-            $added = 0;
-
-            foreach ($rows as $row) {
-                $key = $row[0];
-
-                /* @var SourceMessage $sourceMessage */
-                $sourceMessage = SourceMessage::find()
-                    ->where(array(DbHelper::caseSensitiveComparisonString('message') => $key, 'category' => $category))
-                    ->one();
-
-                if (!$sourceMessage) {
-                    $sourceMessage = new SourceMessage();
-                    $sourceMessage->category = $category;
-                    $sourceMessage->message = $key;
-                    $sourceMessage->save();
-                }
-
-                $i = 1;
-                foreach ($siteLocales as $siteLocale) {
-                    $translation = $row[$i];
-                    $translation = trim($translation) !== '' ? $translation : null;
-                    $i++;
-
-                    /* @var Message $message */
-                    $message = Message::find()
-                        ->where(array('language' => $siteLocale->id, 'id' => $sourceMessage->id))
-                        ->one();
-
-                    if (!$message) {
-                        $message = new Message();
-                        $message->id = $sourceMessage->id;
-                        $message->language = $siteLocale->id;
-                        $message->translation = null;
-                    }
-
-                    $oldTranslation = $message->translation;
-
-                    if ($message->translation !== $translation) {
-                        $message->translation = $translation;
-                        if ($message->save()) {
-                            if ($oldTranslation === null) {
-                                $added++;
-                            } else {
-                                $updated++;
-                            }
-                        }
-                    }
-                }
-            }
-
-            Craft::$app->getSession()->setNotice(
-                Craft::t(
-                    'translations-admin',
-                    '{added} translations added. {updated} translations updated.',
-                    ['added' => $added, 'updated' => $updated]
-                )
-            );
-        } else {
-            Craft::$app->getSession()->setError(
-                Craft::t(
-                    'translations-admin',
-                    'No csv file uploaded.'
-                )
-            );
+        if (!$csvFile) {
+            $this->setFailFlash(Craft::t('translations-admin', 'No csv file uploaded.'));
+            return null;
         }
 
-        return $this->redirectToPostedUrl();
+        if (strtolower($csvFile->getExtension()) !== 'csv') {
+            $this->setFailFlash(Craft::t('translations-admin', 'The file isn’t a CSV file. Save it as CSV in your spreadsheet app (e.g. “CSV UTF-8” in Excel).'));
+            return null;
+        }
+
+        // The temp file keeps the uploaded file name: the reader trusts the .csv extension, otherwise it checks the MIME type,
+        // which can reject valid files (e.g. UTF-16)
+        $tempPath = $csvFile->saveAsTempFile();
+        if ($tempPath === false) {
+            $this->setFailFlash(Craft::t('translations-admin', 'No csv file uploaded.'));
+            return null;
+        }
+
+        try {
+            $result = Translate::getInstance()->import->importCsv($tempPath, $category);
+        } catch (InvalidArgumentException $e) {
+            $this->setFailFlash($e->getMessage());
+            return null;
+        } finally {
+            FileHelper::unlink($tempPath);
+        }
+
+        $notice = Craft::t(
+            'translations-admin',
+            '{added, plural, =1{# translation} other{# translations}} added. {updated, plural, =1{# translation} other{# translations}} updated.',
+            ['added' => $result['added'], 'updated' => $result['updated']]
+        );
+        if ($result['created'] > 0) {
+            $notice .= ' ' . Craft::t('translations-admin', '{created, plural, =1{# key} other{# keys}} created.', ['created' => $result['created']]);
+        }
+        if (count($result['ignoredColumns']) > 0) {
+            $notice .= ' ' . Craft::t('translations-admin', 'Ignored columns: {columns}.', [
+                'columns' => implode(', ', $result['ignoredColumns']),
+            ]);
+        }
+        $this->setSuccessFlash($notice);
+
+        // The category stays selected, to import other files in it
+        return $this->redirectToPostedUrl(null, UrlHelper::cpUrl('translations-admin/import-messages', ['category' => $category]));
+    }
+
+    /**
+     * Returns the uploaded CSV file (the tests can't upload one: it must come from an HTTP upload).
+     */
+    protected function getUploadedFile(): ?UploadedFile
+    {
+        return UploadedFile::getInstanceByName('file');
     }
 }

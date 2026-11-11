@@ -17,10 +17,8 @@ use craft\services\UserPermissions;
 use craft\web\UrlManager;
 use GraphQL\Type\Definition\Type;
 use mutation\translate\arguments\StaticMessageArguments;
-use mutation\translate\helpers\DbHelper;
 use mutation\translate\interfaces\StaticMessageInterface;
 use mutation\translate\models\Settings;
-use mutation\translate\models\SourceMessage;
 use mutation\translate\resolvers\StaticMessageResolver;
 use mutation\translate\services\DbMessageSource;
 use mutation\translate\services\ExportService;
@@ -90,23 +88,23 @@ class Translate extends Plugin
         $currentUser = Craft::$app->getUser()->getIdentity();
 
         $item = parent::getCpNavItem();
-        $item['subnav']['translations'] = ['label' => 'Messages', 'url' => 'translations-admin'];
+        $item['subnav']['translations'] = ['label' => Craft::t('translations-admin', 'Messages'), 'url' => 'translations-admin'];
 
         if ($currentUser instanceof User) {
             if ($currentUser->can(self::EXPORT_TRANSLATIONS_PERMISSION)) {
-                $item['subnav']['export'] = ['label' => 'Export', 'url' => 'translations-admin/export-messages'];
+                $item['subnav']['export'] = ['label' => Craft::t('translations-admin', 'Export'), 'url' => 'translations-admin/export-messages'];
             }
             if ($currentUser->can(self::IMPORT_TRANSLATIONS_PERMISSION)) {
-                $item['subnav']['import'] = ['label' => 'Import', 'url' => 'translations-admin/import-messages'];
+                $item['subnav']['import'] = ['label' => Craft::t('translations-admin', 'Import'), 'url' => 'translations-admin/import-messages'];
             }
             if ($currentUser->can(self::TRANSLATIONS_UTILITIES_PERMISSION)) {
                 $item['subnav']['utilities'] = [
-                    'label' => 'Utilities',
+                    'label' => Craft::t('translations-admin', 'Utilities'),
                     'url' => 'translations-admin/translations-utilities',
                 ];
             }
             if ($currentUser->can(self::CHANGE_TRANSLATIONS_SETTINGS_PERMISSION)) {
-                $item['subnav']['settings'] = ['label' => 'Settings', 'url' => 'translations-admin/plugin-settings'];
+                $item['subnav']['settings'] = ['label' => Craft::t('translations-admin', 'Settings'), 'url' => 'translations-admin/plugin-settings'];
             }
         }
 
@@ -126,6 +124,18 @@ class Translate extends Plugin
     public function getReadOnlySettingsResponse(): mixed
     {
         return $this->getSettingsResponse();
+    }
+
+    /**
+     * Returns whether the missing translations can be added to the database in the current request.
+     */
+    private function canAddMissingTranslations(): bool
+    {
+        if (!$this->settings->addMissingTranslations) {
+            return false;
+        }
+
+        return !$this->settings->addMissingSiteRequestOnly || (Craft::$app->has('request', true) && Craft::$app->getRequest()->getIsSiteRequest());
     }
 
     private function initDbMessages()
@@ -158,25 +168,25 @@ class Translate extends Plugin
                     'heading' => Craft::t('translations-admin', 'Translations admin'),
                     'permissions' => [
                         self::SAVE_TRANSLATIONS_PERMISSION => [
-                            'label' => 'Save translations',
+                            'label' => Craft::t('translations-admin', 'Save translations'),
                         ],
                         self::ADD_TRANSLATIONS_PERMISSION => [
-                            'label' => 'Add translations',
+                            'label' => Craft::t('translations-admin', 'Add translations'),
                         ],
                         self::DELETE_TRANSLATIONS_PERMISSION => [
-                            'label' => 'Delete translations',
+                            'label' => Craft::t('translations-admin', 'Delete translations'),
                         ],
                         self::EXPORT_TRANSLATIONS_PERMISSION => [
-                            'label' => 'Export translations',
+                            'label' => Craft::t('translations-admin', 'Export translations'),
                         ],
                         self::IMPORT_TRANSLATIONS_PERMISSION => [
-                            'label' => 'Import translations',
+                            'label' => Craft::t('translations-admin', 'Import translations'),
                         ],
                         self::TRANSLATIONS_UTILITIES_PERMISSION => [
-                            'label' => 'Use translations utilities',
+                            'label' => Craft::t('translations-admin', 'Use translations utilities'),
                         ],
                         self::CHANGE_TRANSLATIONS_SETTINGS_PERMISSION => [
-                            'label' => 'Change translations settings',
+                            'label' => Craft::t('translations-admin', 'Change translations settings'),
                         ],
                     ],
                 ];
@@ -203,7 +213,9 @@ class Translate extends Plugin
             function(RegisterUrlRulesEvent $event) {
                 $event->rules['translations-admin'] = 'translations-admin/messages/index';
                 foreach ($this->settings->getCategories() as $category) {
-                    $event->rules["translations-admin/<category:$category>"] = 'translations-admin/messages/index';
+                    // The category is a regex in the rule
+                    $categoryPattern = preg_quote($category, '#');
+                    $event->rules["translations-admin/<category:{$categoryPattern}>"] = 'translations-admin/messages/index';
                 }
                 $event->rules['translations-admin/export-messages'] = 'translations-admin/export/index';
                 $event->rules['translations-admin/import-messages'] = 'translations-admin/import/index';
@@ -219,15 +231,12 @@ class Translate extends Plugin
             MessageSource::class,
             MessageSource::EVENT_MISSING_TRANSLATION,
             function(MissingTranslationEvent $event) {
-                if (!$this->settings->addMissingTranslations) {
+                if (!$this->canAddMissingTranslations()) {
                     return;
                 }
 
-                if (!(Craft::$app->has('request', true) && Craft::$app->request->isSiteRequest) && $this->settings->addMissingSiteRequestOnly) {
-                    return;
-                }
-
-                if (!$event->message) {
+                // Not empty(): "0" is a message
+                if ((string)$event->message === '') {
                     return;
                 }
 
@@ -235,22 +244,20 @@ class Translate extends Plugin
                     return;
                 }
 
-                foreach ($this->settings->getExcludedMessages() as $excludedMessagePattern) {
-                    if (str_contains($event->message, $excludedMessagePattern)) {
-                        Craft::getLogger()->log("Excluded translation message: {$event->message} because of message pattern {$excludedMessagePattern}", Logger::LEVEL_INFO, 'translations');
-                        return;
-                    }
+                if ($this->settings->addMissingFromTemplatesOnly && !DbMessageSource::isTranslatedByTemplate()) {
+                    return;
                 }
 
-                $sourceMessage = SourceMessage::find()
-                    ->where(array(DbHelper::caseSensitiveComparisonString('message') => $event->message, 'category' => $event->category))
-                    ->one();
+                $excludedMessagePattern = $this->settings->getExcludedMessagePattern($event->message);
+                if ($excludedMessagePattern !== null) {
+                    Craft::getLogger()->log("Excluded translation message: {$event->message} because of message pattern {$excludedMessagePattern}", Logger::LEVEL_INFO, 'translations');
+                    return;
+                }
 
-                if (!$sourceMessage) {
-                    $sourceMessage = new SourceMessage();
-                    $sourceMessage->category = $event->category;
-                    $sourceMessage->message = $event->message;
-                    $sourceMessage->save();
+                $this->sourceMessage->getOrCreateSourceMessageId($event->category, $event->message, $created);
+
+                if ($created) {
+                    $this->messages->invalidateCaches();
                 }
             }
         );

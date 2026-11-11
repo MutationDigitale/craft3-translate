@@ -21,11 +21,20 @@
     "phpoffice/phpspreadsheet": "^5.4.0"
   },
   "require-dev": {
-    "craftcms/ecs": "dev-main"
+    "codeception/codeception": "^5.2",
+    "codeception/module-asserts": "^3.0",
+    "codeception/module-yii2": "^1.1.9",
+    "craftcms/ecs": "dev-main",
+    "vlucas/phpdotenv": "^5.4"
   },
   "autoload": {
     "psr-4": {
       "mutation\\translate\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "mutation\\translate\\tests\\": "tests/"
     }
   },
   "extra": {
@@ -33,7 +42,7 @@
     "handle": "translations-admin",
     "hasCpSettings": true,
     "hasCpSection": true,
-    "schemaVersion": "1.1.0",
+    "schemaVersion": "1.2.0",
     "changelogUrl": "https://raw.githubusercontent.com/MutationDigitale/craft3-translate/master/CHANGELOG.md",
     "class": "mutation\\translate\\Translate"
   },
@@ -41,10 +50,14 @@
     "allow-plugins": {
       "yiisoft/yii2-composer": true,
       "craftcms/plugin-installer": true
+    },
+    "platform": {
+      "php": "8.2"
     }
   },
   "scripts": {
     "check-cs": "ecs check --ansi",
-    "fix-cs": "ecs check --ansi --fix"
+    "fix-cs": "ecs check --ansi --fix",
+    "test": "codecept run"
   }
 }

@@ -1,8 +1,8 @@
 <template>
   <div id="translations-toolbar" class="flex flex-grow">
     <div>
-      <button class="btn menubtn statusmenubtn"><span class="status" :class="{'disabled': emptyMessages, 'all': !emptyMessages}"></span>{{
-          !emptyMessages ? t('All') : t('Empty')
+      <button ref="filterButton" type="button" class="btn menubtn statusmenubtn" :aria-label="t('Filter')"><span class="status" :class="{'disabled': emptyMessages, 'all': !emptyMessages}"></span>{{
+          filterLabel
         }}</button>
       <div class="menu">
         <ul class="padded">
@@ -12,21 +12,30 @@
               <span class="status all"></span>{{ t('All') }}
             </a>
           </li>
+          <!-- Like the previous versions, the languages of the displayed columns -->
           <li>
-            <a :class="{'sel': emptyMessages}"
+            <a :class="{'sel': emptyMessages === true}"
                @click="setEmptyMessages(true)">
-              <span class="status disabled"></span>{{ t('Empty') }}
+              <span class="status disabled"></span>{{ t('Empty in any language') }}
+            </a>
+          </li>
+          <!-- The messages without a translation in a language, even when its column is hidden -->
+          <li v-for="language in languages" :key="language.id" :id="'filter-aria-option-' + language.id">
+            <a :id="'filter-option-' + language.id"
+               :class="{'sel': emptyMessages === language.id}"
+               @click="setEmptyMessages(language.id)">
+              <span class="status disabled"></span>{{ t('Empty in {language}', { language: language.displayName }) }}
             </a>
           </li>
         </ul>
       </div>
     </div>
     <div class="flex-grow texticon search icon search-container">
-      <input class="text fullwidth" type="text" autocomplete="off" placeholder="Search"
+      <input class="text fullwidth" type="text" autocomplete="off" :placeholder="t('Search')" :aria-label="t('Search')"
              v-model="search">
     </div>
     <div>
-      <button class="btn menubtn" data-icon="sliders">{{ t('Columns') }}</button>
+      <button type="button" class="btn menubtn" data-icon="sliders" :aria-label="t('Columns')">{{ t('Columns') }}</button>
       <div class="menu">
         <ul class="padded checkbox-menu">
           <li v-for="language in languages" :key="language.id" class="checkbox-menu-item">
@@ -54,11 +63,11 @@
       </div>
     </div>
     <div v-if="addPermission" class="textarea-container">
-      <textarea class="text" rows="1" v-model="messageToAdd" :placeholder="t('Message')"></textarea>
+      <textarea class="text" rows="1" v-model="messageToAdd" :placeholder="t('Message')" :aria-label="t('Message')"></textarea>
     </div>
     <div v-if="addPermission">
       <button class="btn" type="button" @click="addMessage()"
-              :disabled="messageToAdd === null || messageToAdd.trim() === ''">
+              :disabled="isAdding || messageToAdd === null || messageToAdd.trim() === ''">
         {{ t('Add') }}
       </button>
     </div>
@@ -67,7 +76,7 @@
 
 <script>
 import {mapActions, mapMutations, mapState} from 'vuex';
-import axios from 'axios';
+import { postAction } from '../helpers';
 
 export default {
   props: {
@@ -78,8 +87,14 @@ export default {
       messageToAdd: ''
     };
   },
-  mounted () {
-
+  watch: {
+    languages: {
+      handler() {
+        this.registerFilterOptions();
+      },
+      // Once the options of the languages are rendered
+      flush: 'post'
+    }
   },
   computed: {
     search: {
@@ -90,20 +105,47 @@ export default {
         this.setSearch(value);
       }
     },
+    filterLabel() {
+      if (!this.emptyMessages) {
+        return this.t('All');
+      }
+      if (this.emptyMessages === true) {
+        return this.t('Empty in any language');
+      }
+      const language = this.languages[this.emptyMessages];
+      return this.t('Empty in {language}', { language: language?.displayName ?? this.emptyMessages });
+    },
     ...mapState({
       isAdding: state => state.isAdding,
       isDeleting: state => state.isDeleting,
       languages: state => state.languages,
       columns: state => state.columns,
       category: state => state.category,
-      sourceMessages: state => state.sourceMessages,
       emptyMessages: state => state.emptyMessages,
       checkedSourceMessages: state => state.checkedSourceMessages
     })
   },
   methods: {
-    t(str) {
-      return this.$craft.t('translations-admin', str);
+    // The menu of Craft only knows the options rendered when the page loaded: the options of the languages are added
+    // once they're loaded, so the menu closes when they're chosen, and they can be reached with the keyboard
+    registerFilterOptions() {
+      const menu = this.$jquery?.(this.$refs.filterButton).data('menubtn')?.menu;
+      if (!menu) {
+        return;
+      }
+      // The options of the previous category's languages aren't in the menu anymore (it's detached from the page when closed)
+      const inMenu = (index, option) => menu.$container[0].contains(option);
+      menu.$options = menu.$options.filter(inMenu);
+      if (menu.$ariaOptions) {
+        menu.$ariaOptions = menu.$ariaOptions.filter(inMenu);
+      }
+      const $options = menu.$container.find('a').not(menu.$options);
+      if ($options.length > 0) {
+        menu.addOptions($options);
+      }
+    },
+    t(str, params = {}) {
+      return this.$craft.t('translations-admin', str, params);
     },
     setLanguages(languageId, value) {
       const languages = this.languages;
@@ -118,31 +160,31 @@ export default {
     addMessage() {
       this.setIsAdding(true);
 
-      const formData = new FormData();
+      const message = this.messageToAdd;
+      const category = this.category;
 
-      formData.append(this.$csrfTokenName, this.$csrfTokenValue);
-      formData.append('action', 'translations-admin/messages/add');
-      formData.append('message', this.messageToAdd);
-      formData.append('category', this.category);
-
-      axios
-        .post('', formData)
+      postAction(this, 'translations-admin/messages/add', { message, category })
         .then((response) => {
           if (response.data.success) {
-            this.emitter.emit('translation-added');
-            const sourceMessages = this.sourceMessages;
-            sourceMessages.push(response.data.sourceMessage);
-            this.updateSourceMessages(sourceMessages);
+            this.$craft.cp.displayNotice(this.t('Translation added'));
+            // Kept when it was changed during the request
+            if (this.messageToAdd === message) {
+              this.messageToAdd = '';
+            }
+            // Not in the list of another category, if it was changed during the request
+            if (category === this.category) {
+              this.addSourceMessages([response.data.sourceMessage]);
+            }
           } else {
-            this.emitter.emit('translation-added-error');
+            // The message is kept, to change it or try again
+            this.$craft.cp.displayError(response.data.error || this.t('Translation not added'));
           }
         })
         .catch(() => {
-          this.emitter.emit('translation-added-error');
+          this.$craft.cp.displayError(this.t('Translation not added'));
         })
         .finally(() => {
           this.setIsAdding(false);
-          this.messageToAdd = '';
         });
     },
     ...mapMutations({
@@ -154,14 +196,14 @@ export default {
     ...mapActions({
       updateLanguages: 'updateLanguages',
       updateColumns: 'updateColumns',
-      updateSourceMessages: 'updateSourceMessages'
+      addSourceMessages: 'addSourceMessages'
     })
   }
 };
 </script>
 
 <style lang="scss" scoped>
-@import "~craftcms-sass/mixins";
+@use "craftcms-sass/mixins" as *;
 
 #translations-toolbar {
   flex-wrap: wrap;

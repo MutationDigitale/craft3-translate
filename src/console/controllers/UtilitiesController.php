@@ -4,8 +4,9 @@ namespace mutation\translate\console\controllers;
 
 use Craft;
 use craft\console\Controller;
-use mutation\translate\models\SourceMessage;
+use craft\helpers\Console;
 use mutation\translate\Translate;
+use yii\console\ExitCode;
 
 /**
  * Admin translations utilities commands
@@ -20,18 +21,16 @@ class UtilitiesController extends Controller
         $translationsImported = Translate::getInstance()->import->importPhpTranslationsToDatabase();
 
         if (is_int($translationsImported)) {
-            echo Craft::t(
+            $this->stdout(Craft::t(
                 'translations-admin',
-                '{count} translations imported to the database.',
+                '{count} translation(s) imported to the database.',
                 ['count' => $translationsImported]
-            );
-            return;
+            ) . PHP_EOL, Console::FG_GREEN);
+            return ExitCode::OK;
         }
 
-        echo Craft::t(
-            'translations-admin',
-            'Translations couldn’t be imported to the database.'
-        );
+        $this->stderr(Craft::t('translations-admin', 'Translations couldn’t be imported to the database.') . PHP_EOL, Console::FG_RED);
+        return ExitCode::UNSPECIFIED_ERROR;
     }
 
     /**
@@ -42,18 +41,16 @@ class UtilitiesController extends Controller
         $translationsExported = Translate::getInstance()->export->exportDatabaseTranslationsToPhp();
 
         if (is_int($translationsExported)) {
-            echo Craft::t(
+            $this->stdout(Craft::t(
                 'translations-admin',
-                '{count} translations exported to PHP files.',
+                '{count} translation(s) exported to PHP files.',
                 ['count' => $translationsExported]
-            );
-            return;
+            ) . PHP_EOL, Console::FG_GREEN);
+            return ExitCode::OK;
         }
 
-        echo Craft::t(
-            'translations-admin',
-            'Translations couldn’t be exported to PHP files.'
-        );
+        $this->stderr(Craft::t('translations-admin', 'Translations couldn’t be exported to PHP files.') . PHP_EOL, Console::FG_RED);
+        return ExitCode::UNSPECIFIED_ERROR;
     }
 
     /**
@@ -61,8 +58,9 @@ class UtilitiesController extends Controller
      */
     public function actionDelete()
     {
-        SourceMessage::deleteAll();
+        Translate::getInstance()->messages->deleteAllMessages();
 
-        echo Craft::t('translations-admin', 'All translations deleted.');
+        $this->stdout(Craft::t('translations-admin', 'All translations deleted.') . PHP_EOL, Console::FG_GREEN);
+        return ExitCode::OK;
     }
 }

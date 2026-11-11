@@ -9,67 +9,56 @@
 </template>
 
 <script>
-import axios from 'axios';
-import {mapState} from 'vuex';
+import { clone, postAction } from '../helpers';
+import { mapGetters, mapState } from 'vuex';
 
 export default {
   data() {
     return {
       isSaving: false,
-      isModified: false,
     };
   },
   computed: {
     ...mapState({
       modifiedMessages: state => state.modifiedMessages,
-      modifiedMessagesKeys: state => state.modifiedMessagesKeys,
+    }),
+    ...mapGetters({
+      isModified: 'isModified',
     })
   },
-  watch: {
-    modifiedMessagesKeys: {
-      handler() {
-        this.isModified = this.modifiedMessagesKeys.length > 0;
-      },
-      deep: true
-    }
-  },
   mounted() {
-    window.addEventListener('keydown', (event) => {
-      if ((event.ctrlKey || event.metaKey) && event.key === 's') {
+    window.addEventListener('keydown', this.onKeydown);
+  },
+  beforeUnmount() {
+    window.removeEventListener('keydown', this.onKeydown);
+  },
+  methods: {
+    onKeydown: function (event) {
+      // The key is "S" with caps lock, but the shortcuts with Shift are left to the browser
+      if ((event.ctrlKey || event.metaKey) && !event.shiftKey && !event.altKey && event.key?.toLowerCase() === 's') {
         if (this.isModified && !this.isSaving) {
           this.save();
         }
         event.preventDefault();
       }
-    });
-  },
-  methods: {
+    },
     save: function () {
       this.isSaving = true;
 
-      const formData = new FormData();
+      // Copy the sent translations, they can still be changed during the request
+      const savedMessages = clone(this.modifiedMessages);
 
-      formData.append(this.$csrfTokenName, this.$csrfTokenValue);
-      formData.append('action', 'translations-admin/messages/save');
-
-      for (const languageId in this.modifiedMessages) {
-        for (const sourceMessageId in this.modifiedMessages[languageId]) {
-          const message = this.modifiedMessages[languageId][sourceMessageId];
-          formData.append('translations[' + languageId + '][' + sourceMessageId + ']', message);
-        }
-      }
-
-      axios
-        .post('', formData)
+      postAction(this, 'translations-admin/messages/save', { translations: savedMessages })
         .then((response) => {
           if (response.data.success) {
-            this.emitter.emit('translations-saved');
+            this.$craft.cp.displayNotice(this.t('Translations saved'));
+            this.emitter.emit('translations-saved', savedMessages);
           } else {
-            this.emitter.emit('translations-saved-error');
+            this.$craft.cp.displayError(this.t('Translations not saved'));
           }
         })
         .catch(() => {
-          this.emitter.emit('translations-saved-error');
+          this.$craft.cp.displayError(this.t('Translations not saved'));
         })
         .finally(() => {
           this.isSaving = false;

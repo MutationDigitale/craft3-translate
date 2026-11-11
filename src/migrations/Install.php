@@ -5,7 +5,7 @@ namespace mutation\translate\migrations;
 use craft\db\Migration;
 
 /**
- * m191016_152459_init migration.
+ * Install migration.
  */
 class Install extends Migration
 {
@@ -14,12 +14,6 @@ class Install extends Migration
      */
     public function safeUp()
     {
-        $tableOptions = null;
-        if ($this->db->driverName === 'mysql') {
-            // http://stackoverflow.com/questions/766809/whats-the-difference-between-utf8-general-ci-and-utf8-unicode-ci
-            $tableOptions = 'CHARACTER SET utf8 COLLATE utf8_unicode_ci ENGINE=InnoDB';
-        }
-
         $this->createTable(
             '{{%source_message}}',
             [
@@ -30,8 +24,7 @@ class Install extends Migration
 
                 'category' => $this->string(),
                 'message' => $this->text(),
-            ],
-            $tableOptions
+            ]
         );
 
         $this->createTable(
@@ -46,8 +39,7 @@ class Install extends Migration
                 'translation' => $this->text(),
 
                 'PRIMARY KEY([[id]], [[language]])',
-            ],
-            $tableOptions
+            ]
         );
 
         $this->addForeignKey(

@@ -44,6 +44,20 @@ class Message extends ActiveRecord
     }
 
     /**
+     * Returns a translation as it's stored: a blank translation is null, the other ones are kept as is (e.g. with a trailing space).
+     *
+     * @internal
+     */
+    public static function normalizeTranslation($translation): ?string
+    {
+        if ($translation === null || trim((string)$translation) === '') {
+            return null;
+        }
+
+        return (string)$translation;
+    }
+
+    /**
      * @inheritdoc
      */
     public function attributeLabels()

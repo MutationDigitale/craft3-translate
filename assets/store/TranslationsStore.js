@@ -1,4 +1,8 @@
 import { createStore } from 'vuex';
+import { clone } from '../helpers';
+
+// Compares like localeCompare(), but a single collator is much faster in the categories with a lot of messages
+const collator = new Intl.Collator();
 
 export const store = createStore({
   state: {
@@ -15,30 +19,31 @@ export const store = createStore({
     filteredSourceMessages: [],
     page: 1,
     perPage: 40,
-    displayedSourceMessages: [],
     checkedSourceMessages: [],
     modifiedMessages: {},
-    modifiedMessagesKeys: [],
     search: '',
+    // false (all the messages), true (empty in a displayed language) or a language ID (empty in that language)
     emptyMessages: false,
     sortProperty: 'message',
     sortDirection: 'asc'
   },
   getters: {
-    displayedSourceMessages: state => {
-      let page = state.page;
-      let perPage = state.perPage;
-      let from = (page * perPage) - perPage;
-      let to = (page * perPage);
-      return state.filteredSourceMessages
+    // Whether there are unsaved changes
+    isModified: state => Object.keys(state.modifiedMessages).length > 0,
+    // The messages matching the search and filters, in the displayed order
+    sortedSourceMessages: state => {
+      // Sort a copy, getters must not mutate the state
+      return [...state.filteredSourceMessages]
         .sort((a, b) => {
           const valueA = a[state.sortProperty];
           const valueB = b[state.sortProperty];
-          return state.sortDirection === 'asc'
-            ? valueA?.localeCompare(valueB)
-            : valueB?.localeCompare(valueA);
-        })
-        .slice(from, to);
+          const result = collator.compare(String(valueA ?? ''), String(valueB ?? ''));
+          return state.sortDirection === 'asc' ? result : -result;
+        });
+    },
+    displayedSourceMessages: (state, getters) => {
+      const from = (state.page - 1) * state.perPage;
+      return getters.sortedSourceMessages.slice(from, from + state.perPage);
     }
   },
   mutations: {
@@ -78,9 +83,6 @@ export const store = createStore({
     setModifiedMessages (state, value) {
       state.modifiedMessages = value;
     },
-    setModifiedMessagesKeys (state, value) {
-      state.modifiedMessagesKeys = value;
-    },
     setSearch (state, value) {
       state.search = value;
     },
@@ -106,14 +108,39 @@ export const store = createStore({
       localStorage.setItem('admin-translations-languages', JSON.stringify(languages));
       commit('setLanguages', languages);
     },
+    // The original messages are the saved values, used to know which translations are modified
     updateSourceMessages ({ commit }, newSourceMessages) {
       commit('setSourceMessages', newSourceMessages);
-      commit('setFilteredSourceMessages', newSourceMessages);
-      commit('setOriginalSourceMessages', JSON.parse(JSON.stringify(newSourceMessages)));
+      commit('setOriginalSourceMessages', clone(newSourceMessages));
+    },
+    // Unlike updateSourceMessages, the other messages keep their unsaved changes
+    addSourceMessages ({ commit, state }, addedSourceMessages) {
+      commit('setSourceMessages', [...state.sourceMessages, ...addedSourceMessages]);
+      commit('setOriginalSourceMessages', [...state.originalSourceMessages, ...clone(addedSourceMessages)]);
+    },
+    removeSourceMessages ({ commit, state }, sourceMessageIds) {
+      const kept = state.sourceMessages.map(sourceMessage => !sourceMessageIds.includes(sourceMessage.id));
+      commit('setSourceMessages', state.sourceMessages.filter((sourceMessage, index) => kept[index]));
+      commit('setOriginalSourceMessages', state.originalSourceMessages.filter((sourceMessage, index) => kept[index]));
     },
     updateModifiedMessages ({ commit }, newModifiedMessages) {
       commit('setModifiedMessages', newModifiedMessages);
-      commit('setModifiedMessagesKeys', Object.keys(newModifiedMessages));
+    },
+    // Forgets the unsaved changes of messages, in every language or only in one
+    forgetModifiedMessages ({ dispatch, state }, { sourceMessageIds, languageId = null }) {
+      const modifiedMessages = {};
+      for (const [modifiedLanguageId, messages] of Object.entries(state.modifiedMessages)) {
+        const kept = { ...messages };
+        if (languageId === null || modifiedLanguageId === languageId) {
+          for (const sourceMessageId of sourceMessageIds) {
+            delete kept[sourceMessageId];
+          }
+        }
+        if (Object.keys(kept).length > 0) {
+          modifiedMessages[modifiedLanguageId] = kept;
+        }
+      }
+      dispatch('updateModifiedMessages', modifiedMessages);
     },
   },
 });

@@ -5,7 +5,7 @@ import TranslationsList from './components/TranslationsList.vue';
 import TranslationsToolbar from './components/TranslationsToolbar.vue';
 import TranslationsMenu from './components/TranslationsMenu.vue';
 import TranslationsFooter from './components/TranslationsFooter.vue';
-import {mapState} from 'vuex';
+import {mapGetters, mapState} from 'vuex';
 import mitt from 'mitt';
 
 const emitter = mitt();
@@ -14,35 +14,18 @@ const app = createApp({
   computed: {
     ...mapState({
       category: state => state.category,
+    }),
+    ...mapGetters({
+      isModified: 'isModified',
     })
   },
   created() {
-    this.emitter.on('translations-saved', () => {
-      this.$craft.cp.displayNotice(this.$craft.t('translations-admin', 'Translations saved'));
-    });
-    this.emitter.on('translations-saved-error', () => {
-      this.$craft.cp.displayError(this.$craft.t('translations-admin', 'Translations not saved'));
-    });
-    this.emitter.on('translation-added', () => {
-      this.$craft.cp.displayNotice(this.$craft.t('translations-admin', 'Translation added'));
-    });
-    this.emitter.on('translation-added-error', () => {
-      this.$craft.cp.displayError(this.$craft.t('translations-admin', 'Translation not added'));
-    });
-    this.emitter.on('translation-deleted', () => {
-      this.$craft.cp.displayNotice(this.$craft.t('translations-admin', 'Translation deleted'));
-    });
-    this.emitter.on('translation-deleted-error', () => {
-      this.$craft.cp.displayError(this.$craft.t('translations-admin', 'Translation not deleted'));
-    });
-    this.emitter.on('translations-copied', () => {
-      this.$craft.cp.displayNotice(this.$craft.t('translations-admin', 'Translations copied'));
-    });
-    this.emitter.on('translations-pasted', () => {
-      this.$craft.cp.displayNotice(this.$craft.t('translations-admin', 'Translations pasted'));
-    });
-    this.emitter.on('translations-pasted-error', () => {
-      this.$craft.cp.displayError(this.$craft.t('translations-admin', 'Translations not pasted'));
+    // Warn before leaving the page with unsaved changes
+    window.addEventListener('beforeunload', (event) => {
+      if (this.isModified) {
+        event.preventDefault();
+        event.returnValue = '';
+      }
     });
   },
   mounted() {
@@ -55,17 +38,27 @@ const app = createApp({
     this.$craft.cp.$sidebar = this.$jquery('#sidebar');
     this.$craft.cp.$contentContainer = this.$jquery('#content-container');
 
-    if (document.querySelector('#sidebar-toggle')) {
-      document.querySelector('#sidebar-toggle').addEventListener('click', () => {
-        document.body.classList.toggle('showing-sidebar');
-      });
-    }
+    // The sidebar toggle of small screens was replaced by Vue, without the listener of Craft
+    this.$craft.cp.$sidebarToggle = this.$jquery('#sidebar-toggle');
+    this.$craft.cp.$sidebarToggle.on('click', () => {
+      this.toggleSidebar();
+    });
   },
   watch: {
     category() {
-      if (document.querySelector('#selected-sidebar-item-label')) {
-        document.body.classList.remove('showing-sidebar');
-        document.querySelector('#selected-sidebar-item-label').innerHTML = this.category;
+      // Once a category is chosen in the sidebar of small screens
+      if (document.body.classList.contains('showing-sidebar')) {
+        this.toggleSidebar();
+      }
+    }
+  },
+  methods: {
+    toggleSidebar() {
+      if (typeof this.$craft.cp.toggleSidebar === 'function') {
+        // Also updates the state of the toggle
+        this.$craft.cp.toggleSidebar();
+      } else {
+        document.body.classList.toggle('showing-sidebar');
       }
     }
   },

@@ -1,0 +1,24 @@
+actor: Tester
+paths:
+  tests: tests
+  output: tests/_output
+  data: tests/_data
+  support: tests/_support
+bootstrap: _bootstrap.php
+settings:
+  colors: true
+  memory_limit: 1024M
+modules:
+  config:
+    \craft\test\Craft:
+      configFile: 'tests/_craft/config/test.php'
+      entryUrl: 'https://test.craftcms.test/index.php'
+      projectConfig: {}
+      migrations: []
+      plugins:
+        - class: '\mutation\translate\Translate'
+          handle: translations-admin
+      cleanup: false
+      transaction: false
+      dbSetup: {clean: true, setupCraft: true}
+      fullMock: false

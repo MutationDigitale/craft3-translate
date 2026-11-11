@@ -4,8 +4,8 @@
 
 {% import "_includes/forms" as forms %}
 
-{% macro uploadFile(name) %}
-    <input type="file" name="{{ name }}" accept="text/csv">
+{% macro uploadFile(name, id) %}
+    <input type="file" id="{{ id }}" name="{{ name }}" accept=".csv,text/csv">
 {% endmacro %}
 
 {% block actionButton %}
@@ -14,23 +14,38 @@
     {% endif %}
 {% endblock %}
 
+{% css %}
+    #language-headers { margin-bottom: 24px; }
+    #language-headers li + li { margin-top: 6px; }
+{% endcss %}
+
 {% block content %}
-    <p class="warning">{{ "The first column must be the key followed by a column for each language in order. It should follow the same format as the exported CSV from the export section." | t('translations-admin')  }}</p>
+    <p class="warning">{{ "The first row must be the headers: the key, then a column for each language. It should follow the same format as the exported CSV from the export section." | t('translations-admin') }}</p>
+
+    {# The headers accepted for the languages of the sites #}
+    <p>{{ "The language columns can be named:" | t('translations-admin') }}</p>
+    <ul id="language-headers" class="bullets">
+        {% for headers in languageHeaders %}
+            <li>{% for header in headers %}<code>{{ header }}</code>{{ not loop.last ? ', ' }}{% endfor %}</li>
+        {% endfor %}
+    </ul>
 
     {{ actionInput('translations-admin/import/import') }}
 
+    {# The category stays selected after an import, or after an import that failed #}
     {{ forms.selectField({
         first: true,
         label: "Category" | t('translations-admin'),
         instructions: "Choose which category to import your translations" | t('translations-admin'),
         id: 'category',
         name: 'category',
-        value: '',
+        value: craft.app.request.getParam('category') ?? '',
         options: categories
     }) }}
 
     {{ forms.field({
+        id: 'file',
         label: "Upload your CSV file" | t('translations-admin'),
-        instructions: "One column for the key and one column for each site is needed"
-    }, _self.uploadFile('file')) }}
+        instructions: "One column for the key and one column for each language is needed" | t('translations-admin')
+    }, _self.uploadFile('file', 'file')) }}
 {% endblock %}

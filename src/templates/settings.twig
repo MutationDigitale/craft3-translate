@@ -16,7 +16,6 @@
 
     {% if not readOnly %}
         {{ actionInput('translations-admin/settings/save') }}
-        {{ hiddenInput('pluginHandle', 'translations-admin') }}
         {{ redirectInput("translations-admin/plugin-settings") }}
     {% endif %}
 
@@ -30,23 +29,28 @@
             name: 'pluginName',
             value: settings.pluginName,
             required: true,
+            errors: settings.getErrors('pluginName'),
             disabled: readOnly
         }) }}
 
+        {# The primary site language isn't an empty value in the field: Craft would restore the previous language when the field
+           loses the focus. It's saved as an empty source language. #}
         {{ forms.selectizeField({
-            label: "Source Language"|t('app'),
+            label: "Source Language" | t('translations-admin'),
             instructions: "By default, the source language is set to the primary site language, but you can override it here." | t('translations-admin'),
             id: 'sourceLanguage',
             name: 'sourceLanguage',
-            value: settings.sourceLanguage|default(currentSite.getLanguage(false)),
-            options: craft.cp.getLanguageOptions(true),
-            required: true,
+            value: settings.sourceLanguage ?: constant('mutation\\translate\\models\\Settings::PRIMARY_SITE_LANGUAGE'),
+            options: [{
+                label: "Primary site language ({language})" | t('translations-admin', {language: craft.app.sites.primarySite.language}),
+                value: constant('mutation\\translate\\models\\Settings::PRIMARY_SITE_LANGUAGE'),
+            }]|merge(craft.cp.getLanguageOptions(true)),
             disabled: readOnly
         }) }}
 
         {{ forms.editableTableField({
             label: "Categories" | t("translations-admin"),
-            instructions: "Choose the source message categories you want to have in your database and control panel" | t("translations-admin"),
+            instructions: "Choose the source message categories you want to have in your database and control panel. Don't add the categories of Craft and plugins (e.g. `app`), the control panel would lose its own translations." | t("translations-admin"),
             id: 'categories',
             name: 'categories',
             required: true,
@@ -54,7 +58,7 @@
             allowReorder: true,
             allowDelete: true,
             defaultValues: {
-                pattern: "",
+                category: "",
             },
             cols: {
                 category: {
@@ -89,9 +93,19 @@
             disabled: readOnly
         }) }}
 
+        {{ forms.lightswitchField({
+            label: "Add missing translations from templates only" | t("translations-admin"),
+            instructions: "Controls whether missing translations are only added when they are translated in a template with the `t` filter. When disabled, the messages translated in PHP code are also added, including the names Craft translates itself (e.g. sites, sections and fields)." | t("translations-admin"),
+            id: "addMissingFromTemplatesOnly",
+            name: "addMissingFromTemplatesOnly",
+            on: settings.addMissingFromTemplatesOnly,
+            errors: settings.getErrors("addMissingFromTemplatesOnly"),
+            disabled: readOnly
+        }) }}
+
         {{ forms.editableTableField({
             label: "Excluded messages" | t("translations-admin"),
-            instructions: "Messages that should not be added to the database, identified by the start of the string (basic matching, no regex)" | t("translations-admin"),
+            instructions: "Messages that should not be added to the database, identified by a part of the string (basic matching, no regex)" | t("translations-admin"),
             id: 'excludedMessages',
             name: 'excludedMessages',
             required: false,
@@ -99,7 +113,7 @@
             allowReorder: true,
             allowDelete: true,
             defaultValues: {
-                pattern: "",
+                message: "",
             },
             cols: {
                 message: {

@@ -8,20 +8,38 @@
     "Translations not saved",
     "Translation added",
     "Translation not added",
-    "Translation deleted",
-    "Translation not deleted",
+    "{count, plural, =1{Translation deleted} other{# translations deleted}}",
+    "{count, plural, =1{Translation not deleted} other{Translations not deleted}}",
     "Add",
     "Delete",
     "Key",
-    "Actions",
     "Message",
-    "No results",
     "All",
-    "Empty",
+    "Empty in any language",
+    "Empty in {language}",
     "Date Created",
     "Columns",
-    "View",
-    "Export"
+    "Export",
+    "Select",
+    "Select all",
+    "Filter",
+    "Search",
+    "of",
+    "First Page",
+    "Previous Page",
+    "Next Page",
+    "Last Page",
+    "Copy translations",
+    "Paste translations",
+    "Translations copied",
+    "Translations pasted",
+    "Translations pasted, except {count, plural, =1{one message} other{# messages}} already in the category.",
+    "Translations not pasted",
+    "Translations not pasted, the messages are already in the category.",
+    "Translations could not be loaded",
+    "Translations could not be exported",
+    "Are you sure you want to delete {count, plural, =1{the selected translation} other{the # selected translations}}?",
+    "You have unsaved changes. Are you sure you want to leave?"
 ]) %}
 
 {% block actionButton %}
@@ -43,7 +61,8 @@
 
 {% block content %}
     <div class="main">
-        <translations-list current-category="{{ category }}"></translations-list>
+        <translations-list current-category="{{ category }}"
+          :save-permission="{{ craft.app.user.checkPermission('saveTranslations') ? 'true' : 'false' }}"></translations-list>
     </div>
 {% endblock %}
 

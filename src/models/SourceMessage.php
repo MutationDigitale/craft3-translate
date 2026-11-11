@@ -4,7 +4,6 @@ namespace mutation\translate\models;
 
 use Craft;
 use craft\db\ActiveRecord;
-use craft\helpers\ArrayHelper;
 use yii\db\ActiveQuery;
 
 /**
@@ -18,20 +17,33 @@ use yii\db\ActiveQuery;
  */
 class SourceMessage extends ActiveRecord
 {
+    /**
+     * @var array<string, string|null> The translations, indexed by site language, saved with the model
+     */
     public $languages;
 
-    public function __construct()
+    public function __construct($config = [])
     {
-        $this->languages = array();
-        foreach (Craft::$app->i18n->getSiteLocales() as $one) {
-            $this->languages[$one->id] = null;
+        $this->languages = [];
+        foreach (Craft::$app->getI18n()->getSiteLocales() as $locale) {
+            $this->languages[$locale->id] = null;
         }
-        parent::__construct();
+        parent::__construct($config);
     }
 
     public static function tableName()
     {
         return '{{%source_message}}';
+    }
+
+    /**
+     * Returns a hash of a message, to index messages by their exact (case and accent sensitive) value.
+     *
+     * @internal
+     */
+    public static function hash(string $message): string
+    {
+        return md5($message);
     }
 
     /**
@@ -68,7 +80,12 @@ class SourceMessage extends ActiveRecord
 
     public function getTranslations()
     {
-        return ArrayHelper::map($this->messages, 'language', 'translation');
+        // Not ArrayHelper::map(): with objects, recent Yii versions skip the null translations
+        $translations = [];
+        foreach ($this->messages as $message) {
+            $translations[$message->language] = $message->translation;
+        }
+        return $translations;
     }
 
     public function getTranslation($lang)
@@ -78,44 +95,37 @@ class SourceMessage extends ActiveRecord
 
     public function afterFind()
     {
-        foreach ($this->languages as $key => $one) {
-            $this->languages[$key] = $this->getTranslation($key);
+        parent::afterFind();
+
+        foreach ($this->languages as $language => $translation) {
+            $this->languages[$language] = $this->getTranslation($language);
         }
     }
 
     public function beforeDelete()
     {
-        if (parent::beforeDelete()) {
-            Message::deleteAll(['id' => $this->id]);
-            return true;
+        if (!parent::beforeDelete()) {
+            return false;
         }
 
-        return false;
+        Message::deleteAll(['id' => $this->id]);
+        return true;
     }
 
     public function afterSave($insert, $changedAttributes)
     {
         if ($insert) {
-            foreach ($this->languages as $key => $one) {
-                $model = new Message();
-                $model->id = $this->id;
-                $model->language = $key;
-                if (empty($one)) {
-                    $model->translation = null;
-                } else {
-                    $model->translation = $one;
-                }
-                $model->save();
+            foreach ($this->languages as $language => $translation) {
+                $message = new Message();
+                $message->id = $this->id;
+                $message->language = $language;
+                $message->translation = Message::normalizeTranslation($translation);
+                $message->save();
             }
         } else {
-            foreach ($this->messages as $one) {
-                $lang = $one->language;
-                if (empty($this->languages[$lang])) {
-                    $one->translation = null;
-                } else {
-                    $one->translation = $this->languages[$lang];
-                }
-                $one->save();
+            foreach ($this->messages as $message) {
+                $message->translation = Message::normalizeTranslation($this->languages[$message->language] ?? null);
+                $message->save();
             }
         }
 
