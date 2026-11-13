@@ -8,67 +8,52 @@
   </div>
 </template>
 
-<script>
-import { clone, postAction } from '../helpers';
-import { mapGetters, mapState } from 'vuex';
+<script setup>
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
+import { useStore } from 'vuex';
+import { clone, postAction, useCraft } from '../helpers';
 
-export default {
-  data() {
-    return {
-      isSaving: false,
-    };
-  },
-  computed: {
-    ...mapState({
-      modifiedMessages: state => state.modifiedMessages,
-    }),
-    ...mapGetters({
-      isModified: 'isModified',
-    })
-  },
-  mounted() {
-    window.addEventListener('keydown', this.onKeydown);
-  },
-  beforeUnmount() {
-    window.removeEventListener('keydown', this.onKeydown);
-  },
-  methods: {
-    onKeydown: function (event) {
-      // The key is "S" with caps lock, but the shortcuts with Shift are left to the browser
-      if ((event.ctrlKey || event.metaKey) && !event.shiftKey && !event.altKey && event.key?.toLowerCase() === 's') {
-        if (this.isModified && !this.isSaving) {
-          this.save();
-        }
-        event.preventDefault();
+const store = useStore();
+const { globals, craft, emitter, t } = useCraft();
+
+const isSaving = ref(false);
+const isModified = computed(() => store.getters.isModified);
+
+function save () {
+  isSaving.value = true;
+
+  // Copy the sent translations, they can still be changed during the request
+  const savedMessages = clone(store.state.modifiedMessages);
+
+  postAction(globals, 'translations-admin/messages/save', { translations: savedMessages })
+    .then((response) => {
+      if (response.data.success) {
+        craft.cp.displayNotice(t('Translations saved'));
+        emitter.emit('translations-saved', savedMessages);
+      } else {
+        craft.cp.displayError(t('Translations not saved'));
       }
-    },
-    save: function () {
-      this.isSaving = true;
+    })
+    .catch(() => {
+      craft.cp.displayError(t('Translations not saved'));
+    })
+    .finally(() => {
+      isSaving.value = false;
+    });
+}
 
-      // Copy the sent translations, they can still be changed during the request
-      const savedMessages = clone(this.modifiedMessages);
-
-      postAction(this, 'translations-admin/messages/save', { translations: savedMessages })
-        .then((response) => {
-          if (response.data.success) {
-            this.$craft.cp.displayNotice(this.t('Translations saved'));
-            this.emitter.emit('translations-saved', savedMessages);
-          } else {
-            this.$craft.cp.displayError(this.t('Translations not saved'));
-          }
-        })
-        .catch(() => {
-          this.$craft.cp.displayError(this.t('Translations not saved'));
-        })
-        .finally(() => {
-          this.isSaving = false;
-        });
-    },
-    t: function (str) {
-      return this.$craft.t('translations-admin', str);
+function onKeydown (event) {
+  // The key is "S" with caps lock, but the shortcuts with Shift are left to the browser
+  if ((event.ctrlKey || event.metaKey) && !event.shiftKey && !event.altKey && event.key?.toLowerCase() === 's') {
+    if (isModified.value && !isSaving.value) {
+      save();
     }
+    event.preventDefault();
   }
-};
+}
+
+onMounted(() => window.addEventListener('keydown', onKeydown));
+onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
 </script>
 
 <style lang="scss" scoped>

@@ -14,69 +14,67 @@
   </div>
 </template>
 
-<script>
-import {mapGetters, mapMutations, mapState} from 'vuex';
+<script setup>
+import { computed, onMounted } from 'vue';
+import { useStore } from 'vuex';
+import { useCraft } from '../helpers';
 
-export default {
-  props: {
-    categories: Array
-  },
-  computed: {
-    ...mapState({
-      category: state => state.category,
-    }),
-    ...mapGetters({
-      isModified: 'isModified',
-    })
-  },
-  mounted() {
-    // The category is kept in the history state, the URL format depends on the site config (e.g. without clean URLs)
-    window.history.replaceState({ ...window.history.state, translationsCategory: this.category }, '');
+defineProps({
+  categories: Array,
+});
 
-    window.addEventListener('popstate', (event) => {
-      const cat = event.state?.translationsCategory;
-      if (!cat) {
-        return;
-      }
-      if (cat !== this.category && !this.confirmLeave()) {
-        // Restore the URL of the current category
-        this.pushCategoryState(this.category);
-        return;
-      }
-      this.changeCategory(cat, false);
-    });
-  },
-  methods: {
-    categoryUrl(cat) {
-      return this.$craft.getCpUrl(`translations-admin/${encodeURIComponent(cat)}`);
-    },
-    pushCategoryState(cat) {
-      window.history.pushState({ translationsCategory: cat }, '', this.categoryUrl(cat));
-    },
-    confirmLeave() {
-      return !this.isModified ||
-        confirm(this.$craft.t('translations-admin', 'You have unsaved changes. Are you sure you want to leave?'));
-    },
-    onCategoryClick(event, cat) {
-      // Opened in a new tab or window by the browser
-      if (event.ctrlKey || event.metaKey || event.shiftKey || event.altKey || event.button !== 0) {
-        return;
-      }
-      event.preventDefault();
-      if (cat !== this.category && this.confirmLeave()) {
-        this.changeCategory(cat);
-      }
-    },
-    changeCategory(cat, pushState = true) {
-      this.setCategory(cat);
-      if (pushState) {
-        this.pushCategoryState(cat);
-      }
-    },
-    ...mapMutations({
-      setCategory: 'setCategory',
-    })
+const store = useStore();
+const { craft, t } = useCraft();
+
+const category = computed(() => store.state.category);
+
+function categoryUrl (cat) {
+  return craft.getCpUrl(`translations-admin/${encodeURIComponent(cat)}`);
+}
+
+function pushCategoryState (cat) {
+  window.history.pushState({ translationsCategory: cat }, '', categoryUrl(cat));
+}
+
+function confirmLeave () {
+  return !store.getters.isModified ||
+    confirm(t('You have unsaved changes. Are you sure you want to leave?'));
+}
+
+function changeCategory (cat, pushState = true) {
+  store.commit('setCategory', cat);
+  if (pushState) {
+    pushCategoryState(cat);
   }
-};
+}
+
+function onCategoryClick (event, cat) {
+  // Opened in a new tab or window by the browser
+  if (event.ctrlKey || event.metaKey || event.shiftKey || event.altKey || event.button !== 0) {
+    return;
+  }
+  event.preventDefault();
+  if (cat !== category.value && confirmLeave()) {
+    changeCategory(cat);
+  }
+}
+
+onMounted(() => {
+  // The category is kept in the history state, the URL format depends on the site config (e.g. without clean URLs)
+  window.history.replaceState({ ...window.history.state, translationsCategory: category.value }, '');
+
+  window.addEventListener('popstate', (event) => {
+    const cat = event.state?.translationsCategory;
+    if (!cat) {
+      return;
+    }
+    if (cat !== category.value && !confirmLeave()) {
+      // Restore the URL of the current category
+      pushCategoryState(category.value);
+      return;
+    }
+    changeCategory(cat, false);
+  });
+});
 </script>
 

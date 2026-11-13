@@ -1,3 +1,9 @@
+/*!
+ * vuex v4.1.0
+ * (c) 2022 Evan You
+ * @license MIT
+ */
+
 /**
 * @vue/compiler-dom v3.5.44
 * (c) 2018-present Yuxi (Evan) You and Vue contributors

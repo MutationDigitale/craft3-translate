@@ -74,171 +74,151 @@
   </div>
 </template>
 
-<script>
-import { mapActions, mapGetters, mapMutations, mapState } from 'vuex';
+<script setup>
+import { computed, ref, watch } from 'vue';
+import { useStore } from 'vuex';
 import axios from 'axios';
-import { clone, postAction } from '../helpers';
+import { clone, postAction, useCraft } from '../helpers';
 
-export default {
-  props: {
-    addPermission: Boolean,
-    deletePermission: Boolean,
-    exportPermission: Boolean,
-  },
-  data() {
-    return {
-      copiedMessages: [],
-      copiedMessagesCategory: '',
-      isExporting: false,
-    };
-  },
-  computed: {
-    pageCount() {
-      return Math.ceil(this.filteredSourceMessages.length / this.perPage);
-    },
-    // The first page is shown even when no message matches the filters
-    lastPage() {
-      return Math.max(this.pageCount, 1);
-    },
-    // The 2 pages before the current one and the 3 after it
-    visiblePages() {
-      const pages = [];
-      for (let pageNumber = Math.max(this.page - 2, 1); pageNumber <= Math.min(this.page + 3, this.pageCount); pageNumber++) {
-        pages.push(pageNumber);
-      }
-      return pages;
-    },
-    ...mapState({
-      page: state => state.page,
-      perPage: state => state.perPage,
-      sourceMessages: state => state.sourceMessages,
-      originalSourceMessages: state => state.originalSourceMessages,
-      filteredSourceMessages: state => state.filteredSourceMessages,
-      checkedSourceMessages: state => state.checkedSourceMessages,
-      category: state => state.category
-    }),
-    ...mapGetters({
-      displayedSourceMessages: 'displayedSourceMessages'
-    })
-  },
-  watch: {
-    lastPage() {
-      if (this.page > this.lastPage) {
-        this.setPage(this.lastPage);
-      }
-    }
-  },
-  methods: {
-    t(str, params = {}) {
-      return this.$craft.t('translations-admin', str, params);
-    },
-    deleteMessages() {
-      const sourceMessageIds = [...this.checkedSourceMessages];
-      if (!confirm(this.t('Are you sure you want to delete {count, plural, =1{the selected translation} other{the # selected translations}}?', { count: sourceMessageIds.length }))) {
-        return;
-      }
+defineProps({
+  addPermission: Boolean,
+  deletePermission: Boolean,
+  exportPermission: Boolean,
+});
 
-      this.setIsDeleting(true);
+const store = useStore();
+const { globals, craft, t } = useCraft();
 
-      postAction(this, 'translations-admin/messages/delete', { sourceMessageId: sourceMessageIds })
-        .then((response) => {
-          if (response.data.success) {
-            this.$craft.cp.displayNotice(this.t('{count, plural, =1{Translation deleted} other{# translations deleted}}', { count: sourceMessageIds.length }));
-            this.removeSourceMessages(sourceMessageIds);
-            // The changes of the deleted messages can't be saved anymore
-            this.forgetModifiedMessages({ sourceMessageIds });
-            this.setCheckedSourceMessages([]);
-          } else {
-            this.$craft.cp.displayError(this.t('{count, plural, =1{Translation not deleted} other{Translations not deleted}}', { count: sourceMessageIds.length }));
-          }
-        })
-        .catch(() => {
-          this.$craft.cp.displayError(this.t('{count, plural, =1{Translation not deleted} other{Translations not deleted}}', { count: sourceMessageIds.length }));
-        })
-        .finally(() => {
-          this.setIsDeleting(false);
-        });
-    },
-    copyMessages() {
-      // The saved translations: the unsaved changes can still be discarded (e.g. by changing category)
-      const checkedIds = new Set(this.checkedSourceMessages);
-      this.copiedMessages = clone(this.originalSourceMessages.filter(s => checkedIds.has(s.id)));
-      this.copiedMessagesCategory = this.category;
-      this.$craft.cp.displayNotice(this.t('Translations copied'));
-    },
-    pasteMessages() {
-      this.setIsAdding(true);
+const copiedMessages = ref([]);
+const copiedMessagesCategory = ref('');
+const isExporting = ref(false);
 
-      const category = this.category;
-      const sourceMessages = this.copiedMessages.map(s => ({ message: s.message, languages: s.languages }));
+const page = computed(() => store.state.page);
+const perPage = computed(() => store.state.perPage);
+const category = computed(() => store.state.category);
+const filteredSourceMessages = computed(() => store.state.filteredSourceMessages);
+const checkedSourceMessages = computed(() => store.state.checkedSourceMessages);
+const displayedSourceMessages = computed(() => store.getters.displayedSourceMessages);
 
-      postAction(this, 'translations-admin/messages/add-multiple', { category, sourceMessages })
-        .then((response) => {
-          if (response.data.success) {
-            // The messages already in the category are skipped
-            const skipped = sourceMessages.length - response.data.sourceMessages.length;
-            this.$craft.cp.displayNotice(skipped > 0
-              ? this.t('Translations pasted, except {count, plural, =1{one message} other{# messages}} already in the category.', { count: skipped })
-              : this.t('Translations pasted'));
-            // Not in the list of another category, if it was changed during the request
-            if (category === this.category) {
-              this.addSourceMessages(response.data.sourceMessages);
-            }
-          } else {
-            this.$craft.cp.displayError(this.t('Translations not pasted, the messages are already in the category.'));
-          }
-          // Pasting them again would give the same result (e.g. when they're all in the category already)
-          this.copiedMessages = [];
-          this.copiedMessagesCategory = '';
-        })
-        .catch(() => {
-          // The copied messages are kept, to try again
-          this.$craft.cp.displayError(this.t('Translations not pasted'));
-        })
-        .finally(() => {
-          this.setIsAdding(false);
-        });
-    },
-    exportMessages() {
-      this.isExporting = true;
-
-      const formData = {};
-
-      formData[this.$csrfTokenName] = this.$csrfTokenValue;
-      formData['category'] = this.category;
-
-      // The selected messages, or the whole category
-      if (this.checkedSourceMessages.length > 0) {
-        formData['sourceMessageId'] = [...this.checkedSourceMessages];
-      }
-
-      this.$craft.downloadFromUrl(
-        'POST',
-        this.$craft.getActionUrl('translations-admin/export/export'),
-        formData
-      )
-        .catch((e) => {
-          if (!axios.isCancel(e)) {
-            this.$craft.cp.displayError(this.t('Translations could not be exported'));
-          }
-        })
-        .finally(() => {
-          this.isExporting = false;
-        });
-    },
-    ...mapMutations({
-      setCheckedSourceMessages: 'setCheckedSourceMessages',
-      setIsAdding: 'setIsAdding',
-      setIsDeleting: 'setIsDeleting',
-      setPage: 'setPage',
-    }),
-    ...mapActions({
-      addSourceMessages: 'addSourceMessages',
-      removeSourceMessages: 'removeSourceMessages',
-      forgetModifiedMessages: 'forgetModifiedMessages'
-    })
+const pageCount = computed(() => Math.ceil(filteredSourceMessages.value.length / perPage.value));
+// The first page is shown even when no message matches the filters
+const lastPage = computed(() => Math.max(pageCount.value, 1));
+// The 2 pages before the current one and the 3 after it
+const visiblePages = computed(() => {
+  const pages = [];
+  for (let pageNumber = Math.max(page.value - 2, 1); pageNumber <= Math.min(page.value + 3, pageCount.value); pageNumber++) {
+    pages.push(pageNumber);
   }
-};
+  return pages;
+});
+
+watch(lastPage, () => {
+  if (page.value > lastPage.value) {
+    setPage(lastPage.value);
+  }
+});
+
+function setPage (value) {
+  store.commit('setPage', value);
+}
+
+function deleteMessages () {
+  const sourceMessageIds = [...checkedSourceMessages.value];
+  if (!confirm(t('Are you sure you want to delete {count, plural, =1{the selected translation} other{the # selected translations}}?', { count: sourceMessageIds.length }))) {
+    return;
+  }
+
+  store.commit('setIsDeleting', true);
+
+  postAction(globals, 'translations-admin/messages/delete', { sourceMessageId: sourceMessageIds })
+    .then((response) => {
+      if (response.data.success) {
+        craft.cp.displayNotice(t('{count, plural, =1{Translation deleted} other{# translations deleted}}', { count: sourceMessageIds.length }));
+        store.dispatch('removeSourceMessages', sourceMessageIds);
+        // The changes of the deleted messages can't be saved anymore
+        store.dispatch('forgetModifiedMessages', { sourceMessageIds });
+        store.commit('setCheckedSourceMessages', []);
+      } else {
+        craft.cp.displayError(t('{count, plural, =1{Translation not deleted} other{Translations not deleted}}', { count: sourceMessageIds.length }));
+      }
+    })
+    .catch(() => {
+      craft.cp.displayError(t('{count, plural, =1{Translation not deleted} other{Translations not deleted}}', { count: sourceMessageIds.length }));
+    })
+    .finally(() => {
+      store.commit('setIsDeleting', false);
+    });
+}
+
+function copyMessages () {
+  // The saved translations: the unsaved changes can still be discarded (e.g. by changing category)
+  const checkedIds = new Set(checkedSourceMessages.value);
+  copiedMessages.value = clone(store.state.originalSourceMessages.filter(s => checkedIds.has(s.id)));
+  copiedMessagesCategory.value = category.value;
+  craft.cp.displayNotice(t('Translations copied'));
+}
+
+function pasteMessages () {
+  store.commit('setIsAdding', true);
+
+  const pasteCategory = category.value;
+  const sourceMessages = copiedMessages.value.map(s => ({ message: s.message, languages: s.languages }));
+
+  postAction(globals, 'translations-admin/messages/add-multiple', { category: pasteCategory, sourceMessages })
+    .then((response) => {
+      if (response.data.success) {
+        // The messages already in the category are skipped
+        const skipped = sourceMessages.length - response.data.sourceMessages.length;
+        craft.cp.displayNotice(skipped > 0
+          ? t('Translations pasted, except {count, plural, =1{one message} other{# messages}} already in the category.', { count: skipped })
+          : t('Translations pasted'));
+        // Not in the list of another category, if it was changed during the request
+        if (pasteCategory === category.value) {
+          store.dispatch('addSourceMessages', response.data.sourceMessages);
+        }
+      } else {
+        craft.cp.displayError(t('Translations not pasted, the messages are already in the category.'));
+      }
+      // Pasting them again would give the same result (e.g. when they're all in the category already)
+      copiedMessages.value = [];
+      copiedMessagesCategory.value = '';
+    })
+    .catch(() => {
+      // The copied messages are kept, to try again
+      craft.cp.displayError(t('Translations not pasted'));
+    })
+    .finally(() => {
+      store.commit('setIsAdding', false);
+    });
+}
+
+function exportMessages () {
+  isExporting.value = true;
+
+  const formData = {};
+
+  formData[globals.$csrfTokenName] = globals.$csrfTokenValue;
+  formData['category'] = category.value;
+
+  // The selected messages, or the whole category
+  if (checkedSourceMessages.value.length > 0) {
+    formData['sourceMessageId'] = [...checkedSourceMessages.value];
+  }
+
+  craft.downloadFromUrl(
+    'POST',
+    craft.getActionUrl('translations-admin/export/export'),
+    formData
+  )
+    .catch((e) => {
+      if (!axios.isCancel(e)) {
+        craft.cp.displayError(t('Translations could not be exported'));
+      }
+    })
+    .finally(() => {
+      isExporting.value = false;
+    });
+}
 </script>
 
 <style lang="scss" scoped>

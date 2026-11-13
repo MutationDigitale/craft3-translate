@@ -74,132 +74,110 @@
   </div>
 </template>
 
-<script>
-import {mapActions, mapMutations, mapState} from 'vuex';
-import { postAction } from '../helpers';
+<script setup>
+import { computed, ref, watch } from 'vue';
+import { useStore } from 'vuex';
+import { postAction, useCraft } from '../helpers';
 
-export default {
-  props: {
-    addPermission: Boolean,
-  },
-  data() {
-    return {
-      messageToAdd: ''
-    };
-  },
-  watch: {
-    languages: {
-      handler() {
-        this.registerFilterOptions();
-      },
-      // Once the options of the languages are rendered
-      flush: 'post'
-    }
-  },
-  computed: {
-    search: {
-      get() {
-        return this.$store.state.search;
-      },
-      set(value) {
-        this.setSearch(value);
-      }
-    },
-    filterLabel() {
-      if (!this.emptyMessages) {
-        return this.t('All');
-      }
-      if (this.emptyMessages === true) {
-        return this.t('Empty in any language');
-      }
-      const language = this.languages[this.emptyMessages];
-      return this.t('Empty in {language}', { language: language?.displayName ?? this.emptyMessages });
-    },
-    ...mapState({
-      isAdding: state => state.isAdding,
-      isDeleting: state => state.isDeleting,
-      languages: state => state.languages,
-      columns: state => state.columns,
-      category: state => state.category,
-      emptyMessages: state => state.emptyMessages,
-      checkedSourceMessages: state => state.checkedSourceMessages
-    })
-  },
-  methods: {
-    // The menu of Craft only knows the options rendered when the page loaded: the options of the languages are added
-    // once they're loaded, so the menu closes when they're chosen, and they can be reached with the keyboard
-    registerFilterOptions() {
-      const menu = this.$jquery?.(this.$refs.filterButton).data('menubtn')?.menu;
-      if (!menu) {
-        return;
-      }
-      // The options of the previous category's languages aren't in the menu anymore (it's detached from the page when closed)
-      const inMenu = (index, option) => menu.$container[0].contains(option);
-      menu.$options = menu.$options.filter(inMenu);
-      if (menu.$ariaOptions) {
-        menu.$ariaOptions = menu.$ariaOptions.filter(inMenu);
-      }
-      const $options = menu.$container.find('a').not(menu.$options);
-      if ($options.length > 0) {
-        menu.addOptions($options);
-      }
-    },
-    t(str, params = {}) {
-      return this.$craft.t('translations-admin', str, params);
-    },
-    setLanguages(languageId, value) {
-      const languages = this.languages;
-      languages[languageId].checked = value;
-      this.updateLanguages(languages);
-    },
-    setColumns(columnKey, value) {
-      const columns = this.columns;
-      columns[columnKey].checked = value;
-      this.updateColumns(columns);
-    },
-    addMessage() {
-      this.setIsAdding(true);
+defineProps({
+  addPermission: Boolean,
+});
 
-      const message = this.messageToAdd;
-      const category = this.category;
+const store = useStore();
+const { globals, craft, jquery, t } = useCraft();
 
-      postAction(this, 'translations-admin/messages/add', { message, category })
-        .then((response) => {
-          if (response.data.success) {
-            this.$craft.cp.displayNotice(this.t('Translation added'));
-            // Kept when it was changed during the request
-            if (this.messageToAdd === message) {
-              this.messageToAdd = '';
-            }
-            // Not in the list of another category, if it was changed during the request
-            if (category === this.category) {
-              this.addSourceMessages([response.data.sourceMessage]);
-            }
-          } else {
-            // The message is kept, to change it or try again
-            this.$craft.cp.displayError(response.data.error || this.t('Translation not added'));
-          }
-        })
-        .catch(() => {
-          this.$craft.cp.displayError(this.t('Translation not added'));
-        })
-        .finally(() => {
-          this.setIsAdding(false);
-        });
-    },
-    ...mapMutations({
-      setIsAdding: 'setIsAdding',
-      setCheckedSourceMessages: 'setCheckedSourceMessages',
-      setSearch: 'setSearch',
-      setEmptyMessages: 'setEmptyMessages'
-    }),
-    ...mapActions({
-      updateLanguages: 'updateLanguages',
-      updateColumns: 'updateColumns',
-      addSourceMessages: 'addSourceMessages'
-    })
+const messageToAdd = ref('');
+const filterButton = ref(null);
+
+const isAdding = computed(() => store.state.isAdding);
+const languages = computed(() => store.state.languages);
+const columns = computed(() => store.state.columns);
+const category = computed(() => store.state.category);
+const emptyMessages = computed(() => store.state.emptyMessages);
+const search = computed({
+  get: () => store.state.search,
+  set: value => store.commit('setSearch', value),
+});
+
+const filterLabel = computed(() => {
+  if (!emptyMessages.value) {
+    return t('All');
   }
-};
+  if (emptyMessages.value === true) {
+    return t('Empty in any language');
+  }
+  const language = languages.value[emptyMessages.value];
+  return t('Empty in {language}', { language: language?.displayName ?? emptyMessages.value });
+});
+
+// The menu of Craft only knows the options rendered when the page loaded: the options of the languages are added once
+// they're loaded, so the menu closes when they're chosen, and they can be reached with the keyboard
+function registerFilterOptions () {
+  const menu = jquery?.(filterButton.value).data('menubtn')?.menu;
+  if (!menu) {
+    return;
+  }
+  // The options of the previous category's languages aren't in the menu anymore (it's detached from the page when closed)
+  const inMenu = (index, option) => menu.$container[0].contains(option);
+  menu.$options = menu.$options.filter(inMenu);
+  if (menu.$ariaOptions) {
+    menu.$ariaOptions = menu.$ariaOptions.filter(inMenu);
+  }
+  const $options = menu.$container.find('a').not(menu.$options);
+  if ($options.length > 0) {
+    menu.addOptions($options);
+  }
+}
+
+// Once the options of the languages are rendered
+watch(languages, registerFilterOptions, { flush: 'post' });
+
+function setEmptyMessages (value) {
+  store.commit('setEmptyMessages', value);
+}
+
+function setLanguages (languageId, value) {
+  const updatedLanguages = languages.value;
+  updatedLanguages[languageId].checked = value;
+  store.dispatch('updateLanguages', updatedLanguages);
+}
+
+function setColumns (columnKey, value) {
+  const updatedColumns = columns.value;
+  updatedColumns[columnKey].checked = value;
+  store.dispatch('updateColumns', updatedColumns);
+}
+
+function addMessage () {
+  store.commit('setIsAdding', true);
+
+  const message = messageToAdd.value;
+  const addCategory = category.value;
+
+  postAction(globals, 'translations-admin/messages/add', { message, category: addCategory })
+    .then((response) => {
+      if (response.data.success) {
+        craft.cp.displayNotice(t('Translation added'));
+        // Kept when it was changed during the request
+        if (messageToAdd.value === message) {
+          messageToAdd.value = '';
+        }
+        // Not in the list of another category, if it was changed during the request
+        if (addCategory === category.value) {
+          store.dispatch('addSourceMessages', [response.data.sourceMessage]);
+        }
+      } else {
+        // The message is kept, to change it or try again
+        craft.cp.displayError(response.data.error || t('Translation not added'));
+      }
+    })
+    .catch(() => {
+      craft.cp.displayError(t('Translation not added'));
+    })
+    .finally(() => {
+      store.commit('setIsAdding', false);
+    });
+}
 </script>
 
 <style lang="scss" scoped>

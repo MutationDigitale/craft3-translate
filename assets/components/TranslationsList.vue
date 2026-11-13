@@ -80,296 +80,260 @@
   </div>
 </template>
 
-<script>
+<script setup>
+import { computed, onBeforeUnmount, ref, watch } from 'vue';
+import { useStore } from 'vuex';
 import axios from 'axios';
-import { mapActions, mapGetters, mapMutations, mapState } from 'vuex';
-import { readLocalStorage, searchable } from '../helpers';
+import { readLocalStorage, searchable, useCraft } from '../helpers';
 
-export default {
-  props: {
-    currentCategory: String,
-    savePermission: Boolean,
-  },
-  data () {
-    return {
-      lastCheckbox: null,
-      // Identifies the last load, the responses of the previous ones are ignored (e.g. after changing category)
-      loadRequest: 0
-    };
-  },
-  computed: {
-    ariaChecked: function () {
-      if (this.checkedSourceMessages.length === 0) {
-        return 'false';
+const props = defineProps({
+  currentCategory: String,
+  savePermission: Boolean,
+});
+
+const store = useStore();
+const { craft, emitter, t } = useCraft();
+
+const translateTable = ref(null);
+let lastCheckbox = null;
+// Identifies the last load, the responses of the previous ones are ignored (e.g. after changing category)
+let loadRequest = 0;
+
+const isLoading = computed(() => store.state.isLoading);
+const isAdding = computed(() => store.state.isAdding);
+const isDeleting = computed(() => store.state.isDeleting);
+const category = computed(() => store.state.category);
+const languages = computed(() => store.state.languages);
+const sourceMessages = computed(() => store.state.sourceMessages);
+const page = computed(() => store.state.page);
+const modifiedMessages = computed(() => store.state.modifiedMessages);
+const emptyMessages = computed(() => store.state.emptyMessages);
+const search = computed(() => store.state.search);
+const sortProperty = computed(() => store.state.sortProperty);
+const sortDirection = computed(() => store.state.sortDirection);
+const columns = computed(() => store.state.columns);
+const displayedSourceMessages = computed(() => store.getters.displayedSourceMessages);
+const checkedSourceMessages = computed({
+  get: () => store.state.checkedSourceMessages,
+  set: value => store.commit('setCheckedSourceMessages', value),
+});
+const checkedLanguages = computed(() => languages.value.filter(lang => lang.checked === true));
+// The saved translations, indexed by source message ID
+const originalSourceMessagesById = computed(() => new Map(store.state.originalSourceMessages.map(sourceMessage => [sourceMessage.id, sourceMessage])));
+
+const ariaChecked = computed(() => {
+  if (checkedSourceMessages.value.length === 0) {
+    return 'false';
+  }
+  return displayedSourceMessages.value.every(sourceMessage => checkedSourceMessages.value.includes(sourceMessage.id))
+    ? 'true'
+    : 'mixed';
+});
+
+function changeCategory () {
+  store.commit('setLanguages', []);
+  store.commit('setSourceMessages', []);
+  store.commit('setFilteredSourceMessages', []);
+  store.commit('setEmptyMessages', false);
+  store.commit('setCheckedSourceMessages', []);
+  store.commit('setPage', 1);
+  store.dispatch('updateModifiedMessages', {});
+  loadSourceMessages();
+  loadColumns();
+}
+
+function loadSourceMessages () {
+  const request = ++loadRequest;
+  store.commit('setIsLoading', true);
+
+  axios
+    .get(craft.getActionUrl('translations-admin/messages/get-translations', { category: category.value }))
+    .then((response) => {
+      if (request !== loadRequest) {
+        return;
       }
-      return this.displayedSourceMessages.every(sourceMessage => this.checkedSourceMessages.includes(sourceMessage.id))
-        ? 'true'
-        : 'mixed';
-    },
-    // The saved translations, indexed by source message ID
-    originalSourceMessagesById: function () {
-      return new Map(this.originalSourceMessages.map(sourceMessage => [sourceMessage.id, sourceMessage]));
-    },
-    checkedSourceMessages: {
-      get () {
-        return this.$store.state.checkedSourceMessages;
-      },
-      set (value) {
-        this.setCheckedSourceMessages(value);
-      }
-    },
-    checkedLanguages: function () {
-      return this.languages.filter(lang => lang.checked === true);
-    },
-    ...mapState({
-      isLoading: state => state.isLoading,
-      isAdding: state => state.isAdding,
-      isDeleting: state => state.isDeleting,
-      category: state => state.category,
-      languages: state => state.languages,
-      originalSourceMessages: state => state.originalSourceMessages,
-      sourceMessages: state => state.sourceMessages,
-      filteredSourceMessages: state => state.filteredSourceMessages,
-      page: state => state.page,
-      modifiedMessages: state => state.modifiedMessages,
-      emptyMessages: state => state.emptyMessages,
-      search: state => state.search,
-      sortProperty: state => state.sortProperty,
-      sortDirection: state => state.sortDirection,
-      columns: state => state.columns,
-    }),
-    ...mapGetters({
-      displayedSourceMessages: 'displayedSourceMessages'
+      const localStorageLanguages = readLocalStorage('admin-translations-languages');
+      const loadedLanguages = response.data.languages;
+      let i = 0;
+      response.data.languages.forEach(lang => {
+        const localStorageLanguage = localStorageLanguages?.find?.(o => o.id === lang.id);
+        loadedLanguages[lang.id] = lang;
+        loadedLanguages[lang.id].checked = localStorageLanguage ? localStorageLanguage.checked : i < 5;
+        i++;
+      });
+      store.dispatch('updateLanguages', loadedLanguages);
+      store.dispatch('updateSourceMessages', response.data.sourceMessages);
     })
-  },
-  created () {
-    this.setCategory(this.currentCategory);
-
-    this.emitter.on('translations-saved', (savedMessages) => {
-      // Only the sent translations are saved, the ones changed during the request stay modified
-      for (const sourceMessage of this.sourceMessages) {
-        for (const languageId in savedMessages) {
-          if (sourceMessage.id in savedMessages[languageId]) {
-            this.originalSourceMessagesById.get(sourceMessage.id).languages[languageId] = savedMessages[languageId][sourceMessage.id];
-            this.change(sourceMessage, { id: languageId });
-          }
-        }
+    .catch(() => {
+      if (request === loadRequest) {
+        craft.cp.displayError(t('Translations could not be loaded'));
+      }
+    })
+    .finally(() => {
+      if (request === loadRequest) {
+        store.commit('setIsLoading', false);
       }
     });
-  },
-  watch: {
-    // Keeps the search and filters when messages are loaded, added or deleted
-    sourceMessages () {
-      this.filterSourceMessages();
-    },
-    search () {
-      this.filterSourceMessages();
-      this.setPage(1);
-    },
-    emptyMessages () {
-      this.filterSourceMessages();
-      this.setPage(1);
-    },
-    // The actions only apply to the selected messages that are displayed, not to the ones of other pages or hidden by the
-    // search and filters, which the user can't see
-    displayedSourceMessages (displayedSourceMessages) {
-      const displayedIds = new Set(displayedSourceMessages.map(sourceMessage => sourceMessage.id));
-      const checkedSourceMessages = this.checkedSourceMessages.filter(id => displayedIds.has(id));
-      if (checkedSourceMessages.length < this.checkedSourceMessages.length) {
-        this.setCheckedSourceMessages(checkedSourceMessages);
-      }
-    },
-    languages: {
-      handler () {
-        this.filterSourceMessages();
-      },
-      deep: true
-    },
-    category () {
-      this.changeCategory();
-    },
-    page () {
-      document.documentElement.scrollTop = document.querySelector('#main').getBoundingClientRect().top +
-        document.documentElement.scrollTop;
-    }
-  },
-  methods: {
-    changeCategory () {
-      this.setLanguages([]);
-      this.setSourceMessages([]);
-      this.setFilteredSourceMessages([]);
-      this.setEmptyMessages(false);
-      this.setCheckedSourceMessages([]);
-      this.setPage(1);
-      this.updateModifiedMessages({});
-      this.loadSourceMessages();
-      this.loadColumns();
-    },
-    loadSourceMessages () {
-      const loadRequest = ++this.loadRequest;
-      this.setIsLoading(true);
+}
 
-      axios
-        .get(this.$craft.getActionUrl('translations-admin/messages/get-translations', { category: this.category }))
-        .then((response) => {
-          if (loadRequest !== this.loadRequest) {
-            return;
-          }
-          const localStorageLanguages = readLocalStorage('admin-translations-languages');
-          const languages = response.data.languages;
-          let i = 0;
-          response.data.languages.forEach(lang => {
-            const localStorageLanguage = localStorageLanguages?.find?.(o => o.id === lang.id);
-            languages[lang.id] = lang;
-            languages[lang.id].checked = localStorageLanguage ? localStorageLanguage.checked : i < 5;
-            i++;
-          });
-          this.updateLanguages(languages);
-          this.updateSourceMessages(response.data.sourceMessages);
-        })
-        .catch(() => {
-          if (loadRequest === this.loadRequest) {
-            this.$craft.cp.displayError(this.t('Translations could not be loaded'));
-          }
-        })
-        .finally(() => {
-          if (loadRequest === this.loadRequest) {
-            this.setIsLoading(false);
-          }
-        });
-    },
-    loadColumns () {
-      const localStorageColumns = readLocalStorage('admin-translations-columns');
-      if (localStorageColumns) {
-        this.setColumns(localStorageColumns);
-      }
-    },
-    filterSourceMessages () {
-      const search = searchable(this.search).trim();
-      let sourceMessages = this.sourceMessages.filter((sourceMessage) => {
-        if (search === '' || sourceMessage.message == null) {
-          return true;
-        }
-        for (const language of this.checkedLanguages) {
-          const translation = sourceMessage.languages[language.id];
-          if (translation && searchable(translation).includes(search)) {
-            return true;
-          }
-        }
-        return searchable(sourceMessage.message).includes(search);
-      });
-      if (this.emptyMessages) {
-        // Empty in one of the displayed languages, or in one language (even when its column is hidden)
-        const languageIds = this.emptyMessages === true ? this.checkedLanguages.map(language => language.id) : [this.emptyMessages];
-        sourceMessages = sourceMessages.filter(sourceMessage => languageIds.some(id => (sourceMessage.languages[id] ?? '').trim() === ''));
-      }
-      this.setFilteredSourceMessages(sourceMessages);
-    },
-    change (sourceMessage, language) {
-      if (this.isChanged(sourceMessage, language)) {
-        this.updateModifiedMessages({
-          ...this.modifiedMessages,
-          [language.id]: {
-            ...this.modifiedMessages[language.id],
-            [sourceMessage.id]: sourceMessage.languages[language.id] || ''
-          }
-        });
-      } else {
-        this.forgetModifiedMessages({ sourceMessageIds: [sourceMessage.id], languageId: language.id });
-      }
-    },
-    // Whether a translation is different from the saved one
-    isChanged (sourceMessage, language) {
-      let originalSourceMessage = this.originalSourceMessagesById.get(sourceMessage.id);
-      let originalValue = this.normalizeStringValue(originalSourceMessage.languages[language.id]);
-      let newValue = this.normalizeStringValue(sourceMessage.languages[language.id]);
-      return originalValue !== newValue;
-    },
-    // The sort of a column, announced by screen readers
-    ariaSort (property) {
-      if (this.sortProperty !== property) {
-        return null;
-      }
-      return this.sortDirection === 'asc' ? 'ascending' : 'descending';
-    },
-    toggleCheckedSourceMessages () {
-      const checkedSourceMessages = [];
-      if (this.checkedSourceMessages.length === 0) {
-        for (const sourceMessage of this.displayedSourceMessages) {
-          checkedSourceMessages.push(sourceMessage.id);
-        }
-      }
-      this.setCheckedSourceMessages(checkedSourceMessages);
-    },
-    t (str) {
-      return this.$craft.t('translations-admin', str);
-    },
-    getNumberOfLines (str) {
-      return (str ?? '').split(/\r\n|\r|\n/).length;
-    },
-    // Like the server, a blank translation is empty, but the other ones are saved as is (e.g. with a trailing space). The
-    // line breaks are compared as \n: the textareas always give them as \n, even when they were saved as \r\n.
-    normalizeStringValue (value) {
-      return (value ?? '').trim() === '' ? '' : value.replace(/\r\n?/g, '\n');
-    },
-    changeSort (property) {
-      if (this.sortProperty !== property) {
-        this.setSortProperty(property);
-        this.setSortDirection('asc');
-      } else {
-        this.setSortDirection(this.sortDirection === 'asc' ? 'desc' : 'asc');
-      }
-      this.setPage(1);
-    },
-    onSourceMessageCheckboxClick (event) {
-      const checkboxes = Array.from(this.$refs["translateTable"].querySelectorAll('.source-message-checkbox'));
-      const checkedCheckboxes = checkboxes.filter(c => c.checked);
-      const checkbox = event.target.previousSibling;
-      const checkboxIndex = checkboxes.indexOf(checkbox);
-      const firstCheckbox = checkboxes.find(el => el.checked);
-      let lastCheckbox = null;
-      if (this.lastCheckbox !== null && this.lastCheckbox !== checkbox && checkedCheckboxes.includes(this.lastCheckbox)) {
-        lastCheckbox = this.lastCheckbox;
-      } else if (firstCheckbox !== undefined && firstCheckbox !== checkbox) {
-        lastCheckbox = firstCheckbox;
-      }
-      const lastCheckboxIndex = checkboxes.indexOf(lastCheckbox);
-      const min = Math.min(checkboxIndex, lastCheckboxIndex);
-      const max = Math.max(checkboxIndex, lastCheckboxIndex);
-
-      if (event.shiftKey && lastCheckbox !== null) {
-        this.checkedSourceMessages = [];
-        for (let i = min; i <= max; i++) {
-          this.checkedSourceMessages.push(this.displayedSourceMessages[i].id);
-        }
-      }
-
-      if (!event.shiftKey) {
-        this.lastCheckbox = !checkbox.checked ? checkbox : null;
-      }
-    },
-    ...mapMutations({
-      setIsLoading: 'setIsLoading',
-      setCategory: 'setCategory',
-      setLanguages: 'setLanguages',
-      setSourceMessages: 'setSourceMessages',
-      setFilteredSourceMessages: 'setFilteredSourceMessages',
-      setEmptyMessages: 'setEmptyMessages',
-      setCheckedSourceMessages: 'setCheckedSourceMessages',
-      setOriginalSourceMessages: 'setOriginalSourceMessages',
-      setSortProperty: 'setSortProperty',
-      setSortDirection: 'setSortDirection',
-      setColumns: 'setColumns',
-      setPage: 'setPage',
-    }),
-    ...mapActions({
-      updateLanguages: 'updateLanguages',
-      updateSourceMessages: 'updateSourceMessages',
-      updateModifiedMessages: 'updateModifiedMessages',
-      forgetModifiedMessages: 'forgetModifiedMessages'
-    })
+function loadColumns () {
+  const localStorageColumns = readLocalStorage('admin-translations-columns');
+  if (localStorageColumns) {
+    store.commit('setColumns', localStorageColumns);
   }
-};
+}
+
+function filterSourceMessages () {
+  const searched = searchable(search.value).trim();
+  let filtered = sourceMessages.value.filter((sourceMessage) => {
+    if (searched === '' || sourceMessage.message == null) {
+      return true;
+    }
+    for (const language of checkedLanguages.value) {
+      const translation = sourceMessage.languages[language.id];
+      if (translation && searchable(translation).includes(searched)) {
+        return true;
+      }
+    }
+    return searchable(sourceMessage.message).includes(searched);
+  });
+  if (emptyMessages.value) {
+    // Empty in one of the displayed languages, or in one language (even when its column is hidden)
+    const languageIds = emptyMessages.value === true ? checkedLanguages.value.map(language => language.id) : [emptyMessages.value];
+    filtered = filtered.filter(sourceMessage => languageIds.some(id => (sourceMessage.languages[id] ?? '').trim() === ''));
+  }
+  store.commit('setFilteredSourceMessages', filtered);
+}
+
+// Like the server, a blank translation is empty, but the other ones are saved as is (e.g. with a trailing space). The line
+// breaks are compared as \n: the textareas always give them as \n, even when they were saved as \r\n.
+function normalizeStringValue (value) {
+  return (value ?? '').trim() === '' ? '' : value.replace(/\r\n?/g, '\n');
+}
+
+// Whether a translation is different from the saved one
+function isChanged (sourceMessage, language) {
+  const originalSourceMessage = originalSourceMessagesById.value.get(sourceMessage.id);
+  const originalValue = normalizeStringValue(originalSourceMessage.languages[language.id]);
+  const newValue = normalizeStringValue(sourceMessage.languages[language.id]);
+  return originalValue !== newValue;
+}
+
+function change (sourceMessage, language) {
+  if (isChanged(sourceMessage, language)) {
+    store.dispatch('updateModifiedMessages', {
+      ...modifiedMessages.value,
+      [language.id]: {
+        ...modifiedMessages.value[language.id],
+        [sourceMessage.id]: sourceMessage.languages[language.id] || ''
+      }
+    });
+  } else {
+    store.dispatch('forgetModifiedMessages', { sourceMessageIds: [sourceMessage.id], languageId: language.id });
+  }
+}
+
+// The sort of a column, announced by screen readers
+function ariaSort (property) {
+  if (sortProperty.value !== property) {
+    return null;
+  }
+  return sortDirection.value === 'asc' ? 'ascending' : 'descending';
+}
+
+function changeSort (property) {
+  if (sortProperty.value !== property) {
+    store.commit('setSortProperty', property);
+    store.commit('setSortDirection', 'asc');
+  } else {
+    store.commit('setSortDirection', sortDirection.value === 'asc' ? 'desc' : 'asc');
+  }
+  store.commit('setPage', 1);
+}
+
+function toggleCheckedSourceMessages () {
+  const checked = [];
+  if (checkedSourceMessages.value.length === 0) {
+    for (const sourceMessage of displayedSourceMessages.value) {
+      checked.push(sourceMessage.id);
+    }
+  }
+  store.commit('setCheckedSourceMessages', checked);
+}
+
+function getNumberOfLines (str) {
+  return (str ?? '').split(/\r\n|\r|\n/).length;
+}
+
+// Selects the messages between the last checked one and this one with Shift
+function onSourceMessageCheckboxClick (event) {
+  const checkboxes = Array.from(translateTable.value.querySelectorAll('.source-message-checkbox'));
+  const checkedCheckboxes = checkboxes.filter(c => c.checked);
+  const checkbox = event.target.closest('label').previousElementSibling;
+  const checkboxIndex = checkboxes.indexOf(checkbox);
+  const firstCheckbox = checkboxes.find(el => el.checked);
+  let rangeStart = null;
+  if (lastCheckbox !== null && lastCheckbox !== checkbox && checkedCheckboxes.includes(lastCheckbox)) {
+    rangeStart = lastCheckbox;
+  } else if (firstCheckbox !== undefined && firstCheckbox !== checkbox) {
+    rangeStart = firstCheckbox;
+  }
+  const rangeStartIndex = checkboxes.indexOf(rangeStart);
+  const min = Math.min(checkboxIndex, rangeStartIndex);
+  const max = Math.max(checkboxIndex, rangeStartIndex);
+
+  if (event.shiftKey && rangeStart !== null) {
+    const checked = [];
+    for (let i = min; i <= max; i++) {
+      checked.push(displayedSourceMessages.value[i].id);
+    }
+    checkedSourceMessages.value = checked;
+  }
+
+  if (!event.shiftKey) {
+    lastCheckbox = !checkbox.checked ? checkbox : null;
+  }
+}
+
+// Keeps the search and filters when messages are loaded, added or deleted
+watch(sourceMessages, filterSourceMessages);
+watch([search, emptyMessages], () => {
+  filterSourceMessages();
+  store.commit('setPage', 1);
+});
+watch(languages, filterSourceMessages, { deep: true });
+// The actions only apply to the selected messages that are displayed, not to the ones of other pages or hidden by the search
+// and filters, which the user can't see
+watch(displayedSourceMessages, (displayed) => {
+  const displayedIds = new Set(displayed.map(sourceMessage => sourceMessage.id));
+  const checked = checkedSourceMessages.value.filter(id => displayedIds.has(id));
+  if (checked.length < checkedSourceMessages.value.length) {
+    store.commit('setCheckedSourceMessages', checked);
+  }
+});
+watch(category, changeCategory);
+watch(page, () => {
+  document.documentElement.scrollTop = document.querySelector('#main').getBoundingClientRect().top +
+    document.documentElement.scrollTop;
+});
+
+function onTranslationsSaved (savedMessages) {
+  // Only the sent translations are saved, the ones changed during the request stay modified
+  for (const sourceMessage of sourceMessages.value) {
+    for (const languageId in savedMessages) {
+      if (sourceMessage.id in savedMessages[languageId]) {
+        originalSourceMessagesById.value.get(sourceMessage.id).languages[languageId] = savedMessages[languageId][sourceMessage.id];
+        change(sourceMessage, { id: languageId });
+      }
+    }
+  }
+}
+
+emitter.on('translations-saved', onTranslationsSaved);
+onBeforeUnmount(() => emitter.off('translations-saved', onTranslationsSaved));
+
+// After the watchers: the change of category loads the messages
+store.commit('setCategory', props.currentCategory);
 </script>
 
 <style lang="scss" scoped>

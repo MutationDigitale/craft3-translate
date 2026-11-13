@@ -34,11 +34,14 @@ export function mountComponent (component, props = {}) {
     attachTo: document.getElementById('main'),
     global: {
       plugins: [store],
-      mocks: {
-        $craft: craft,
-        $csrfTokenName: 'CRAFT_CSRF_TOKEN',
-        $csrfTokenValue: 'csrf-token',
-        emitter,
+      // Like main.js: the components read them from the app config (useCraft())
+      config: {
+        globalProperties: {
+          $craft: craft,
+          $csrfTokenName: 'CRAFT_CSRF_TOKEN',
+          $csrfTokenValue: 'csrf-token',
+          emitter,
+        },
       },
     },
   });
