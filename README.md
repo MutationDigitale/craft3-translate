@@ -58,6 +58,7 @@ You can either go the **settings page** or create a file `translations-admin.php
 - **Add missing translations for site request only**: Controls whether missing translations are only added when the request is from the site.
 - **Add missing translations from templates only**: Controls whether missing translations are only added when they are translated in a template with the `t` filter (disabled by default). When disabled, the messages translated in PHP code are also added, including the names Craft translates itself in the `site` category (e.g. sites, sections and fields).
 - **Excluded Messages**: Messages that should not be added to the database, identified by a part of the string (basic matching, no regex — see example).
+- **GraphQL cache invalidation**: Which cached GraphQL results are cleared when the translations change: `all` (default) or `staticMessages`. Choose `staticMessages` to keep the other cached results (e.g. entries) when editors change translations, if they don't output translations of these categories (e.g. a Twig template rendered by a field).
 
 Config file example:
 ```PHP
@@ -76,7 +77,8 @@ return [
     'excludedMessages' => [
         'Submission triggered for',
         'Submission marked as spam'
-    ]
+    ],
+    'gqlCacheInvalidation' => 'staticMessages'
 ];
 ```
 
@@ -116,6 +118,8 @@ Query static messages this way:
 ```
 
 The languages default to the current language, and the categories to `site`. Only the existing translations are returned, `message` is `null` when a translation is empty.
+
+When the translations change, every cached GraphQL result is cleared by default. Set **GraphQL cache invalidation** to `staticMessages` to clear only the cached results with a `staticMessages` query (they're tagged `translations-admin:staticMessages`).
 
 ## Events
 

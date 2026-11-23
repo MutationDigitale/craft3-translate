@@ -6,10 +6,13 @@ use Craft;
 use craft\helpers\Db;
 use mutation\translate\helpers\LocaleHelper;
 use mutation\translate\models\Message;
+use mutation\translate\models\Settings;
 use mutation\translate\models\SourceMessage;
+use mutation\translate\resolvers\StaticMessageResolver;
 use mutation\translate\Translate;
 use yii\base\Component;
 use yii\base\Event;
+use yii\caching\TagDependency;
 
 class MessagesService extends Component
 {
@@ -196,12 +199,20 @@ class MessagesService extends Component
     }
 
     /**
-     * Invalidates the GraphQL caches.
+     * Invalidates the cached GraphQL results, all of them or only the `staticMessages` ones (see the `gqlCacheInvalidation`
+     * setting).
      *
      * @internal
      */
     public function invalidateCaches()
     {
+        if (Translate::getInstance()->settings->gqlCacheInvalidation === Settings::GQL_CACHE_INVALIDATION_STATIC_MESSAGES) {
+            // Only the results with a `staticMessages` query, tagged by its resolver
+            TagDependency::invalidate(Craft::$app->getCache(), StaticMessageResolver::CACHE_TAG);
+            return;
+        }
+
+        // Every result: the other queries can also output translations (e.g. a Twig template rendered by a field)
         Craft::$app->getGql()->invalidateCaches();
     }
 

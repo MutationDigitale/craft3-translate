@@ -9,6 +9,7 @@
 - Add a warning before leaving the page or changing category with unsaved changes
 - Add an error when the translations can't be loaded
 - Add an "Empty in …" filter for each language, to find the messages that aren't translated in a specific language. The "Empty" filter is renamed "Empty in any language"
+- Add a "GraphQL cache invalidation" setting (`gqlCacheInvalidation`), to clear only the cached `staticMessages` results instead of every GraphQL result when the translations change ([#111](https://github.com/MutationDigitale/craft3-translate/issues/111))
 - Add `MessagesService::saveTranslations()`, like `saveMessages()`, but returns whether all the translations were saved
 - Add `MessagesService::importMessages()`
 - Add `MessagesService::deleteAllMessages()`

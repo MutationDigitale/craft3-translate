@@ -128,5 +128,19 @@
             static: readOnly
         }) }}
 
+        {{ forms.selectField({
+            label: "GraphQL cache invalidation" | t("translations-admin"),
+            instructions: "Which cached GraphQL results are cleared when the translations change. Clear only the `staticMessages` queries if the other GraphQL queries don't output translations of these categories (e.g. a Twig template rendered by a field)." | t("translations-admin"),
+            id: "gqlCacheInvalidation",
+            name: "gqlCacheInvalidation",
+            value: settings.gqlCacheInvalidation,
+            options: [
+                {label: "All the GraphQL results" | t("translations-admin"), value: "all"},
+                {label: "Only the staticMessages queries" | t("translations-admin"), value: "staticMessages"},
+            ],
+            errors: settings.getErrors("gqlCacheInvalidation"),
+            disabled: readOnly
+        }) }}
+
     {% endnamespace %}
 {% endblock %}

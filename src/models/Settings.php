@@ -14,6 +14,16 @@ class Settings extends Model
      */
     public const PRIMARY_SITE_LANGUAGE = '__primary__';
 
+    /**
+     * Every cached GraphQL result is cleared when the translations change (the default).
+     */
+    public const GQL_CACHE_INVALIDATION_ALL = 'all';
+
+    /**
+     * Only the cached GraphQL results with a `staticMessages` query are cleared when the translations change.
+     */
+    public const GQL_CACHE_INVALIDATION_STATIC_MESSAGES = 'staticMessages';
+
     public $pluginName = 'Translations';
     public $sourceLanguage = '';
     public $categories = [['category' => 'site']];
@@ -21,6 +31,7 @@ class Settings extends Model
     public $addMissingSiteRequestOnly = true;
     public $addMissingFromTemplatesOnly = false;
     public $excludedMessages = [];
+    public $gqlCacheInvalidation = self::GQL_CACHE_INVALIDATION_ALL;
 
     public function attributeLabels(): array
     {
@@ -33,6 +44,7 @@ class Settings extends Model
             'addMissingSiteRequestOnly' => Craft::t('translations-admin', 'Add missing translations for site request only'),
             'addMissingFromTemplatesOnly' => Craft::t('translations-admin', 'Add missing translations from templates only'),
             'excludedMessages' => Craft::t('translations-admin', 'Excluded messages'),
+            'gqlCacheInvalidation' => Craft::t('translations-admin', 'GraphQL cache invalidation'),
         ];
     }
 
@@ -44,6 +56,7 @@ class Settings extends Model
             // An empty source language means the primary site language
             [['sourceLanguage'], 'filter', 'filter' => fn($language) => $language === self::PRIMARY_SITE_LANGUAGE ? '' : $language],
             [['pluginName', 'categories'], 'required'],
+            [['gqlCacheInvalidation'], 'in', 'range' => [self::GQL_CACHE_INVALIDATION_ALL, self::GQL_CACHE_INVALIDATION_STATIC_MESSAGES]],
             [['categories'], function($attribute) {
                 $categories = self::normalizeCategories($this->$attribute);
                 foreach ($categories as $category) {
