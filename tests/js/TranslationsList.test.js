@@ -135,6 +135,37 @@ describe('the translations list', () => {
     expect(store.state.modifiedMessages).toEqual({});
   });
 
+  it('detects the changes of the spaces around a translation, but a blank translation is empty', async () => {
+    const { wrapper } = await mountList([sourceMessage(1, 'Hello', { fr: 'Bonjour' })]);
+
+    await input(textarea(wrapper, 'Hello', 'fr'), 'Bonjour ');
+    expect(store.state.modifiedMessages, 'A space added').toEqual({ fr: { 1: 'Bonjour ' } });
+
+    await input(textarea(wrapper, 'Hello', 'fr'), 'Bonjour');
+    expect(store.state.modifiedMessages, 'Back to the saved value').toEqual({});
+
+    await input(textarea(wrapper, 'Hello', 'fr'), '   ');
+    expect(Object.keys(store.state.modifiedMessages.fr), 'Cleared with spaces').toEqual(['1']);
+
+    await input(textarea(wrapper, 'Hello', 'en'), '  ');
+    expect(store.state.modifiedMessages.en, 'Spaces in an empty translation').toBeUndefined();
+  });
+
+  it('keeps the unsaved changes when messages are added or deleted', async () => {
+    const { wrapper } = await mountList(items(2));
+    await input(textarea(wrapper, 'Item 001', 'fr'), 'Modifié');
+
+    await store.dispatch('addSourceMessages', [sourceMessage(3, 'Added')]);
+    await store.dispatch('removeSourceMessages', [2]);
+    await flushPromises();
+    // Checked again, like when the field is edited
+    await input(textarea(wrapper, 'Item 001', 'fr'), 'Modifié');
+
+    expect(store.state.originalSourceMessages.find(s => s.id === 1).languages.fr).toBe('');
+    expect(store.state.modifiedMessages).toEqual({ fr: { 1: 'Modifié' } });
+    expect(textarea(wrapper, 'Item 001', 'fr').element.closest('td').classList).toContain('modified');
+  });
+
   it('makes the translations read-only without the save permission', async () => {
     const { wrapper } = await mountList(items(1), { savePermission: false });
 

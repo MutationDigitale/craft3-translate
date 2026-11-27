@@ -17,7 +17,7 @@
 ### Changed
 - The tables are converted to the database charset (utf8mb4 by default) on MySQL and MariaDB, and new installs create them with it, so translations can contain any character (e.g. emojis)
 - Imports, saves and deletions are done in a database transaction, so they're not partly applied when they fail
-- The CSV import matches the columns by header (the language name in itself, in the other site languages or in English, or the language ID), so their order doesn't matter
+- The CSV import matches the columns by header (the language name in itself, in the other site languages or in English, or the language ID), so their order doesn't matter. The Import page lists the accepted headers of each site language
 - The CSV import lists the ignored columns
 - The CSV exports start with a UTF-8 BOM, so Excel shows the accents correctly
 - Parsing the templates only adds the messages of the configured categories that aren't excluded
@@ -49,8 +49,7 @@
 - Fix the CSV import garbling accented characters when the file isn't UTF-8
 - Fix the CSV import changing the values: formulas were calculated (e.g. `=1+1` saved as `2`, or the import failing on an invalid one) and numbers reformatted (e.g. `1.50` to `1.5`)
 - Fix the CSV import adding the keys with Windows line breaks (`\r\n`) again, with `\n` line breaks
-- Fix the CSV import page errors and selected category
-- Fix the CSV import page giving header examples of languages that aren't on the site (e.g. `fr-CA`): it lists the headers of the site languages
+- Fix the CSV import page: errors are shown on the page instead of failing, the chosen category stays selected after an import, and the uploaded file is deleted
 - Fix the CSV import reporting a success for a file with a quote that isn't closed, which turned the rest of the file into one key: the import fails and tells the line of the quote
 - Fix the "Parse templates" utility ignoring the category passed as the first argument (e.g. `'Hello'|t('other')`). A message or category set in a variable (e.g. `'Hello'|t(category)`) can't be known by parsing, so it's skipped
 - Fix the "Parse templates" utility ignoring the `{% embed %}` blocks
