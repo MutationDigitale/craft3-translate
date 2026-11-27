@@ -36,9 +36,9 @@
 ### Fixed
 - Fix a security issue where users with the "Change translations settings" permission could save the settings of other plugins
 - Fix a security issue where users without the plugin access permission could use every action of the plugin with the `actions/` URLs
-- Fix the actions accepting the messages of categories that aren't in the settings
 - Fix a security issue where the PHP translations utilities could write and include files outside the translations folder when a category contained slashes
-- Fix the CSV export being open to formula injection: the values starting with `=`, `+`, `-`, `@` or a tab start with an apostrophe, so spreadsheet apps don't run them, and the import removes it
+- Fix a security issue where the CSV export was open to formula injection: the values starting with `=`, `+`, `-`, `@`, a tab or a carriage return now start with an apostrophe, so spreadsheet apps don't run them, and the import removes it
+- Fix the actions accepting the messages of categories that aren't in the settings
 - Fix the same message being added more than once when several requests added it at the same time
 - Fix the pages translating a new message with emojis on MySQL and MariaDB failing, or adding the message again on every request ([#73](https://github.com/MutationDigitale/craft3-translate/issues/73))
 - Fix the selected messages that weren't displayed anymore (e.g. on another page or hidden by the search) being deleted, copied or exported with the displayed ones. The deletion confirmation and notice now tell how many messages are deleted
