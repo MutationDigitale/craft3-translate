@@ -66,7 +66,6 @@
 - Fix the pagination not going back to the first page after a search, filter, sort or category change
 - Fix the layout of the messages page on small screens
 - Fix the read-only users being able to edit the translations
-- Fix Ctrl+S not saving with caps lock
 - Fix the keyboard access of the select all checkbox and the pagination
 - Fix the translation fields, the checkboxes, the filter and Columns menus, and the file input of the Import page having no accessible name
 - Fix the sorted column not being announced by screen readers
