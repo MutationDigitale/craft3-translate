@@ -33,7 +33,7 @@
       </button>
 
       <div class="page-info">
-        {{ displayedSourceMessages.length > 0 ? ((page - 1) * perPage) + 1 : 0 }}-{{ ((page - 1) * perPage) + displayedSourceMessages.length }} {{ t('of') }}
+        {{ firstDisplayed }}-{{ lastDisplayed }} {{ t('of') }}
         {{ filteredSourceMessages.length }} {{ t('translations') }}
       </div>
     </div>
@@ -77,7 +77,6 @@
 <script setup>
 import { computed, ref, watch } from 'vue';
 import { useStore } from 'vuex';
-import axios from 'axios';
 import { clone, postAction, useCraft } from '../helpers';
 
 defineProps({
@@ -87,7 +86,7 @@ defineProps({
 });
 
 const store = useStore();
-const { globals, craft, t } = useCraft();
+const { craft, t } = useCraft();
 
 const copiedMessages = ref([]);
 const copiedMessagesCategory = ref('');
@@ -100,6 +99,9 @@ const filteredSourceMessages = computed(() => store.state.filteredSourceMessages
 const checkedSourceMessages = computed(() => store.state.checkedSourceMessages);
 const displayedSourceMessages = computed(() => store.getters.displayedSourceMessages);
 
+// The positions of the first and last displayed messages (e.g. 41-80 on the second page)
+const firstDisplayed = computed(() => displayedSourceMessages.value.length > 0 ? (page.value - 1) * perPage.value + 1 : 0);
+const lastDisplayed = computed(() => (page.value - 1) * perPage.value + displayedSourceMessages.value.length);
 const pageCount = computed(() => Math.ceil(filteredSourceMessages.value.length / perPage.value));
 // The first page is shown even when no message matches the filters
 const lastPage = computed(() => Math.max(pageCount.value, 1));
@@ -130,7 +132,7 @@ function deleteMessages () {
 
   store.commit('setIsDeleting', true);
 
-  postAction(globals, 'translations-admin/messages/delete', { sourceMessageId: sourceMessageIds })
+  postAction(craft, 'translations-admin/messages/delete', { sourceMessageId: sourceMessageIds })
     .then((response) => {
       if (response.data.success) {
         craft.cp.displayNotice(t('{count, plural, =1{Translation deleted} other{# translations deleted}}', { count: sourceMessageIds.length }));
@@ -164,7 +166,7 @@ function pasteMessages () {
   const pasteCategory = category.value;
   const sourceMessages = copiedMessages.value.map(s => ({ message: s.message, languages: s.languages }));
 
-  postAction(globals, 'translations-admin/messages/add-multiple', { category: pasteCategory, sourceMessages })
+  postAction(craft, 'translations-admin/messages/add-multiple', { category: pasteCategory, sourceMessages })
     .then((response) => {
       if (response.data.success) {
         // The messages already in the category are skipped
@@ -195,14 +197,14 @@ function pasteMessages () {
 function exportMessages () {
   isExporting.value = true;
 
-  const formData = {};
-
-  formData[globals.$csrfTokenName] = globals.$csrfTokenValue;
-  formData['category'] = category.value;
+  const formData = {
+    [craft.csrfTokenName]: craft.csrfTokenValue,
+    category: category.value,
+  };
 
   // The selected messages, or the whole category
   if (checkedSourceMessages.value.length > 0) {
-    formData['sourceMessageId'] = [...checkedSourceMessages.value];
+    formData.sourceMessageId = [...checkedSourceMessages.value];
   }
 
   craft.downloadFromUrl(
@@ -210,10 +212,8 @@ function exportMessages () {
     craft.getActionUrl('translations-admin/export/export'),
     formData
   )
-    .catch((e) => {
-      if (!axios.isCancel(e)) {
-        craft.cp.displayError(t('Translations could not be exported'));
-      }
+    .catch(() => {
+      craft.cp.displayError(t('Translations could not be exported'));
     })
     .finally(() => {
       isExporting.value = false;

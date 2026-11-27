@@ -22,13 +22,8 @@ class MessagesService extends Component
 
     public function addMessage($message, $category, $languages = null)
     {
-        $sourceMessageService = Translate::getInstance()->sourceMessage;
-
-        if ($sourceMessageService->getSourceMessageId($category, $message) !== null) {
-            return null;
-        }
-
-        $sourceMessage = $sourceMessageService->createSourceMessage($category, $message, $languages);
+        // Null if it already exists or couldn't be saved
+        $sourceMessage = Translate::getInstance()->sourceMessage->createSourceMessage($category, $message, $languages);
 
         if ($sourceMessage) {
             $this->invalidateCaches();
@@ -86,11 +81,11 @@ class MessagesService extends Component
             }
         }
 
-        $existingIds = array_map('intval', SourceMessage::find()
+        $existingIds = array_flip(array_map('intval', SourceMessage::find()
             ->select(['id'])
             ->where(['id' => array_unique(array_column($rows, 'id'))])
-            ->column());
-        $existingRows = array_filter($rows, fn($row) => in_array($row['id'], $existingIds, true));
+            ->column()));
+        $existingRows = array_filter($rows, fn($row) => isset($existingIds[$row['id']]));
         if (count($existingRows) < count($rows)) {
             $success = false;
         }
@@ -142,20 +137,14 @@ class MessagesService extends Component
             $siteLocaleIds = LocaleHelper::getSiteLocaleIds();
 
             foreach ($messagesByHash as $hash => $item) {
-                $id = $ids[$hash] ?? null;
-
+                $created = false;
+                // Null when it's invalid
+                $id = $ids[$hash] ?? $sourceMessageService->getOrCreateSourceMessageId($category, $item['message'], $created);
                 if ($id === null) {
-                    $sourceMessage = $sourceMessageService->createSourceMessage($category, $item['message']);
-                    if ($sourceMessage !== null) {
-                        $id = $sourceMessage->id;
-                        $counts['created']++;
-                    } else {
-                        // Invalid, or added by another request in the meantime
-                        $id = $sourceMessageService->getSourceMessageId($category, $item['message']);
-                        if ($id === null) {
-                            continue;
-                        }
-                    }
+                    continue;
+                }
+                if ($created) {
+                    $counts['created']++;
                 }
 
                 foreach ($item['languages'] as $language => $translation) {

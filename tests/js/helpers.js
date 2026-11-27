@@ -15,10 +15,17 @@ export function resetStore () {
   store.replaceState(clone(initialState));
 }
 
+// Craft.sendActionRequest(), shared by the mounted components so the tests can set its response before mounting
+export const sendActionRequest = vi.fn();
+
 // The parts of window.Craft used by the components
 export function createCraft () {
   return {
-    t: vi.fn((category, message) => message),
+    csrfTokenName: 'CRAFT_CSRF_TOKEN',
+    csrfTokenValue: 'csrf-token',
+    sendActionRequest,
+    // With the simple params (e.g. "{language}"), not the plural ones
+    t: vi.fn((category, message, params = {}) => message.replace(/\{(\w+)\}/g, (match, name) => params[name] ?? match)),
     getCpUrl: vi.fn(path => `/admin/${path}`),
     getActionUrl: vi.fn((action, params) => `/actions/${action}` + (params ? '?' + new URLSearchParams(params) : '')),
     cp: { displayNotice: vi.fn(), displayError: vi.fn() },
@@ -38,8 +45,6 @@ export function mountComponent (component, props = {}) {
       config: {
         globalProperties: {
           $craft: craft,
-          $csrfTokenName: 'CRAFT_CSRF_TOKEN',
-          $csrfTokenValue: 'csrf-token',
           emitter,
         },
       },
@@ -55,10 +60,7 @@ export function sourceMessage (id, message, translations = {}, dateCreated = '20
 
 // The messages of a category, as if they were loaded and filtered by the list
 export function setSourceMessages (sourceMessages) {
-  // Like the list: an array also indexed by language ID
-  const checkedLanguages = clone(languages).map(language => ({ ...language, checked: true }));
-  checkedLanguages.forEach(language => { checkedLanguages[language.id] = language; });
-  store.dispatch('updateLanguages', checkedLanguages);
+  store.dispatch('updateLanguages', languages.map(language => ({ ...language, checked: true })));
   store.dispatch('updateSourceMessages', sourceMessages);
   store.commit('setFilteredSourceMessages', [...store.state.sourceMessages]);
 }

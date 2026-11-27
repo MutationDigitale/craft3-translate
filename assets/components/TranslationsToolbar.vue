@@ -42,7 +42,7 @@
             <input :id="`language-checkbox-${language.id}`"
                    class="checkbox"
                    type="checkbox"
-                   :checked="languages[language.id].checked"
+                   :checked="language.checked"
                    @input="setLanguages(language.id, $event.target.checked)">
             <label :for="`language-checkbox-${language.id}`">
               <span>{{ language.displayName }}</span>
@@ -53,7 +53,7 @@
             <input :id="`column-checkbox-${column.key}`"
                    class="checkbox"
                    type="checkbox"
-                   :checked="columns[column.key].checked"
+                   :checked="column.checked"
                    @input="setColumns(column.key, $event.target.checked)">
             <label :for="`column-checkbox-${column.key}`">
               {{ t(column.name) }}
@@ -84,7 +84,7 @@ defineProps({
 });
 
 const store = useStore();
-const { globals, craft, jquery, t } = useCraft();
+const { craft, jquery, t } = useCraft();
 
 const messageToAdd = ref('');
 const filterButton = ref(null);
@@ -106,7 +106,7 @@ const filterLabel = computed(() => {
   if (emptyMessages.value === true) {
     return t('Empty in any language');
   }
-  const language = languages.value[emptyMessages.value];
+  const language = languages.value.find(language => language.id === emptyMessages.value);
   return t('Empty in {language}', { language: language?.displayName ?? emptyMessages.value });
 });
 
@@ -136,16 +136,12 @@ function setEmptyMessages (value) {
   store.commit('setEmptyMessages', value);
 }
 
-function setLanguages (languageId, value) {
-  const updatedLanguages = languages.value;
-  updatedLanguages[languageId].checked = value;
-  store.dispatch('updateLanguages', updatedLanguages);
+function setLanguages (languageId, checked) {
+  store.dispatch('updateLanguages', languages.value.map(language => language.id === languageId ? { ...language, checked } : language));
 }
 
-function setColumns (columnKey, value) {
-  const updatedColumns = columns.value;
-  updatedColumns[columnKey].checked = value;
-  store.dispatch('updateColumns', updatedColumns);
+function setColumns (columnKey, checked) {
+  store.dispatch('updateColumns', { ...columns.value, [columnKey]: { ...columns.value[columnKey], checked } });
 }
 
 function addMessage () {
@@ -154,7 +150,7 @@ function addMessage () {
   const message = messageToAdd.value;
   const addCategory = category.value;
 
-  postAction(globals, 'translations-admin/messages/add', { message, category: addCategory })
+  postAction(craft, 'translations-admin/messages/add', { message, category: addCategory })
     .then((response) => {
       if (response.data.success) {
         craft.cp.displayNotice(t('Translation added'));

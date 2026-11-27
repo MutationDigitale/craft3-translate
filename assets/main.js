@@ -66,8 +66,6 @@ app
 
 app.use(store);
 
-app.config.globalProperties.$csrfTokenName = window.csrfTokenName;
-app.config.globalProperties.$csrfTokenValue = window.csrfTokenValue;
 app.config.globalProperties.$jquery = window.$;
 app.config.globalProperties.$craft = window.Craft;
 app.config.globalProperties.emitter = emitter;

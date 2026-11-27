@@ -31,7 +31,7 @@
         </thead>
         <tbody>
         <tr v-for="sourceMessage in displayedSourceMessages" v-bind:key="sourceMessage.id"
-            :class="{'sel': checkedSourceMessages.indexOf(sourceMessage.id) > -1}">
+            :class="{'sel': checkedSourceMessages.includes(sourceMessage.id)}">
           <td class="checkbox-cell">
             <input :id="'source-message-' + sourceMessage.id"
                    type="checkbox"
@@ -83,7 +83,6 @@
 <script setup>
 import { computed, onBeforeUnmount, ref, watch } from 'vue';
 import { useStore } from 'vuex';
-import axios from 'axios';
 import { readLocalStorage, searchable, useCraft } from '../helpers';
 
 const props = defineProps({
@@ -146,20 +145,16 @@ function loadSourceMessages () {
   const request = ++loadRequest;
   store.commit('setIsLoading', true);
 
-  axios
-    .get(craft.getActionUrl('translations-admin/messages/get-translations', { category: category.value }))
+  craft.sendActionRequest('GET', 'translations-admin/messages/get-translations', { params: { category: category.value } })
     .then((response) => {
       if (request !== loadRequest) {
         return;
       }
+      // The columns chosen before, or the first 5 languages
       const localStorageLanguages = readLocalStorage('admin-translations-languages');
-      const loadedLanguages = response.data.languages;
-      let i = 0;
-      response.data.languages.forEach(lang => {
-        const localStorageLanguage = localStorageLanguages?.find?.(o => o.id === lang.id);
-        loadedLanguages[lang.id] = lang;
-        loadedLanguages[lang.id].checked = localStorageLanguage ? localStorageLanguage.checked : i < 5;
-        i++;
+      const loadedLanguages = response.data.languages.map((language, index) => {
+        const localStorageLanguage = localStorageLanguages?.find?.(o => o.id === language.id);
+        return { ...language, checked: localStorageLanguage ? localStorageLanguage.checked : index < 5 };
       });
       store.dispatch('updateLanguages', loadedLanguages);
       store.dispatch('updateSourceMessages', response.data.sourceMessages);
@@ -251,13 +246,9 @@ function changeSort (property) {
   store.commit('setPage', 1);
 }
 
+// Selects the displayed messages, or clears the selection
 function toggleCheckedSourceMessages () {
-  const checked = [];
-  if (checkedSourceMessages.value.length === 0) {
-    for (const sourceMessage of displayedSourceMessages.value) {
-      checked.push(sourceMessage.id);
-    }
-  }
+  const checked = checkedSourceMessages.value.length === 0 ? displayedSourceMessages.value.map(sourceMessage => sourceMessage.id) : [];
   store.commit('setCheckedSourceMessages', checked);
 }
 
@@ -271,7 +262,7 @@ function onSourceMessageCheckboxClick (event) {
   const checkedCheckboxes = checkboxes.filter(c => c.checked);
   const checkbox = event.target.closest('label').previousElementSibling;
   const checkboxIndex = checkboxes.indexOf(checkbox);
-  const firstCheckbox = checkboxes.find(el => el.checked);
+  const firstCheckbox = checkedCheckboxes[0];
   let rangeStart = null;
   if (lastCheckbox !== null && lastCheckbox !== checkbox && checkedCheckboxes.includes(lastCheckbox)) {
     rangeStart = lastCheckbox;

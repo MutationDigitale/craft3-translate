@@ -18,7 +18,7 @@ class ExportService extends Component
     {
         try {
             $sourceMessages = Translate::getInstance()->sourceMessage->getAllSourceMessages();
-            $settingsCategories = Translate::getInstance()->getSettings()->getCategories();
+            $settingsCategories = Translate::getInstance()->settings->getCategories();
             $siteLocaleIds = LocaleHelper::getSiteLocaleIds();
             $skippedCategories = [];
             $count = 0;

@@ -14,7 +14,7 @@ import { useStore } from 'vuex';
 import { clone, postAction, useCraft } from '../helpers';
 
 const store = useStore();
-const { globals, craft, emitter, t } = useCraft();
+const { craft, emitter, t } = useCraft();
 
 const isSaving = ref(false);
 const isModified = computed(() => store.getters.isModified);
@@ -25,7 +25,7 @@ function save () {
   // Copy the sent translations, they can still be changed during the request
   const savedMessages = clone(store.state.modifiedMessages);
 
-  postAction(globals, 'translations-admin/messages/save', { translations: savedMessages })
+  postAction(craft, 'translations-admin/messages/save', { translations: savedMessages })
     .then((response) => {
       if (response.data.success) {
         craft.cp.displayNotice(t('Translations saved'));

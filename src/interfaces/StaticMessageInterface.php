@@ -7,7 +7,7 @@ use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\Type;
 
 /**
- * Class LinkGqlType
+ * The GraphQL type of the static messages
  */
 class StaticMessageInterface
 {
@@ -24,24 +24,15 @@ class StaticMessageInterface
      */
     public static function getType()
     {
-        if ($type = GqlEntityRegistry::getEntity(self::class)) {
-            return $type;
-        }
-
-        return GqlEntityRegistry::createEntity(
-            self::class,
-            new ObjectType(
-                [
-                    'name' => static::getName(),
-                    'fields' => self::class . '::getFieldDefinitions',
-                    'description' => 'This is the interface implemented by static messages.',
-                ]
-            )
-        );
+        return GqlEntityRegistry::getOrCreate(self::getName(), fn() => new ObjectType([
+            'name' => self::getName(),
+            'fields' => self::class . '::getFieldDefinitions',
+            'description' => 'This is the interface implemented by static messages.',
+        ]));
     }
 
     /**
-     * @rejturn array
+     * @return array
      */
     public static function getFieldDefinitions(): array
     {

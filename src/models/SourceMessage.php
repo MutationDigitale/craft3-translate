@@ -24,10 +24,7 @@ class SourceMessage extends ActiveRecord
 
     public function __construct($config = [])
     {
-        $this->languages = [];
-        foreach (Craft::$app->getI18n()->getSiteLocales() as $locale) {
-            $this->languages[$locale->id] = null;
-        }
+        $this->languages = array_fill_keys(Craft::$app->getI18n()->getSiteLocaleIds(), null);
         parent::__construct($config);
     }
 
@@ -90,15 +87,16 @@ class SourceMessage extends ActiveRecord
 
     public function getTranslation($lang)
     {
-        return (isset($this->translations[$lang])) ? $this->translations[$lang] : null;
+        return $this->getTranslations()[$lang] ?? null;
     }
 
     public function afterFind()
     {
         parent::afterFind();
 
+        $translations = $this->getTranslations();
         foreach ($this->languages as $language => $translation) {
-            $this->languages[$language] = $this->getTranslation($language);
+            $this->languages[$language] = $translations[$language] ?? null;
         }
     }
 

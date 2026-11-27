@@ -83,12 +83,7 @@ class MessagesController extends Controller
 
         return $this->asJson([
             'success' => true,
-            'sourceMessage' => [
-                'id' => $sourceMessage->id,
-                'message' => $sourceMessage->message,
-                'languages' => array_fill_keys(LocaleHelper::getSiteLocaleIds(), ''),
-                'dateCreated' => $sourceMessage->dateCreated,
-            ],
+            'sourceMessage' => $this->serializeSourceMessage($sourceMessage),
         ]);
     }
 
@@ -119,18 +114,7 @@ class MessagesController extends Controller
 
         return $this->asJson([
             'success' => count($addedSourceMessages) > 0,
-            'sourceMessages' => array_map(function($sourceMessage) {
-                return [
-                    'id' => $sourceMessage->id,
-                    'message' => $sourceMessage->message,
-                    // Like the add action, the languages without a translation are empty strings
-                    'languages' => array_merge(
-                        array_fill_keys(LocaleHelper::getSiteLocaleIds(), ''),
-                        array_map(fn($translation) => $translation ?? '', $sourceMessage->getTranslations())
-                    ),
-                    'dateCreated' => $sourceMessage->dateCreated,
-                ];
-            }, $addedSourceMessages),
+            'sourceMessages' => array_map(fn($sourceMessage) => $this->serializeSourceMessage($sourceMessage), $addedSourceMessages),
         ]);
     }
 
@@ -175,6 +159,23 @@ class MessagesController extends Controller
 
         // The messages key is always empty, like the previous versions
         return $this->asJson(['success' => $success && !$hasForbiddenIds, 'messages' => []]);
+    }
+
+    /**
+     * Returns an added source message for the list of the messages page, like the get-translations action: the languages
+     * without a translation are empty strings.
+     */
+    private function serializeSourceMessage(SourceMessage $sourceMessage): array
+    {
+        return [
+            'id' => $sourceMessage->id,
+            'message' => $sourceMessage->message,
+            'languages' => array_merge(
+                array_fill_keys(LocaleHelper::getSiteLocaleIds(), ''),
+                array_map(fn($translation) => $translation ?? '', $sourceMessage->getTranslations())
+            ),
+            'dateCreated' => $sourceMessage->dateCreated,
+        ];
     }
 
     /**

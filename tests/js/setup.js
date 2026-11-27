@@ -2,8 +2,6 @@ import { afterEach, beforeEach, vi } from 'vitest';
 import { enableAutoUnmount } from '@vue/test-utils';
 import { resetStore } from './helpers';
 
-vi.mock('axios');
-
 enableAutoUnmount(afterEach);
 
 beforeEach(() => {

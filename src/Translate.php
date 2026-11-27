@@ -29,7 +29,6 @@ use mutation\translate\services\TemplateService;
 use yii\base\Event;
 use yii\i18n\MessageSource;
 use yii\i18n\MissingTranslationEvent;
-use yii\log\Logger;
 
 /**
  * Class Translate
@@ -54,6 +53,19 @@ class Translate extends Plugin
     public bool $hasCpSettings = true;
     public bool $hasReadOnlyCpSettings = true;
 
+    public static function config(): array
+    {
+        return [
+            'components' => [
+                'messages' => MessagesService::class,
+                'sourceMessage' => SourceMessageService::class,
+                'template' => TemplateService::class,
+                'import' => ImportService::class,
+                'export' => ExportService::class,
+            ],
+        ];
+    }
+
     public function init()
     {
         parent::init();
@@ -63,14 +75,6 @@ class Translate extends Plugin
         if (Craft::$app->getRequest()->getIsConsoleRequest()) {
             $this->controllerNamespace = 'mutation\translate\console\controllers';
         }
-
-        $this->setComponents([
-            'messages' => MessagesService::class,
-            'sourceMessage' => SourceMessageService::class,
-            'template' => TemplateService::class,
-            'import' => ImportService::class,
-            'export' => ExportService::class,
-        ]);
 
         if (Craft::$app->getPlugins()->isPluginEnabled($this->handle)) {
             $this->initDbMessages();
@@ -250,7 +254,7 @@ class Translate extends Plugin
 
                 $excludedMessagePattern = $this->settings->getExcludedMessagePattern($event->message);
                 if ($excludedMessagePattern !== null) {
-                    Craft::getLogger()->log("Excluded translation message: {$event->message} because of message pattern {$excludedMessagePattern}", Logger::LEVEL_INFO, 'translations');
+                    Craft::info("Excluded translation message: {$event->message} because of message pattern {$excludedMessagePattern}", 'translations');
                     return;
                 }
 

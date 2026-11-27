@@ -43,7 +43,7 @@
 ]) %}
 
 {% block actionButton %}
-  {% if craft.app.user.checkPermission('saveTranslations') %}
+  {% if currentUser.can('saveTranslations') %}
     <save-translations></save-translations>
   {% endif %}
 {% endblock %}
@@ -56,26 +56,19 @@
 
 {% block toolbar %}
     <translations-toolbar
-      :add-permission="{{ craft.app.user.checkPermission('addTranslations') ? 'true' : 'false' }}"></translations-toolbar>
+      :add-permission="{{ currentUser.can('addTranslations')|json_encode }}"></translations-toolbar>
 {% endblock %}
 
 {% block content %}
     <div class="main">
         <translations-list current-category="{{ category }}"
-          :save-permission="{{ craft.app.user.checkPermission('saveTranslations') ? 'true' : 'false' }}"></translations-list>
+          :save-permission="{{ currentUser.can('saveTranslations')|json_encode }}"></translations-list>
     </div>
 {% endblock %}
 
 {% block footer %}
     <translations-footer
-      :add-permission="{{ craft.app.user.checkPermission('addTranslations') ? 'true' : 'false' }}"
-      :delete-permission="{{ craft.app.user.checkPermission('deleteTranslations') ? 'true' : 'false' }}"
-      :export-permission="{{ craft.app.user.checkPermission('exportTranslations') ? 'true' : 'false' }}"></translations-footer>
-{% endblock %}
-
-{% block foot %}
-    <script>
-    window.csrfTokenName = "{{ craft.app.config.general.csrfTokenName|e('js') }}";
-    window.csrfTokenValue = "{{ craft.app.request.csrfToken|e('js') }}";
-    </script>
+      :add-permission="{{ currentUser.can('addTranslations')|json_encode }}"
+      :delete-permission="{{ currentUser.can('deleteTranslations')|json_encode }}"
+      :export-permission="{{ currentUser.can('exportTranslations')|json_encode }}"></translations-footer>
 {% endblock %}

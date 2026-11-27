@@ -51,8 +51,8 @@ class SourceMessageService extends Component
     {
         $rows = (new Query())
             ->select(['s.message', 's.category', 'm.translation', 'm.language', 'm.dateCreated'])
-            ->from('{{%source_message}} AS s')
-            ->innerJoin('{{%message}} AS m', 'm.id = s.id')
+            ->from(['s' => SourceMessage::tableName()])
+            ->innerJoin(['m' => Message::tableName()], 'm.id = s.id')
             ->where(['s.category' => $categories, 'm.language' => $languages])
             ->all();
 
@@ -74,7 +74,7 @@ class SourceMessageService extends Component
     public function getSourceMessageId(string $category, string $message): ?int
     {
         $rows = (new Query())
-            ->select(['id', 'category', 'message'])
+            ->select(['id', 'message'])
             ->from(SourceMessage::tableName())
             // Like the previous versions: a binary comparison on MySQL and MariaDB, which compare the strings case and accent
             // insensitively, and fail to compare characters a utf8mb3 table can't contain (e.g. emojis)
@@ -101,7 +101,7 @@ class SourceMessageService extends Component
     public function getSourceMessageIdsByCategory(string $category): array
     {
         $rows = (new Query())
-            ->select(['id', 'category', 'message'])
+            ->select(['id', 'message'])
             ->from(SourceMessage::tableName())
             ->where(['category' => $category])
             ->orderBy(['id' => SORT_ASC])
@@ -204,8 +204,8 @@ class SourceMessageService extends Component
     {
         $rows = (new Query())
             ->select(['s.id', 's.category', 's.message', 's.dateCreated', 'm.language', 'm.translation'])
-            ->from('{{%source_message}} AS s')
-            ->leftJoin('{{%message}} AS m', 'm.id = s.id')
+            ->from(['s' => SourceMessage::tableName()])
+            ->leftJoin(['m' => Message::tableName()], 'm.id = s.id')
             ->where($condition)
             ->orderBy(['s.id' => SORT_ASC])
             ->all();
@@ -238,8 +238,8 @@ class SourceMessageService extends Component
     {
         $rows = (new Query())
             ->select(['m.id', 'm.language', 'm.translation'])
-            ->from('{{%message}} AS m')
-            ->innerJoin('{{%source_message}} AS s', 'm.id = s.id')
+            ->from(['m' => Message::tableName()])
+            ->innerJoin(['s' => SourceMessage::tableName()], 'm.id = s.id')
             ->where($condition)
             ->all();
 

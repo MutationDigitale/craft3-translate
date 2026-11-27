@@ -1,13 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { flushPromises } from '@vue/test-utils';
-import axios from 'axios';
 import TranslationsList from '../../assets/components/TranslationsList.vue';
 import { clone } from '../../assets/helpers';
 import { store } from '../../assets/store/TranslationsStore';
-import { items, languages, mountComponent, sourceMessage } from './helpers';
+import { items, languages, mountComponent, sendActionRequest, sourceMessage } from './helpers';
 
 async function mountList (sourceMessages, { savePermission = true } = {}) {
-  axios.get.mockResolvedValue({ data: { languages: structuredClone(languages), sourceMessages } });
+  sendActionRequest.mockResolvedValue({ data: { languages: structuredClone(languages), sourceMessages } });
   const mounted = mountComponent(TranslationsList, { currentCategory: 'site', savePermission });
   await flushPromises();
 
@@ -64,9 +63,7 @@ describe('the translations list', () => {
 
     // The French column hidden
     store.commit('setEmptyMessages', 'fr');
-    const languages = store.state.languages;
-    languages.fr.checked = false;
-    await store.dispatch('updateLanguages', languages);
+    await store.dispatch('updateLanguages', store.state.languages.map(language => ({ ...language, checked: language.id !== 'fr' })));
     await flushPromises();
     expect(displayedKeys(wrapper)).toEqual(['Blank French', 'No French']);
     // "Any language": the displayed ones
@@ -87,7 +84,7 @@ describe('the translations list', () => {
   it('loads the messages of the category', async () => {
     const { wrapper } = await mountList(items(3, i => ({ fr: `Élément ${i}` })));
 
-    expect(axios.get).toHaveBeenCalledWith('/actions/translations-admin/messages/get-translations?category=site');
+    expect(sendActionRequest).toHaveBeenCalledWith('GET', 'translations-admin/messages/get-translations', { params: { category: 'site' } });
     expect(displayedKeys(wrapper)).toEqual(['Item 001', 'Item 002', 'Item 003']);
     expect(textarea(wrapper, 'Item 002', 'fr').element.value).toBe('Élément 2');
   });

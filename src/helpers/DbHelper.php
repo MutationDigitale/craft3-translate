@@ -10,11 +10,12 @@ use Craft;
 class DbHelper
 {
     /**
-     * @param $string
-     * @return mixed|string
+     * Returns a column to compare case and accent sensitively: MySQL and MariaDB compare the strings insensitively.
      */
-    public static function caseSensitiveComparisonString($string)
+    public static function caseSensitiveComparisonString(string $column): string
     {
-        return Craft::$app->db->getIsMysql() ? 'BINARY(`' . $string . '`)' : $string;
+        $db = Craft::$app->getDb();
+
+        return $db->getIsMysql() ? 'BINARY(' . $db->quoteColumnName($column) . ')' : $column;
     }
 }

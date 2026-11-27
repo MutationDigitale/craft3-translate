@@ -1,9 +1,8 @@
 import { describe, expect, it, vi } from 'vitest';
 import { flushPromises } from '@vue/test-utils';
-import axios from 'axios';
 import TranslationsFooter from '../../assets/components/TranslationsFooter.vue';
 import { store } from '../../assets/store/TranslationsStore';
-import { items, mountComponent, setSourceMessages, sourceMessage } from './helpers';
+import { items, mountComponent, sendActionRequest, setSourceMessages, sourceMessage } from './helpers';
 
 const permissions = { addPermission: true, deletePermission: true, exportPermission: true };
 const button = (wrapper, label) => wrapper.findAll('button').find(b => b.text().includes(label));
@@ -12,7 +11,7 @@ describe('the footer', () => {
   it('asks to confirm how many messages are deleted, and deletes them', async () => {
     setSourceMessages(items(3));
     store.commit('setCheckedSourceMessages', [1, 3]);
-    axios.post.mockResolvedValue({ data: { success: true } });
+    sendActionRequest.mockResolvedValue({ data: { success: true } });
     const confirm = vi.spyOn(window, 'confirm').mockReturnValue(true);
     const { wrapper, craft } = mountComponent(TranslationsFooter, permissions);
 
@@ -21,10 +20,10 @@ describe('the footer', () => {
 
     expect(craft.t).toHaveBeenCalledWith('translations-admin', expect.stringContaining('{count, plural'), { count: 2 });
     expect(confirm).toHaveBeenCalled();
-    expect(axios.post).toHaveBeenCalledWith(
-      '/actions/translations-admin/messages/delete',
-      { sourceMessageId: [1, 3] },
-      { headers: { 'X-CSRF-Token': 'csrf-token' } }
+    expect(sendActionRequest).toHaveBeenCalledWith(
+      'POST',
+      'translations-admin/messages/delete',
+      { data: { sourceMessageId: [1, 3] } }
     );
     expect(store.state.sourceMessages.map(s => s.id)).toEqual([2]);
     expect(store.state.checkedSourceMessages).toEqual([]);
@@ -37,7 +36,7 @@ describe('the footer', () => {
     setSourceMessages([sourceMessage(1, 'Hello', { fr: 'Bonjour' }), sourceMessage(2, 'Bye')]);
     store.state.sourceMessages[0].languages.fr = 'Unsaved change';
     store.commit('setCheckedSourceMessages', [1]);
-    axios.post.mockResolvedValue({ data: { success: true, sourceMessages: [sourceMessage(5, 'Hello', { fr: 'Bonjour' })] } });
+    sendActionRequest.mockResolvedValue({ data: { success: true, sourceMessages: [sourceMessage(5, 'Hello', { fr: 'Bonjour' })] } });
     const { wrapper } = mountComponent(TranslationsFooter, permissions);
 
     await button(wrapper, 'Copy translations').trigger('click');
@@ -47,10 +46,10 @@ describe('the footer', () => {
     await button(wrapper, 'Paste translations').trigger('click');
     await flushPromises();
 
-    expect(axios.post).toHaveBeenCalledWith(
-      '/actions/translations-admin/messages/add-multiple',
-      { category: 'other', sourceMessages: [{ message: 'Hello', languages: { en: '', fr: 'Bonjour' } }] },
-      { headers: { 'X-CSRF-Token': 'csrf-token' } }
+    expect(sendActionRequest).toHaveBeenCalledWith(
+      'POST',
+      'translations-admin/messages/add-multiple',
+      { data: { category: 'other', sourceMessages: [{ message: 'Hello', languages: { en: '', fr: 'Bonjour' } }] } }
     );
   });
 
@@ -58,7 +57,7 @@ describe('the footer', () => {
     store.commit('setCategory', 'site');
     setSourceMessages(items(2));
     store.commit('setCheckedSourceMessages', [1, 2]);
-    axios.post.mockResolvedValue({ data: { success: true, sourceMessages: [sourceMessage(5, 'Item 001')] } });
+    sendActionRequest.mockResolvedValue({ data: { success: true, sourceMessages: [sourceMessage(5, 'Item 001')] } });
     const { wrapper, craft } = mountComponent(TranslationsFooter, permissions);
 
     await button(wrapper, 'Copy translations').trigger('click');
@@ -84,6 +83,7 @@ describe('the footer', () => {
     };
 
     expect(await exportedIds()).toBeUndefined();
+    expect(craft.downloadFromUrl.mock.calls[0][2]).toEqual({ CRAFT_CSRF_TOKEN: 'csrf-token', category: 'site' });
 
     store.commit('setCheckedSourceMessages', [2, 1]);
     expect(await exportedIds()).toEqual([2, 1]);

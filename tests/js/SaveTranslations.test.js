@@ -1,9 +1,8 @@
 import { describe, expect, it, vi } from 'vitest';
 import { flushPromises } from '@vue/test-utils';
-import axios from 'axios';
 import SaveTranslations from '../../assets/components/SaveTranslations.vue';
 import { store } from '../../assets/store/TranslationsStore';
-import { mountComponent } from './helpers';
+import { mountComponent, sendActionRequest } from './helpers';
 
 async function mountSave (modifiedMessages) {
   const mounted = mountComponent(SaveTranslations);
@@ -19,7 +18,7 @@ function pressKey (init) {
 
 describe('the save button', () => {
   it('sends the translations as JSON, which keeps their line breaks', async () => {
-    axios.post.mockResolvedValue({ data: { success: true, deletedIds: [] } });
+    sendActionRequest.mockResolvedValue({ data: { success: true, deletedIds: [] } });
     const { wrapper, emitter } = await mountSave({ fr: { 1: 'Ligne 1\nLigne 2' } });
     const saved = vi.fn();
     emitter.on('translations-saved', saved);
@@ -27,28 +26,28 @@ describe('the save button', () => {
     await wrapper.find('button').trigger('click');
     await flushPromises();
 
-    expect(axios.post).toHaveBeenCalledWith(
-      '/actions/translations-admin/messages/save',
-      { translations: { fr: { 1: 'Ligne 1\nLigne 2' } } },
-      { headers: { 'X-CSRF-Token': 'csrf-token' } }
+    expect(sendActionRequest).toHaveBeenCalledWith(
+      'POST',
+      'translations-admin/messages/save',
+      { data: { translations: { fr: { 1: 'Ligne 1\nLigne 2' } } } }
     );
     expect(saved).toHaveBeenCalledWith({ fr: { 1: 'Ligne 1\nLigne 2' } });
   });
 
   it('saves with Ctrl+S, also with caps lock, but leaves the shortcuts with Shift to the browser', async () => {
-    axios.post.mockReturnValue(new Promise(() => {}));
+    sendActionRequest.mockReturnValue(new Promise(() => {}));
     await mountSave({ fr: { 1: 'x' } });
 
     pressKey({ key: 'S', ctrlKey: true, shiftKey: true });
-    expect(axios.post).not.toHaveBeenCalled();
+    expect(sendActionRequest).not.toHaveBeenCalled();
 
     pressKey({ key: 'S', ctrlKey: true });
-    expect(axios.post).toHaveBeenCalledTimes(1);
+    expect(sendActionRequest).toHaveBeenCalledTimes(1);
   });
 
 
   it('keeps the changes when the translations are not saved', async () => {
-    axios.post.mockRejectedValue(new Error('Network Error'));
+    sendActionRequest.mockRejectedValue(new Error('Network Error'));
     const { wrapper, craft } = await mountSave({ fr: { 1: 'x' } });
 
     await wrapper.find('button').trigger('click');
