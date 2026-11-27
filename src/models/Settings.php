@@ -57,25 +57,7 @@ class Settings extends Model
             [['sourceLanguage'], 'filter', 'filter' => fn($language) => $language === self::PRIMARY_SITE_LANGUAGE ? '' : $language],
             [['pluginName', 'categories'], 'required'],
             [['gqlCacheInvalidation'], 'in', 'range' => [self::GQL_CACHE_INVALIDATION_ALL, self::GQL_CACHE_INVALIDATION_STATIC_MESSAGES]],
-            [['categories'], function($attribute) {
-                $categories = self::normalizeCategories($this->$attribute);
-                foreach ($categories as $category) {
-                    if (!self::isFileNameCategory($category)) {
-                        $this->addError($attribute, Craft::t('translations-admin', 'The category “{category}” can’t contain slashes.', ['category' => $category]));
-                    }
-                }
-            }],
         ];
-    }
-
-    /**
-     * Returns whether a category can be used as the name of a PHP translation file, inside the language folder.
-     *
-     * @internal
-     */
-    public static function isFileNameCategory(string $category): bool
-    {
-        return !preg_match('/[\/\\\\\0]/', $category) && !in_array($category, ['.', '..'], true);
     }
 
     public function getSourceLanguage()

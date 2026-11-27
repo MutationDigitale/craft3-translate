@@ -4,6 +4,7 @@ namespace mutation\translate\tests\unit;
 
 use Craft;
 use craft\helpers\FileHelper;
+use mutation\translate\helpers\TranslationFileHelper;
 
 /**
  * The "Import PHP translations to DB" and "Export DB translations to PHP" utilities.
@@ -113,6 +114,43 @@ class PhpFilesTest extends TestCase
             $this->assertNull($this->plugin()->export->exportDatabaseTranslationsToPhp());
         } finally {
             unlink(Craft::$app->getPath()->getSiteTranslationsPath() . '/fr-CA');
+        }
+    }
+
+    public function testCategoryFiles(): void
+    {
+        $folder = FileHelper::normalizePath(Craft::$app->getPath()->getSiteTranslationsPath() . '/fr-CA');
+
+        $this->assertSame($folder . DIRECTORY_SEPARATOR . 'site.php', TranslationFileHelper::getCategoryFile('fr-CA', 'site'));
+        // Inside the language folder, like Yii reads the categories with slashes
+        $this->assertSame(FileHelper::normalizePath("$folder/forms/contact.php"), TranslationFileHelper::getCategoryFile('fr-CA', 'forms/contact'));
+        $this->assertSame(FileHelper::normalizePath("$folder/site.php"), TranslationFileHelper::getCategoryFile('fr-CA', 'forms/../site'));
+
+        foreach (['../escaped', '../../config/db', 'forms/../../escaped', '..\\escaped', "site\0"] as $category) {
+            $this->assertNull(TranslationFileHelper::getCategoryFile('fr-CA', $category), $category);
+        }
+        $this->assertNull(TranslationFileHelper::getCategoryFile('../fr-CA', 'site'), 'The language is checked too');
+    }
+
+    public function testCategoriesWithSubfoldersOfTheConfigFile(): void
+    {
+        // Refused by the settings page, but a config file can set them: they stay inside the language folder
+        $settings = $this->plugin()->getSettings();
+        $categories = $settings->categories;
+        $settings->categories = ['site', 'forms/contact'];
+        $this->plugin()->messages->addMessage('Subfolder', 'forms/contact', ['fr-CA' => 'Sous-dossier']);
+        $file = TranslationFileHelper::getCategoryFile('fr-CA', 'forms/contact');
+
+        try {
+            $this->plugin()->export->exportDatabaseTranslationsToPhp();
+            $this->assertSame('Sous-dossier', (include $file)['Subfolder']);
+
+            $this->plugin()->messages->deleteAllMessages();
+            $this->plugin()->import->importPhpTranslationsToDatabase();
+            $this->assertSame('Sous-dossier', $this->storedTranslation('Subfolder', 'fr-CA', 'forms/contact'));
+        } finally {
+            $settings->categories = $categories;
+            FileHelper::removeDirectory(dirname($file));
         }
     }
 

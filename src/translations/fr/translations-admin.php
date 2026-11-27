@@ -76,7 +76,6 @@ return [
     'Select all' => 'Tout sélectionner',
     'Settings' => 'Paramètres',
     'Source Language' => 'Langue source',
-    'The category “{category}” can’t contain slashes.' => 'La catégorie « {category} » ne peut pas contenir de barres obliques.',
     'The file couldn’t be read as a CSV file.' => 'Le fichier n’a pas pu être lu comme un fichier CSV.',
     'The file isn’t a CSV file. Save it as CSV in your spreadsheet app (e.g. “CSV UTF-8” in Excel).' => 'Le fichier n’est pas un fichier CSV. Enregistrez-le en CSV dans votre tableur (p. ex. « CSV UTF-8 » dans Excel).',
     'The first row must be the headers: the key, then a column for each language. It should follow the same format as the exported CSV from the export section.' => 'La première ligne doit contenir les en-têtes : la clé, puis une colonne pour chaque langue. Le fichier doit avoir le même format que les CSV de la section Exporter.',

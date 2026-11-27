@@ -28,8 +28,9 @@ const { craft, t } = useCraft();
 
 const category = computed(() => store.state.category);
 
+// The slashes of a category (e.g. `forms/contact`) are kept: Apache refuses the encoded ones (%2F) by default
 function categoryUrl (cat) {
-  return craft.getCpUrl(`translations-admin/${encodeURIComponent(cat)}`);
+  return craft.getCpUrl(`translations-admin/${cat.split('/').map(encodeURIComponent).join('/')}`);
 }
 
 function pushCategoryState (cat) {

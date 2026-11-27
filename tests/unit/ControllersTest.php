@@ -126,8 +126,7 @@ class ControllersTest extends TestCase
         $this->assertSame('Encore', $this->storedTranslation('Allowed', 'fr-CA'));
         $this->assertSame('Ancienne catégorie', $this->storedTranslation('Legacy category', 'fr-CA', 'legacy'));
 
-        // A message deleted in the meantime (e.g. by another user) doesn't make every following save fail, and is reported
-        // so the control panel can remove it from the list
+        // A message deleted in the meantime (e.g. by another user) is ignored, so it doesn't make every following save fail
         $this->assertSame(
             ['success' => true, 'messages' => []],
             $this->runAction('translations-admin/messages/save', ['translations' => ['fr-CA' => [$allowed => 'Toujours', 999999 => 'Supprimé'], 'en-US' => [999999 => 'Deleted']]])->data
@@ -314,7 +313,7 @@ class ControllersTest extends TestCase
     {
         $this->loginAs([Controller::ACCESS_PLUGIN_PERMISSION, Translate::CHANGE_TRANSLATIONS_SETTINGS_PERMISSION]);
         $this->runAction('translations-admin/settings/save', [
-            'settings' => ['pluginName' => ' ', 'categories' => [['category' => 'site'], ['category' => 'a/b']]],
+            'settings' => ['pluginName' => ' ', 'categories' => [['category' => 'site']]],
         ]);
 
         // The page rendered after the save failed
@@ -322,7 +321,6 @@ class ControllersTest extends TestCase
         $html = Craft::$app->getView()->renderPageTemplate($template->template, $template->variables, View::TEMPLATE_MODE_CP);
 
         $this->assertStringContainsString('Plugin Name cannot be blank.', $html);
-        $this->assertStringContainsString('The category “a/b” can’t contain slashes.', $html);
     }
 
     public function testSettingsErrorsInFrench(): void
@@ -495,18 +493,18 @@ class ControllersTest extends TestCase
         $this->assertSame(['other'], $this->plugin()->getSettings()->getCategories(), 'Also when not validated (e.g. set in the config file)');
     }
 
-    public function testCategoriesCantBePaths(): void
+    public function testCategoriesCanHaveSlashes(): void
     {
         $this->loginAs([Controller::ACCESS_PLUGIN_PERMISSION, Translate::CHANGE_TRANSLATIONS_SETTINGS_PERMISSION]);
 
-        // The PHP translation files are named after the categories
-        foreach (['../../config/general', 'sub\\dir', '..'] as $category) {
-            $this->assertNull($this->runAction('translations-admin/settings/save', [
-                'settings' => ['categories' => [['category' => 'site'], ['category' => $category]]],
-            ]), $category);
-            $this->assertTrue($this->plugin()->getSettings()->hasErrors('categories'), $category);
-        }
-        $this->assertNotContains(['category' => '../../config/general'], ProjectConfigHelper::unpackAssociativeArrays((array)Craft::$app->getProjectConfig()->get('plugins.translations-admin.settings.categories')));
+        // Like the previous versions. The PHP translation files of the categories stay in the translations folder (see
+        // PhpFilesTest)
+        $this->runAction('translations-admin/settings/save', [
+            'settings' => ['pluginName' => 'Translations', 'categories' => [['category' => 'site'], ['category' => 'forms/contact']]],
+        ]);
+
+        $this->assertFalse($this->plugin()->getSettings()->hasErrors(), json_encode($this->plugin()->getSettings()->getErrors()));
+        $this->assertContains(['category' => 'forms/contact'], ProjectConfigHelper::unpackAssociativeArrays((array)Craft::$app->getProjectConfig()->get('plugins.translations-admin.settings.categories')));
     }
 
     private function loginAs(array $permissions): void

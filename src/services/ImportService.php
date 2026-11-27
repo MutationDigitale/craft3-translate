@@ -4,10 +4,9 @@ namespace mutation\translate\services;
 
 use Craft;
 use craft\db\Query;
-use craft\helpers\FileHelper;
 use mutation\translate\helpers\CsvHelper;
 use mutation\translate\helpers\LocaleHelper;
-use mutation\translate\models\Settings;
+use mutation\translate\helpers\TranslationFileHelper;
 use mutation\translate\models\SourceMessage;
 use mutation\translate\Translate;
 use PhpOffice\PhpSpreadsheet\Cell\StringValueBinder;
@@ -23,27 +22,25 @@ class ImportService extends Component
         try {
             $locales = LocaleHelper::getSiteLocaleIds();
             $categories = Translate::getInstance()->settings->getCategories();
-            $siteTranslationsPath = Craft::$app->getPath()->getSiteTranslationsPath();
 
             $count = 0;
             foreach ($categories as $category) {
-                // E.g. set in the config file: the file would be outside the language folder
-                if (!Settings::isFileNameCategory($category)) {
-                    Craft::warning("Skipped the \"{$category}\" category, it can't be a file name.", __METHOD__);
-                    continue;
-                }
-
                 $messages = [];
                 foreach ($locales as $locale) {
-                    $categoryFile = FileHelper::normalizePath("{$siteTranslationsPath}/{$locale}/{$category}.php");
+                    $categoryFile = TranslationFileHelper::getCategoryFile($locale, $category);
+
+                    // E.g. set in the config file: the file would be outside the translations folder
+                    if ($categoryFile === null) {
+                        Craft::warning("Skipped the \"{$category}\" category, its file would be outside the translations folder.", __METHOD__);
+                        continue 2;
+                    }
 
                     // Check for fallback language if file doesn't exist
                     if (str_contains($locale, '-') && !file_exists($categoryFile)) {
-                        $fallbackLocale = explode('-', $locale)[0];
-                        $categoryFile = FileHelper::normalizePath("{$siteTranslationsPath}/{$fallbackLocale}/{$category}.php");
+                        $categoryFile = TranslationFileHelper::getCategoryFile(explode('-', $locale)[0], $category);
                     }
 
-                    if (!file_exists($categoryFile)) {
+                    if ($categoryFile === null || !file_exists($categoryFile)) {
                         continue;
                     }
 
@@ -76,7 +73,7 @@ class ImportService extends Component
 
     /**
      * Imports a CSV file in a category: the first column is the key, followed by a column for each language, matched by header
-     * (see {@see getLanguageNames()}), or in the export order when no header is recognized.
+     * (see {@see getLanguageHeaders()}). A file without a recognized language column isn't imported.
      *
      * @return array{created: int, added: int, updated: int, ignoredColumns: string[]}
      * @throws InvalidArgumentException if the file can't be read

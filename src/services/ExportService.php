@@ -7,7 +7,7 @@ use craft\helpers\FileHelper;
 use craft\i18n\Locale;
 use mutation\translate\helpers\CsvHelper;
 use mutation\translate\helpers\LocaleHelper;
-use mutation\translate\models\Settings;
+use mutation\translate\helpers\TranslationFileHelper;
 use mutation\translate\Translate;
 use Throwable;
 use yii\base\Component;
@@ -20,6 +20,7 @@ class ExportService extends Component
             $sourceMessages = Translate::getInstance()->sourceMessage->getAllSourceMessages();
             $settingsCategories = Translate::getInstance()->getSettings()->getCategories();
             $siteLocaleIds = LocaleHelper::getSiteLocaleIds();
+            $skippedCategories = [];
             $count = 0;
             foreach ($sourceMessages as $language => $categories) {
                 // Not the languages that don't have a site anymore
@@ -27,11 +28,20 @@ class ExportService extends Component
                     continue;
                 }
                 foreach ($categories as $category => $messages) {
-                    // E.g. set in the config file: the file would be outside the language folder
-                    if (!in_array($category, $settingsCategories, true) || !Settings::isFileNameCategory($category)) {
+                    if (!in_array($category, $settingsCategories, true)) {
                         continue;
                     }
-                    $this->saveMessagesToFile($language, $category, $messages);
+                    // E.g. set in the config file: the file would be outside the translations folder
+                    $file = TranslationFileHelper::getCategoryFile($language, $category);
+                    if ($file === null) {
+                        // Logged once, not for each language
+                        if (!isset($skippedCategories[$category])) {
+                            Craft::warning("Skipped the \"{$category}\" category, its file would be outside the translations folder.", __METHOD__);
+                            $skippedCategories[$category] = true;
+                        }
+                        continue;
+                    }
+                    $this->saveMessagesToFile($file, $messages);
                     $count += count($messages);
                 }
             }
@@ -89,13 +99,10 @@ class ExportService extends Component
         return $csv;
     }
 
-    private function saveMessagesToFile($language, $category, $messages)
+    private function saveMessagesToFile(string $file, array $messages): void
     {
-        $path = Craft::$app->getPath()->getSiteTranslationsPath() . DIRECTORY_SEPARATOR .
-            $language . DIRECTORY_SEPARATOR . $category . '.php';
-
         ksort($messages);
 
-        FileHelper::writeToFile($path, "<?php\n\nreturn " . var_export($messages, true) . ";\n");
+        FileHelper::writeToFile($file, "<?php\n\nreturn " . var_export($messages, true) . ";\n");
     }
 }
