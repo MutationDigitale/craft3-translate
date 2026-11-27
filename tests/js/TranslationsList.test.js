@@ -89,6 +89,42 @@ describe('the translations list', () => {
     expect(textarea(wrapper, 'Item 002', 'fr').element.value).toBe('Élément 2');
   });
 
+  it('only shows the messages of the last category chosen, whatever the order of the responses', async () => {
+    const { wrapper } = await mountList(items(1));
+    // The loads of two quick category changes, answered when the test resolves them
+    const responses = {};
+    sendActionRequest.mockImplementation((method, action, { params }) => new Promise(resolve => {
+      responses[params.category] = sourceMessages => resolve({ data: { languages: structuredClone(languages), sourceMessages } });
+    }));
+    store.commit('setCategory', 'other');
+    await flushPromises();
+    store.commit('setCategory', 'emails');
+    await flushPromises();
+
+    // The previous category answers first: ignored, still loading
+    responses.other([sourceMessage(10, 'Other message')]);
+    await flushPromises();
+    expect(displayedKeys(wrapper)).toEqual([]);
+    expect(store.state.isLoading).toBe(true);
+
+    responses.emails([sourceMessage(20, 'Email message')]);
+    await flushPromises();
+    expect(displayedKeys(wrapper)).toEqual(['Email message']);
+    expect(store.state.isLoading).toBe(false);
+
+    // Also when it answers last
+    store.commit('setCategory', 'other');
+    await flushPromises();
+    store.commit('setCategory', 'emails');
+    await flushPromises();
+    responses.emails([sourceMessage(20, 'Email message')]);
+    await flushPromises();
+    responses.other([sourceMessage(10, 'Other message')]);
+    await flushPromises();
+    expect(displayedKeys(wrapper)).toEqual(['Email message']);
+    expect(store.state.isLoading).toBe(false);
+  });
+
   it('detects the changes made without typing (e.g. pasted with the mouse or corrected by the spell checker)', async () => {
     const { wrapper } = await mountList(items(2));
 
