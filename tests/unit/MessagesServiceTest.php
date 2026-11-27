@@ -24,8 +24,6 @@ class MessagesServiceTest extends TestCase
 
     public function testSaveMessages(): void
     {
-        $this->assertSame([], $this->plugin()->messages->saveMessages([]), 'An array, like the previous versions');
-
         $messages = $this->plugin()->messages;
         $id = $messages->addMessage('Saved', 'site')->id;
 
@@ -148,7 +146,7 @@ class MessagesServiceTest extends TestCase
 
         $expect(['afterAddMessage'], fn() => $messages->addMessage('Event', 'site'));
         $id = $this->sourceMessageIds('Event')[0];
-        $expect(['afterSaveMessages'], fn() => $messages->saveMessages(['fr-CA' => [$id => 'x']]));
+        $expect(['afterSaveMessages'], fn() => $messages->saveTranslations(['fr-CA' => [$id => 'x']]));
         $expect(['afterSaveMessages'], fn() => $messages->importMessages('site', [['message' => 'Event', 'languages' => ['fr-CA' => 'y']]]));
         $expect([], fn() => $messages->importMessages('site', [['message' => 'Event', 'languages' => ['fr-CA' => 'y']]]));
         $expect(['afterDeleteMessages'], fn() => $messages->deleteMessages([$id]));
@@ -178,6 +176,19 @@ class MessagesServiceTest extends TestCase
         $this->assertSame(1, $this->countSourceMessages());
     }
 
+    public function testDeprecatedSaveMessages(): void
+    {
+        $messages = $this->plugin()->messages;
+        $id = $messages->addMessage('Deprecated', 'site')->id;
+        $deprecator = Craft::$app->getDeprecator();
+        $key = MessagesService::class . '::saveMessages';
+
+        // Still works like the previous versions, with a deprecation warning
+        $this->assertSame([], $messages->saveMessages(['fr-CA' => [$id => 'Déprécié']]), 'An array, like the previous versions');
+        $this->assertSame('Déprécié', $this->storedTranslation('Deprecated', 'fr-CA'));
+        $this->assertContains($key, array_map(fn($log) => $log->key, $deprecator->getRequestLogs()));
+    }
+
     public function testSaveIsAllOrNothing(): void
     {
         $messages = $this->plugin()->messages;
@@ -186,7 +197,7 @@ class MessagesServiceTest extends TestCase
         $this->failOnValue('BOOM');
 
         try {
-            $messages->saveMessages(['fr-CA' => [$first => 'Après', $second => 'BOOM']]);
+            $messages->saveTranslations(['fr-CA' => [$first => 'Après', $second => 'BOOM']]);
             $this->fail('The save should have failed');
         } catch (Throwable) {
         } finally {

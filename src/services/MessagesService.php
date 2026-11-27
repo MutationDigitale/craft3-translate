@@ -43,10 +43,13 @@ class MessagesService extends Component
     /**
      * Saves translations, indexed by language and source message ID.
      *
-     * @return array Always empty, like the previous versions (see {@see saveTranslations()} to know if they were all saved)
+     * @return array Always empty, like the previous versions
+     * @deprecated in 4.3.0. {@see saveTranslations()} should be used instead, it returns whether all the translations were saved.
      */
     public function saveMessages($translations)
     {
+        Craft::$app->getDeprecator()->log(__METHOD__, '`MessagesService::saveMessages()` has been deprecated. Use `saveTranslations()` instead, which returns whether all the translations were saved.');
+
         $this->saveTranslations($translations);
 
         return [];

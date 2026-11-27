@@ -248,7 +248,7 @@ class ControllersTest extends TestCase
         $this->runAction('translations-admin/utilities/missing');
         $this->assertSame('9 translation(s) imported.', $this->flash('success'));
 
-        $this->plugin()->messages->saveMessages(['fr-CA' => [$this->sourceMessageIds('Parse default')[0] => 'Par défaut']]);
+        $this->plugin()->messages->saveTranslations(['fr-CA' => [$this->sourceMessageIds('Parse default')[0] => 'Par défaut']]);
         $this->runAction('translations-admin/utilities/export');
         $this->assertSame('18 translation(s) exported to PHP files.', $this->flash('success'));
 

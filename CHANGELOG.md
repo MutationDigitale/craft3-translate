@@ -30,6 +30,9 @@
 - The remaining interface labels can be translated
 - Update NodeJS packages for css/js assets
 
+### Deprecated
+- Deprecate `MessagesService::saveMessages()`. `saveTranslations()` should be used instead, it returns whether all the translations were saved
+
 ### Fixed
 - Fix a security issue where users with the "Change translations settings" permission could save the settings of other plugins
 - Fix users without the plugin access permission being able to use every action of the plugin with the `actions/` URLs
