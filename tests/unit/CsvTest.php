@@ -159,6 +159,21 @@ class CsvTest extends TestCase
         $this->assertSame("'quoted'", $this->storedTranslation("'Quoted", 'fr-CA'), 'Other apostrophes are kept');
     }
 
+    public function testValuesAreImportedAsTyped(): void
+    {
+        // Not calculated as formulas (an invalid one made the import fail), nor converted to numbers
+        $this->import($this->csv([
+            ['Key', 'en-US', 'fr-CA'],
+            ['=1+1', '=SUM(A1)', '=foo('],
+            ['007', '1.50', '1e3'],
+        ]));
+
+        $this->assertSame('=SUM(A1)', $this->storedTranslation('=1+1', 'en-US'));
+        $this->assertSame('=foo(', $this->storedTranslation('=1+1', 'fr-CA'));
+        $this->assertSame('1.50', $this->storedTranslation('007', 'en-US'));
+        $this->assertSame('1e3', $this->storedTranslation('007', 'fr-CA'));
+    }
+
     public function testImportInAnotherCategory(): void
     {
         $this->import($this->plugin()->export->exportCsv('site'), 'other');

@@ -42,14 +42,12 @@
 - Fix the same message being added more than once when several requests added it at the same time
 - Fix the pages translating a new message with emojis on MySQL and MariaDB failing, or adding the message again on every request ([#73](https://github.com/MutationDigitale/craft3-translate/issues/73))
 - Fix the selected messages that weren't displayed anymore (e.g. on another page or hidden by the search) being deleted, copied or exported with the displayed ones. The deletion confirmation and notice now tell how many messages are deleted
-- Fix the translations changed without the keyboard (e.g. pasted with the mouse or corrected by the spell checker) not being saved by the Save button and Ctrl+S, nor warned about when leaving the page, until the field lost the focus
+- Fix the translations changed without the keyboard (e.g. pasted with the mouse or corrected by the spell checker) not being saved by the Save button and Ctrl+S until the field lost the focus
 - Fix the line breaks being saved as `\r\n` in the control panel, so the multi-line keys added there never matched the ones of the templates
-- Fix the CSV import putting translations in the wrong language when the sites changed since the export
-- Fix the CSV import saving the translations in the wrong languages, or only adding the keys, when no header is a language (e.g. a file without a header row): these files aren't imported anymore
+- Fix the CSV import matching the columns to the languages by position instead of by header, which saved translations in the wrong languages when the sites or columns had changed. Files without a language header are now refused
 - Fix the CSV import accepting the files that aren't CSV (e.g. a `.txt` file, or an image or Excel file renamed `.csv`), which added junk keys
 - Fix the CSV import garbling accented characters when the file isn't UTF-8
-- Fix the CSV import evaluating values starting with `=` as formulas
-- Fix the CSV import changing some numbers (e.g. `1.50` to `1.5`)
+- Fix the CSV import changing the values: formulas were calculated (e.g. `=1+1` saved as `2`, or the import failing on an invalid one) and numbers reformatted (e.g. `1.50` to `1.5`)
 - Fix the CSV import adding the keys with Windows line breaks (`\r\n`) again, with `\n` line breaks
 - Fix the CSV import page errors and selected category
 - Fix the CSV import page giving header examples of languages that aren't on the site (e.g. `fr-CA`): it lists the headers of the site languages
