@@ -28,7 +28,6 @@
 - The console commands return an error exit code on failure
 - The PHP translations import and export errors are logged
 - The remaining interface labels can be translated
-- Update NodeJS packages for css/js assets
 
 ### Deprecated
 - Deprecate `MessagesService::saveMessages()`. `saveTranslations()` should be used instead, it returns whether all the translations were saved
@@ -85,7 +84,6 @@
 - Fix the plugin name error not being shown in the settings
 - Fix the settings save error and the names of the settings in the validation errors not being translated
 - Fix deleting a message that doesn't exist anymore
-- Fix the Utilities breadcrumb
 - Fix the config file example of the README using the `app` category, which replaces Craft's own translations with the database ones (remove `app` from your categories if you copied it)
 
 ## 4.2.3 - 2026-06-10
