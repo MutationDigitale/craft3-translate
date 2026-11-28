@@ -28,13 +28,37 @@ export function createCraft () {
     t: vi.fn((category, message, params = {}) => message.replace(/\{(\w+)\}/g, (match, name) => params[name] ?? match)),
     getCpUrl: vi.fn(path => `/admin/${path}`),
     getActionUrl: vi.fn((action, params) => `/actions/${action}` + (params ? '?' + new URLSearchParams(params) : '')),
-    cp: { displayNotice: vi.fn(), displayError: vi.fn() },
+    cp: { displayNotice: vi.fn(), displaySuccess: vi.fn(), displayError: vi.fn() },
     downloadFromUrl: vi.fn(() => Promise.resolve()),
+  };
+}
+
+// The parts of window.Garnish used by the components: the shortcuts of the UI layers, matched like Garnish (Ctrl is Cmd on a Mac)
+export function createGarnish () {
+  const shortcuts = [];
+  return {
+    S_KEY: 83,
+    uiLayerManager: {
+      layer: 0,
+      shortcuts,
+      registerShortcut: vi.fn((shortcut, callback, layer) => shortcuts.push({ shortcut, callback, layer })),
+      unregisterShortcut: vi.fn((shortcut, layer) => {
+        const index = shortcuts.findIndex(s => s.layer === layer && JSON.stringify(s.shortcut) === JSON.stringify(shortcut));
+        if (index !== -1) {
+          shortcuts.splice(index, 1);
+        }
+      }),
+      // Like a keydown on the page: the shortcut with this key and the same modifiers
+      press ({ keyCode, ctrl = false, shift = false, alt = false }) {
+        shortcuts.find(({ shortcut }) => shortcut.keyCode === keyCode && !!shortcut.ctrl === ctrl && !!shortcut.shift === shift && !!shortcut.alt === alt)?.callback();
+      },
+    },
   };
 }
 
 export function mountComponent (component, props = {}) {
   const craft = createCraft();
+  const garnish = createGarnish();
   const emitter = mitt();
   const wrapper = mount(component, {
     props,
@@ -45,13 +69,14 @@ export function mountComponent (component, props = {}) {
       config: {
         globalProperties: {
           $craft: craft,
+          $garnish: garnish,
           emitter,
         },
       },
     },
   });
 
-  return { wrapper, craft, emitter };
+  return { wrapper, craft, garnish, emitter };
 }
 
 export function sourceMessage (id, message, translations = {}, dateCreated = '2026-01-01 00:00:00') {

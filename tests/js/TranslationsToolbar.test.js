@@ -14,7 +14,7 @@ describe('adding a message', () => {
   it('sends the message as JSON and adds it to the list', async () => {
     store.commit('setCategory', 'site');
     sendActionRequest.mockResolvedValue({ data: { success: true, sourceMessage: sourceMessage(1, 'Line 1\nLine 2') } });
-    const { wrapper } = mountComponent(TranslationsToolbar, { addPermission: true });
+    const { wrapper, craft } = mountComponent(TranslationsToolbar, { addPermission: true });
 
     await add(wrapper, 'Line 1\nLine 2');
 
@@ -25,6 +25,7 @@ describe('adding a message', () => {
     );
     expect(store.state.sourceMessages.map(s => s.message)).toEqual(['Line 1\nLine 2']);
     expect(wrapper.find('textarea').element.value).toBe('');
+    expect(craft.cp.displaySuccess).toHaveBeenCalledWith('Translation added');
   });
 
   it('keeps the message when it is not added, and shows why', async () => {
@@ -45,15 +46,15 @@ describe('adding a message', () => {
 });
 
 describe('the filter menu', () => {
-  it('has an Empty filter for any language and for each language', async () => {
+  it('has an Empty filter for the displayed languages and for each language', async () => {
     setSourceMessages([]);
     const { wrapper } = mountComponent(TranslationsToolbar, { addPermission: true });
     const options = () => wrapper.findAll('.menu').at(0).findAll('a');
 
-    expect(options().map(a => a.text())).toEqual(['All', 'Empty in any language', 'Empty in English', 'Empty in French']);
+    expect(options().map(a => a.text())).toEqual(['All', 'Empty in any displayed language', 'Empty in English', 'Empty in French']);
     await options()[1].trigger('click');
     expect(store.state.emptyMessages).toBe(true);
-    expect(wrapper.find('.statusmenubtn').text()).toBe('Empty in any language');
+    expect(wrapper.find('.statusmenubtn').text()).toBe('Empty in any displayed language');
 
     // Only the chosen option is selected
     await options()[3].trigger('click');
@@ -61,6 +62,8 @@ describe('the filter menu', () => {
     expect(store.state.emptyMessages).toBe('fr');
     expect(options().map(a => a.classes().includes('sel'))).toEqual([false, false, false, true]);
     expect(wrapper.find('.statusmenubtn').text()).toBe('Empty in French');
+    // The accessible name tells the chosen filter, like the text of the button
+    expect(wrapper.find('.statusmenubtn').attributes('aria-label')).toBe('Filter: Empty in French');
 
     await options()[0].trigger('click');
     expect(store.state.emptyMessages).toBe(false);

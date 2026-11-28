@@ -12,14 +12,10 @@ async function mountSave (modifiedMessages) {
   return mounted;
 }
 
-function pressKey (init) {
-  window.dispatchEvent(new KeyboardEvent('keydown', { cancelable: true, ...init }));
-}
-
 describe('the save button', () => {
   it('sends the translations as JSON, which keeps their line breaks', async () => {
     sendActionRequest.mockResolvedValue({ data: { success: true, deletedIds: [] } });
-    const { wrapper, emitter } = await mountSave({ fr: { 1: 'Ligne 1\nLigne 2' } });
+    const { wrapper, craft, emitter } = await mountSave({ fr: { 1: 'Ligne 1\nLigne 2' } });
     const saved = vi.fn();
     emitter.on('translations-saved', saved);
 
@@ -32,17 +28,35 @@ describe('the save button', () => {
       { data: { translations: { fr: { 1: 'Ligne 1\nLigne 2' } } } }
     );
     expect(saved).toHaveBeenCalledWith({ fr: { 1: 'Ligne 1\nLigne 2' } });
+    // The success style of the notifications of Craft
+    expect(craft.cp.displaySuccess).toHaveBeenCalledWith('Translations saved');
   });
 
-  it('saves with Ctrl+S, also with caps lock, but leaves the shortcuts with Shift to the browser', async () => {
+  it('saves with the Ctrl+S shortcut of Craft, but not with Shift', async () => {
     sendActionRequest.mockReturnValue(new Promise(() => {}));
-    await mountSave({ fr: { 1: 'x' } });
+    const { garnish } = await mountSave({ fr: { 1: 'x' } });
 
-    pressKey({ key: 'S', ctrlKey: true, shiftKey: true });
+    expect(garnish.uiLayerManager.registerShortcut).toHaveBeenCalledWith({ keyCode: 83, ctrl: true }, expect.any(Function), 0);
+
+    garnish.uiLayerManager.press({ keyCode: 83, ctrl: true, shift: true });
     expect(sendActionRequest).not.toHaveBeenCalled();
 
-    pressKey({ key: 'S', ctrlKey: true });
+    garnish.uiLayerManager.press({ keyCode: 83, ctrl: true });
     expect(sendActionRequest).toHaveBeenCalledTimes(1);
+
+    // Not again while saving
+    garnish.uiLayerManager.press({ keyCode: 83, ctrl: true });
+    expect(sendActionRequest).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not save without changes, and removes the shortcut when it is unmounted', async () => {
+    const { wrapper, garnish } = await mountSave({});
+
+    garnish.uiLayerManager.press({ keyCode: 83, ctrl: true });
+    expect(sendActionRequest).not.toHaveBeenCalled();
+
+    wrapper.unmount();
+    expect(garnish.uiLayerManager.shortcuts).toEqual([]);
   });
 
 

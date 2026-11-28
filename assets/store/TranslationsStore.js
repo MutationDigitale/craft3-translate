@@ -1,5 +1,5 @@
 import { createStore } from 'vuex';
-import { clone } from '../helpers';
+import { clone, writeLocalStorage } from '../helpers';
 
 // Compares like localeCompare(), but a single collator is much faster in the categories with a lot of messages
 const collator = new Intl.Collator();
@@ -101,11 +101,11 @@ export const store = createStore({
   },
   actions: {
     updateColumns ({ commit }, columns) {
-      localStorage.setItem('admin-translations-columns', JSON.stringify(columns));
+      writeLocalStorage('admin-translations-columns', columns);
       commit('setColumns', columns);
     },
     updateLanguages ({ commit }, languages) {
-      localStorage.setItem('admin-translations-languages', JSON.stringify(languages));
+      writeLocalStorage('admin-translations-languages', languages);
       commit('setLanguages', languages);
     },
     // The original messages are the saved values, used to know which translations are modified

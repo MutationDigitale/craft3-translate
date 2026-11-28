@@ -1,7 +1,7 @@
 <template>
   <div id="translations-toolbar" class="flex flex-grow">
     <div>
-      <button ref="filterButton" type="button" class="btn menubtn statusmenubtn" :aria-label="t('Filter')"><span class="status" :class="{'disabled': emptyMessages, 'all': !emptyMessages}"></span>{{
+      <button ref="filterButton" type="button" class="btn menubtn statusmenubtn" :aria-label="t('Filter: {filter}', { filter: filterLabel })"><span class="status" :class="{'disabled': emptyMessages, 'all': !emptyMessages}"></span>{{
           filterLabel
         }}</button>
       <div class="menu">
@@ -12,11 +12,11 @@
               <span class="status all"></span>{{ t('All') }}
             </a>
           </li>
-          <!-- Like the previous versions, the languages of the displayed columns -->
+          <!-- The languages of the displayed columns, like the previous versions -->
           <li>
             <a :class="{'sel': emptyMessages === true}"
                @click="setEmptyMessages(true)">
-              <span class="status disabled"></span>{{ t('Empty in any language') }}
+              <span class="status disabled"></span>{{ t('Empty in any displayed language') }}
             </a>
           </li>
           <!-- The messages without a translation in a language, even when its column is hidden -->
@@ -104,7 +104,7 @@ const filterLabel = computed(() => {
     return t('All');
   }
   if (emptyMessages.value === true) {
-    return t('Empty in any language');
+    return t('Empty in any displayed language');
   }
   const language = languages.value.find(language => language.id === emptyMessages.value);
   return t('Empty in {language}', { language: language?.displayName ?? emptyMessages.value });
@@ -153,7 +153,7 @@ function addMessage () {
   postAction(craft, 'translations-admin/messages/add', { message, category: addCategory })
     .then((response) => {
       if (response.data.success) {
-        craft.cp.displayNotice(t('Translation added'));
+        craft.cp.displaySuccess(t('Translation added'));
         // Kept when it was changed during the request
         if (messageToAdd.value === message) {
           messageToAdd.value = '';

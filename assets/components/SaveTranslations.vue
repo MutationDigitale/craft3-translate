@@ -14,7 +14,7 @@ import { useStore } from 'vuex';
 import { clone, postAction, useCraft } from '../helpers';
 
 const store = useStore();
-const { craft, emitter, t } = useCraft();
+const { craft, garnish, emitter, t } = useCraft();
 
 const isSaving = ref(false);
 const isModified = computed(() => store.getters.isModified);
@@ -28,7 +28,7 @@ function save () {
   postAction(craft, 'translations-admin/messages/save', { translations: savedMessages })
     .then((response) => {
       if (response.data.success) {
-        craft.cp.displayNotice(t('Translations saved'));
+        craft.cp.displaySuccess(t('Translations saved'));
         emitter.emit('translations-saved', savedMessages);
       } else {
         craft.cp.displayError(t('Translations not saved'));
@@ -42,18 +42,22 @@ function save () {
     });
 }
 
-function onKeydown (event) {
-  // The key is "S" with caps lock, but the shortcuts with Shift are left to the browser
-  if ((event.ctrlKey || event.metaKey) && !event.shiftKey && !event.altKey && event.key?.toLowerCase() === 's') {
-    if (isModified.value && !isSaving.value) {
-      save();
-    }
-    event.preventDefault();
+// Ctrl+S (Cmd+S on a Mac), like the save shortcut of the other control panel pages: the shortcuts of Craft only work on the
+// top layer (e.g. not while a modal is open), and the browser doesn't open its "Save page as" dialog
+const saveShortcut = { keyCode: garnish.S_KEY, ctrl: true };
+let shortcutLayer = null;
+
+function onSaveShortcut () {
+  if (isModified.value && !isSaving.value) {
+    save();
   }
 }
 
-onMounted(() => window.addEventListener('keydown', onKeydown));
-onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
+onMounted(() => {
+  shortcutLayer = garnish.uiLayerManager.layer;
+  garnish.uiLayerManager.registerShortcut(saveShortcut, onSaveShortcut, shortcutLayer);
+});
+onBeforeUnmount(() => garnish.uiLayerManager.unregisterShortcut(saveShortcut, shortcutLayer));
 </script>
 
 <style lang="scss" scoped>

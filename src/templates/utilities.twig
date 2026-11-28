@@ -38,18 +38,14 @@
 
     <h2>{{ "Delete all database translations" | t('translations-admin') }}</h2>
     <p class="warning">{{ "Warning! This action is irreversible!" | t('translations-admin')  }}</p>
-    <form id="delete-all-translations" method="post" accept-charset="UTF-8">
-        {{ actionInput('translations-admin/utilities/delete') }}
+    {# Submitted by Craft once confirmed (Craft.submitForm()) #}
+    <form method="post" accept-charset="UTF-8">
         {{ csrfInput() }}
 
-        <button class="btn submit" type="submit">{{ "Delete all" | t('translations-admin') }}</button>
+        <button class="btn submit formsubmit" type="button"
+                data-action="translations-admin/utilities/delete"
+                data-confirm="{{ "Are you sure you want to delete all database translations? This action is irreversible." | t('translations-admin') }}">
+            {{ "Delete all" | t('translations-admin') }}
+        </button>
     </form>
 {% endblock %}
-
-{% js %}
-    document.getElementById('delete-all-translations').addEventListener('submit', (event) => {
-        if (!confirm({{ "Are you sure you want to delete all database translations? This action is irreversible."|t('translations-admin')|json_encode|raw }})) {
-            event.preventDefault();
-        }
-    });
-{% endjs %}

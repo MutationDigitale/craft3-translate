@@ -68,6 +68,7 @@ app.use(store);
 
 app.config.globalProperties.$jquery = window.$;
 app.config.globalProperties.$craft = window.Craft;
+app.config.globalProperties.$garnish = window.Garnish;
 app.config.globalProperties.emitter = emitter;
 
 app.mount('#main');

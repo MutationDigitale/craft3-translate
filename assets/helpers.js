@@ -14,6 +14,16 @@ export function readLocalStorage (key) {
   }
 }
 
+// Saves a JSON value in the local storage. It's only a preference: it's skipped when the storage can't be used (e.g. the site
+// data blocked by the browser, or the storage full)
+export function writeLocalStorage (key, value) {
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch {
+    // Not saved
+  }
+}
+
 // Returns a text to search in, or to search for: without case nor accents (e.g. "Café" becomes "cafe")
 export function searchable (value) {
   return (value ?? '').normalize('NFD').replace(/\p{M}/gu, '').toLowerCase();
@@ -25,12 +35,13 @@ export function postAction (craft, action, data) {
   return craft.sendActionRequest('POST', action, { data });
 }
 
-// The globals of the app (see main.js), for the components: Craft, jQuery and the events emitter
+// The globals of the app (see main.js), for the components: Craft, Garnish, jQuery and the events emitter
 export function useCraft () {
   const globals = getCurrentInstance().appContext.config.globalProperties;
 
   return {
     craft: globals.$craft,
+    garnish: globals.$garnish,
     jquery: globals.$jquery,
     emitter: globals.emitter,
     // Translates a text of the plugin

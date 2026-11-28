@@ -8,7 +8,7 @@
 - Add a confirmation before deleting all translations in the Utilities page
 - Add a warning before leaving the page or changing category with unsaved changes
 - Add an error on the messages page when the translations can't be loaded
-- Add an "Empty in …" filter for each language, to find the messages that aren't translated in a specific language. The "Empty" filter is renamed "Empty in any language"
+- Add an "Empty in …" filter for each language, to find the messages that aren't translated in a specific language. The "Empty" filter is renamed "Empty in any displayed language"
 - Add a "GraphQL cache invalidation" setting (`gqlCacheInvalidation`), to clear only the cached `staticMessages` results instead of every GraphQL result when the translations change ([#111](https://github.com/MutationDigitale/craft3-translate/issues/111))
 - Add `MessagesService::saveTranslations()` (like `saveMessages()`, but returns whether all the translations were saved), `importMessages()` and `deleteAllMessages()`
 
@@ -23,6 +23,7 @@
 - The source language can be left empty in the settings, to follow the primary site language
 - The `afterSaveMessages` and `afterDeleteMessages` events are also triggered by the imports and the "Delete all" utility
 - The console commands return an error exit code on failure, and the PHP translations import and export errors are logged
+- The messages page uses Craft's Ctrl+S shortcut (Cmd+S on a Mac)
 
 ### Deprecated
 - Deprecate `MessagesService::saveMessages()`, use `saveTranslations()` instead
@@ -55,6 +56,8 @@
 - Fix copying unsaved changes that were then discarded
 - Fix pasting not reporting the messages already in the category
 - Fix the message to add being lost when it couldn't be added
+- Fix pasting twice, and showing an error, when the Paste button was clicked twice
+- Fix the messages page not loading when the browser blocks the site data
 - Fix the pagination starting at 0, going to an empty page, or not going back to the first page after a search, filter, sort or category change
 - Fix the layout of the messages page on small screens
 - Fix the read-only users being able to edit the translations

@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { store } from '../../assets/store/TranslationsStore';
 import { items, setSourceMessages, sourceMessage } from './helpers';
 
@@ -56,5 +56,20 @@ describe('the store', () => {
     await store.dispatch('forgetModifiedMessages', { sourceMessageIds: [1, 2] });
     expect(store.state.modifiedMessages).toEqual({});
     expect(store.getters.isModified).toBe(false);
+  });
+});
+
+describe('the preferences', () => {
+  it('are still applied when the local storage can\'t be used', async () => {
+    const setItem = vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+      throw new DOMException('The site data is blocked', 'SecurityError');
+    });
+
+    await store.dispatch('updateLanguages', [{ id: 'fr', checked: false }]);
+    await store.dispatch('updateColumns', { dateCreated: { key: 'dateCreated', checked: false } });
+
+    expect(store.state.languages).toEqual([{ id: 'fr', checked: false }]);
+    expect(store.state.columns.dateCreated.checked).toBe(false);
+    setItem.mockRestore();
   });
 });

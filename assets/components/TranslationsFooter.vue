@@ -43,6 +43,7 @@
             v-if="addPermission"
             type="button"
             class="btn paste-btn"
+            :disabled="isAdding"
             @click="pasteMessages()">
       <span class="inline-flex gap-xs">
         <span class="cp-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" focusable="false" aria-hidden="true"><path d="M0 130h64v92H0v-92zM130 64V0h92v64h-92zM64 98V64h34V0H64C28.7 0 0 28.7 0 64v34M254 64h34v64h64V64c0-35.3-28.7-64-64-64h-34M128 288H64v-34H0v34c0 35.3 28.7 64 64 64h64M448 160H224c-35.3 0-64 28.7-64 64v224c0 35.3 28.7 64 64 64h224c35.3 0 64-28.7 64-64V224c0-35.3-28.7-64-64-64zm0 259v29H224V224h224v195z"></path></svg></span>
@@ -53,6 +54,7 @@
             v-if="deletePermission"
             class="btn secondary"
             data-icon="trash"
+            :disabled="isDeleting"
             @click="deleteMessages()">
       {{ t('Delete') }}
     </button>
@@ -91,6 +93,8 @@ const { craft, t } = useCraft();
 const copiedMessages = ref([]);
 const copiedMessagesCategory = ref('');
 const isExporting = ref(false);
+const isAdding = computed(() => store.state.isAdding);
+const isDeleting = computed(() => store.state.isDeleting);
 
 const page = computed(() => store.state.page);
 const perPage = computed(() => store.state.perPage);
@@ -125,6 +129,9 @@ function setPage (value) {
 }
 
 function deleteMessages () {
+  if (isDeleting.value) {
+    return;
+  }
   const sourceMessageIds = [...checkedSourceMessages.value];
   if (!confirm(t('Are you sure you want to delete {count, plural, =1{the selected translation} other{the # selected translations}}?', { count: sourceMessageIds.length }))) {
     return;
@@ -135,7 +142,7 @@ function deleteMessages () {
   postAction(craft, 'translations-admin/messages/delete', { sourceMessageId: sourceMessageIds })
     .then((response) => {
       if (response.data.success) {
-        craft.cp.displayNotice(t('{count, plural, =1{Translation deleted} other{# translations deleted}}', { count: sourceMessageIds.length }));
+        craft.cp.displaySuccess(t('{count, plural, =1{Translation deleted} other{# translations deleted}}', { count: sourceMessageIds.length }));
         store.dispatch('removeSourceMessages', sourceMessageIds);
         // The changes of the deleted messages can't be saved anymore
         store.dispatch('forgetModifiedMessages', { sourceMessageIds });
@@ -161,6 +168,10 @@ function copyMessages () {
 }
 
 function pasteMessages () {
+  // Not twice: the second request would report the messages as already in the category
+  if (isAdding.value) {
+    return;
+  }
   store.commit('setIsAdding', true);
 
   const pasteCategory = category.value;
@@ -171,7 +182,7 @@ function pasteMessages () {
       if (response.data.success) {
         // The messages already in the category are skipped
         const skipped = sourceMessages.length - response.data.sourceMessages.length;
-        craft.cp.displayNotice(skipped > 0
+        craft.cp.displaySuccess(skipped > 0
           ? t('Translations pasted, except {count, plural, =1{one message} other{# messages}} already in the category.', { count: skipped })
           : t('Translations pasted'));
         // Not in the list of another category, if it was changed during the request

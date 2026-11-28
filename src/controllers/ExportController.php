@@ -3,6 +3,7 @@
 namespace mutation\translate\controllers;
 
 use Craft;
+use craft\helpers\FileHelper;
 use mutation\translate\base\Controller;
 use mutation\translate\Translate;
 
@@ -34,7 +35,10 @@ class ExportController extends Controller
 
         $csv = Translate::getInstance()->export->exportCsv($category, $sourceMessageIds);
 
-        return $this->response->sendContentAsFile($csv, "translations-{$category}.csv", [
+        // E.g. "translations-forms-contact.csv" for the "forms/contact" category (the helper would remove the slash)
+        $filename = FileHelper::sanitizeFilename('translations-' . str_replace(['/', '\\'], '-', $category) . '.csv');
+
+        return $this->response->sendContentAsFile($csv, $filename, [
             'mimeType' => 'text/csv',
         ]);
     }

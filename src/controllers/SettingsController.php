@@ -46,12 +46,10 @@ class SettingsController extends Controller
             throw new BadRequestHttpException('Invalid settings.');
         }
         if (!Craft::$app->getPlugins()->savePluginSettings($plugin, $settings)) {
-            $this->setFailFlash(Craft::t('app', 'Couldn’t save plugin settings.'));
-            // Send the settings back to the template, with their errors
-            return null;
+            // The settings page is shown again with the plugin settings, which have the errors
+            return $this->asModelFailure($plugin->getSettings(), Craft::t('app', 'Couldn’t save plugin settings.'), 'settings');
         }
 
-        $this->setSuccessFlash(Craft::t('app', 'Plugin settings saved.'));
-        return $this->redirectToPostedUrl();
+        return $this->asSuccess(Craft::t('app', 'Plugin settings saved.'));
     }
 }

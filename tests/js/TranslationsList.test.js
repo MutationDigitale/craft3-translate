@@ -66,7 +66,7 @@ describe('the translations list', () => {
     await store.dispatch('updateLanguages', store.state.languages.map(language => ({ ...language, checked: language.id !== 'fr' })));
     await flushPromises();
     expect(displayedKeys(wrapper)).toEqual(['Blank French', 'No French']);
-    // "Any language": the displayed ones
+    // "Any displayed language": not the hidden ones
     store.commit('setEmptyMessages', true);
     await flushPromises();
     expect(displayedKeys(wrapper)).toEqual(['No English']);

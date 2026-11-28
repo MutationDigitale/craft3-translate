@@ -28,7 +28,7 @@ describe('the footer', () => {
     expect(store.state.sourceMessages.map(s => s.id)).toEqual([2]);
     expect(store.state.checkedSourceMessages).toEqual([]);
     expect(craft.t).toHaveBeenCalledWith('translations-admin', '{count, plural, =1{Translation deleted} other{# translations deleted}}', { count: 2 });
-    expect(craft.cp.displayNotice).toHaveBeenCalled();
+    expect(craft.cp.displaySuccess).toHaveBeenCalled();
   });
 
   it('copies the saved translations, not the unsaved changes', async () => {
@@ -53,6 +53,25 @@ describe('the footer', () => {
     );
   });
 
+  it('pastes only once when the button is clicked twice', async () => {
+    store.commit('setCategory', 'site');
+    setSourceMessages(items(1));
+    store.commit('setCheckedSourceMessages', [1]);
+    sendActionRequest.mockReturnValue(new Promise(() => {}));
+    const { wrapper } = mountComponent(TranslationsFooter, permissions);
+
+    await button(wrapper, 'Copy translations').trigger('click');
+    store.commit('setCheckedSourceMessages', []);
+    store.commit('setCategory', 'other');
+    await flushPromises();
+    await button(wrapper, 'Paste translations').trigger('click');
+    await flushPromises();
+
+    expect(button(wrapper, 'Paste translations').element.disabled).toBe(true);
+    await button(wrapper, 'Paste translations').trigger('click');
+    expect(sendActionRequest).toHaveBeenCalledTimes(1);
+  });
+
   it('tells how many messages were already in the category when pasting', async () => {
     store.commit('setCategory', 'site');
     setSourceMessages(items(2));
@@ -68,7 +87,7 @@ describe('the footer', () => {
     await flushPromises();
 
     expect(craft.t).toHaveBeenCalledWith('translations-admin', expect.stringContaining('already in the category'), { count: 1 });
-    expect(craft.cp.displayNotice).toHaveBeenCalledWith(expect.stringContaining('Translations pasted, except'));
+    expect(craft.cp.displaySuccess).toHaveBeenCalledWith(expect.stringContaining('Translations pasted, except'));
   });
 
   it('exports the whole category, or the selected messages', async () => {

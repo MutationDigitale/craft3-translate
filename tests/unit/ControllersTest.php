@@ -166,6 +166,19 @@ class ControllersTest extends TestCase
         $this->assertStringContainsString('Hello,,Bonjour', $response->content);
         $this->assertStringContainsString('translations-site.csv', $response->getHeaders()->get('content-disposition'));
 
+        // A category with a slash gives a file name without it
+        $settings = $this->plugin()->settings;
+        $categories = $settings->categories;
+        $settings->categories = ['site', 'forms/contact'];
+        try {
+            // The tests share the response: only set if there's none
+            Craft::$app->getResponse()->getHeaders()->remove('content-disposition');
+            $response = $this->runAction('translations-admin/export/export', ['category' => 'forms/contact']);
+            $this->assertStringContainsString('filename="translations-forms-contact.csv"', $response->getHeaders()->get('content-disposition'));
+        } finally {
+            $settings->categories = $categories;
+        }
+
         $this->loginAs([]);
         $this->expectException(ForbiddenHttpException::class);
         $this->runAction('translations-admin/export/export', ['category' => 'site']);
@@ -247,6 +260,14 @@ class ControllersTest extends TestCase
         $this->runAction('translations-admin/utilities/missing');
         $this->assertSame('9 translation(s) imported.', $this->flash('success'));
 
+        // Also usable with a JSON request, like the actions of Craft
+        Craft::$app->getRequest()->setAcceptableContentTypes(['application/json' => []]);
+        try {
+            $this->assertSame(['message' => '0 translation(s) imported.'], $this->runAction('translations-admin/utilities/missing')->data);
+        } finally {
+            Craft::$app->getRequest()->setAcceptableContentTypes(null);
+        }
+
         $this->plugin()->messages->saveTranslations(['fr-CA' => [$this->sourceMessageIds('Parse default')[0] => 'Par défaut']]);
         $this->runAction('translations-admin/utilities/export');
         $this->assertSame('18 translation(s) exported to PHP files.', $this->flash('success'));
@@ -321,6 +342,20 @@ class ControllersTest extends TestCase
         $html = Craft::$app->getView()->renderPageTemplate($template->template, $template->variables, View::TEMPLATE_MODE_CP);
 
         $this->assertStringContainsString('Plugin Name cannot be blank.', $html);
+
+        // A JSON request gets the errors, like the actions of Craft
+        Craft::$app->getRequest()->setAcceptableContentTypes(['application/json' => []]);
+        try {
+            $response = $this->runAction('translations-admin/settings/save', [
+                'settings' => ['pluginName' => ' ', 'categories' => [['category' => 'site']]],
+            ]);
+            $this->assertSame(400, $response->getStatusCode());
+            $this->assertSame('settings', $response->data['modelName']);
+            $this->assertSame(['Plugin Name cannot be blank.'], $response->data['errors']['pluginName']);
+        } finally {
+            Craft::$app->getRequest()->setAcceptableContentTypes(null);
+            Craft::$app->getResponse()->setStatusCode(200);
+        }
     }
 
     public function testSettingsErrorsInFrench(): void

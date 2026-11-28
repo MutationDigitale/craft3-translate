@@ -38,28 +38,24 @@ class ImportController extends Controller
         $csvFile = $this->getUploadedFile();
 
         if (!$csvFile) {
-            $this->setFailFlash(Craft::t('translations-admin', 'No csv file uploaded.'));
-            return null;
+            return $this->asFailure(Craft::t('translations-admin', 'No csv file uploaded.'));
         }
 
         if (strtolower($csvFile->getExtension()) !== 'csv') {
-            $this->setFailFlash(Craft::t('translations-admin', 'The file isn’t a CSV file. Save it as CSV in your spreadsheet app (e.g. “CSV UTF-8” in Excel).'));
-            return null;
+            return $this->asFailure(Craft::t('translations-admin', 'The file isn’t a CSV file. Save it as CSV in your spreadsheet app (e.g. “CSV UTF-8” in Excel).'));
         }
 
         // The temp file keeps the uploaded file name: the reader trusts the .csv extension, otherwise it checks the MIME type,
         // which can reject valid files (e.g. UTF-16)
         $tempPath = $csvFile->saveAsTempFile();
         if ($tempPath === false) {
-            $this->setFailFlash(Craft::t('translations-admin', 'No csv file uploaded.'));
-            return null;
+            return $this->asFailure(Craft::t('translations-admin', 'No csv file uploaded.'));
         }
 
         try {
             $result = Translate::getInstance()->import->importCsv($tempPath, $category);
         } catch (InvalidArgumentException $e) {
-            $this->setFailFlash($e->getMessage());
-            return null;
+            return $this->asFailure($e->getMessage());
         } finally {
             FileHelper::unlink($tempPath);
         }
@@ -77,10 +73,8 @@ class ImportController extends Controller
                 'columns' => implode(', ', $result['ignoredColumns']),
             ]);
         }
-        $this->setSuccessFlash($notice);
-
         // The category stays selected, to import other files in it
-        return $this->redirectToPostedUrl(null, UrlHelper::cpUrl('translations-admin/import-messages', ['category' => $category]));
+        return $this->asSuccess($notice, redirect: UrlHelper::cpUrl('translations-admin/import-messages', ['category' => $category]));
     }
 
     /**

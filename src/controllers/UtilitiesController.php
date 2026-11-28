@@ -30,13 +30,11 @@ class UtilitiesController extends Controller
 
         $translationsImported = Translate::getInstance()->template->parseTemplates();
 
-        $this->setSuccessFlash(Craft::t(
+        return $this->asSuccess(Craft::t(
             'translations-admin',
             '{count} translation(s) imported.',
             ['count' => $translationsImported]
         ));
-
-        return $this->redirectToPostedUrl();
     }
 
     public function actionImport()
@@ -46,17 +44,15 @@ class UtilitiesController extends Controller
 
         $translationsImported = Translate::getInstance()->import->importPhpTranslationsToDatabase();
 
-        if (is_int($translationsImported)) {
-            $this->setSuccessFlash(Craft::t(
-                'translations-admin',
-                '{count} translation(s) imported to the database.',
-                ['count' => $translationsImported]
-            ));
-        } else {
-            $this->setFailFlash(Craft::t('translations-admin', 'Translations couldn’t be imported to the database.'));
+        if (!is_int($translationsImported)) {
+            return $this->asFailure(Craft::t('translations-admin', 'Translations couldn’t be imported to the database.'));
         }
 
-        return $this->redirectToPostedUrl();
+        return $this->asSuccess(Craft::t(
+            'translations-admin',
+            '{count} translation(s) imported to the database.',
+            ['count' => $translationsImported]
+        ));
     }
 
     public function actionExport()
@@ -66,17 +62,15 @@ class UtilitiesController extends Controller
 
         $translationsExported = Translate::getInstance()->export->exportDatabaseTranslationsToPhp();
 
-        if (is_int($translationsExported)) {
-            $this->setSuccessFlash(Craft::t(
-                'translations-admin',
-                '{count} translation(s) exported to PHP files.',
-                ['count' => $translationsExported]
-            ));
-        } else {
-            $this->setFailFlash(Craft::t('translations-admin', 'Translations couldn’t be exported to PHP files.'));
+        if (!is_int($translationsExported)) {
+            return $this->asFailure(Craft::t('translations-admin', 'Translations couldn’t be exported to PHP files.'));
         }
 
-        return $this->redirectToPostedUrl();
+        return $this->asSuccess(Craft::t(
+            'translations-admin',
+            '{count} translation(s) exported to PHP files.',
+            ['count' => $translationsExported]
+        ));
     }
 
     public function actionDelete()
@@ -86,8 +80,6 @@ class UtilitiesController extends Controller
 
         Translate::getInstance()->messages->deleteAllMessages();
 
-        $this->setSuccessFlash(Craft::t('translations-admin', 'All translations deleted.'));
-
-        return $this->redirectToPostedUrl();
+        return $this->asSuccess(Craft::t('translations-admin', 'All translations deleted.'));
     }
 }
