@@ -3,7 +3,7 @@
 ## 4.3.0 - unreleased
 
 ### Added
-- Add the French translations of the plugin
+- Add the French translations of the plugin, and make the remaining interface labels translatable
 - Add an "Add missing translations from templates only" setting (disabled by default), so the names Craft translates itself in the `site` category (e.g. sites, sections and fields) aren't added as missing translations ([#75](https://github.com/MutationDigitale/craft3-translate/issues/75))
 - Add a confirmation before deleting all translations in the Utilities page
 - Add a warning before leaving the page or changing category with unsaved changes
@@ -23,11 +23,11 @@
 - Parsing the templates only adds the messages of the configured categories that aren't excluded
 - Parsing the templates reports how many messages were added
 - The search of the messages page ignores the accents (e.g. `cafe` finds `café`)
+- Improve the performance of the messages page with large categories, especially when typing a translation and sorting
 - The source language can be left empty in the settings, to follow the primary site language
 - The `afterSaveMessages` and `afterDeleteMessages` events are also triggered by the imports and the "Delete all" utility
 - The console commands return an error exit code on failure
 - The PHP translations import and export errors are logged
-- The remaining interface labels can be translated
 
 ### Deprecated
 - Deprecate `MessagesService::saveMessages()`. `saveTranslations()` should be used instead, it returns whether all the translations were saved
@@ -70,19 +70,16 @@
 - Fix the translation fields, the checkboxes, the filter and Columns menus, and the file input of the Import page having no accessible name
 - Fix the sorted column not being announced by screen readers
 - Fix the category links having no URL (they can now be opened in a new tab), and the current category not being announced
-- Fix the slowness of the messages page with large categories
-- Fix the export errors not being shown
+- Fix the Export button of the messages page not showing an error when the export failed
 - Fix the PHP translations import failing on an invalid file or storing arrays
-- Fix the messages without translation rows being ignored
-- Fix the PHP export including languages without a site
-- Fix the GraphQL caches not being cleared
-- Fix the `0` message not being added
+- Fix the messages without translation rows in the database (e.g. added by a migration) missing from the messages page and the exports
+- Fix the "Export DB translations to PHP" utility writing files for the languages of removed sites
+- Fix the GraphQL caches not being cleared by the imports, utilities and console commands
+- Fix the "Add missing translations" setting ignoring the `0` message
 - Fix the regex characters of the categories in the URLs (e.g. `site.forms` matching `site-forms`)
 - Fix the "Excluded messages" setting excluding everything with an empty row
-- Fix the settings accepting empty plugin names
-- Fix the plugin name error not being shown in the settings
-- Fix the settings save error and the names of the settings in the validation errors not being translated
-- Fix deleting a message that doesn't exist anymore
+- Fix the settings accepting an empty plugin name: the save is refused, with the error shown on the field
+- Fix deleting messages failing, and only partly deleting them, when one of them was already deleted
 - Fix the config file example of the README using the `app` category, which replaces Craft's own translations with the database ones (remove `app` from your categories if you copied it)
 
 ## 4.2.3 - 2026-06-10
